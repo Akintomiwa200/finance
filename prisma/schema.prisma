@@ -1,0 +1,404 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  FINANCE_MANAGER
+  ACCOUNTANT_PAYABLE
+  ACCOUNTANT_RECEIVABLE
+  PAYROLL_OFFICER
+  BUDGET_ANALYST
+  DEPARTMENT_HEAD
+  EMPLOYEE
+  AUDITOR
+  TAX_SPECIALIST
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum PayrollStatus {
+  DRAFT
+  COMPUTED
+  APPROVED
+  PAID
+  CANCELLED
+}
+
+enum ExpenseStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  REIMBURSED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum BudgetStatus {
+  ACTIVE
+  CLOSED
+  CANCELLED
+}
+
+model Organization {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  email     String?
+  phone     String?
+  address   String?
+  logo      String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  departments      Department[]
+  employees        Employee[]
+  budgets          Budget[]
+  payrollRuns      PayrollRun[]
+  customerInvoices CustomerInvoice[]
+  vendorInvoices   VendorInvoice[]
+  taxConfigurations TaxConfiguration[]
+  auditLogs        AuditLog[]
+}
+
+model Department {
+  id             String       @id @default(cuid())
+  name           String
+  code           String       @unique
+  description    String?
+  costCenter     String?
+  budgetAmount   Decimal?     @default(0) @db.Decimal(15, 2)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  head      String?
+  employees Employee[]
+  budgets   Budget[]
+}
+
+model Employee {
+  id           String     @id @default(cuid())
+  employeeCode String     @unique
+  firstName    String
+  lastName     String
+  email        String     @unique
+  phone        String?
+  position     String?
+  baseSalary   Decimal?   @default(0) @db.Decimal(15, 2)
+  passwordHash String?
+  bankName     String?
+  bankAccount  String?
+  bankCode     String?
+  taxId        String?
+  hireDate     DateTime?
+  isActive     Boolean    @default(true)
+  role         Role       @default(EMPLOYEE)
+
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  organizationId String
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payrollItems   PayrollItem[]
+  expenseReports ExpenseReport[]
+  timesheets     Timesheet[]
+  loans          EmployeeLoan[]
+  approvals      ApprovalRequest[]
+  approvalsApproved ApprovalRequest[] @relation("ApproverRelation")
+}
+
+model Timesheet {
+  id         String   @id @default(cuid())
+  date       DateTime
+  hoursWorked Decimal? @db.Decimal(5, 2)
+  overtime   Decimal? @default(0) @db.Decimal(5, 2)
+  status     ApprovalStatus @default(PENDING)
+  notes      String?
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PayrollRun {
+  id          String        @id @default(cuid())
+  periodStart DateTime
+  periodEnd   DateTime
+  totalAmount Decimal?      @default(0) @db.Decimal(15, 2)
+  status      PayrollStatus @default(DRAFT)
+  processedAt DateTime?
+  notes       String?
+
+  processedBy String?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items PayrollItem[]
+}
+
+model PayrollItem {
+  id          String   @id @default(cuid())
+  grossPay    Decimal  @db.Decimal(15, 2)
+  deductions  Decimal  @default(0) @db.Decimal(15, 2)
+  taxAmount   Decimal  @default(0) @db.Decimal(15, 2)
+  netPay      Decimal  @db.Decimal(15, 2)
+  allowances  Decimal  @default(0) @db.Decimal(15, 2)
+  bonus       Decimal  @default(0) @db.Decimal(15, 2)
+  loanDeduction Decimal @default(0) @db.Decimal(15, 2)
+  overtimePay  Decimal  @default(0) @db.Decimal(15, 2)
+
+  payrollRunId String
+  payrollRun   PayrollRun @relation(fields: [payrollRunId], references: [id])
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ExpenseReport {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  totalAmount Decimal       @default(0) @db.Decimal(15, 2)
+  status      ExpenseStatus @default(DRAFT)
+  submittedAt DateTime?
+  approvedAt  DateTime?
+  receiptUrl  String?
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items ExpenseItem[]
+}
+
+model ExpenseItem {
+  id           String   @id @default(cuid())
+  category     String
+  description  String
+  amount       Decimal  @db.Decimal(15, 2)
+  receiptUrl   String?
+  expenseDate  DateTime
+
+  expenseReportId String
+  expenseReport   ExpenseReport @relation(fields: [expenseReportId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CustomerInvoice {
+  id           String        @id @default(cuid())
+  invoiceNumber String       @unique
+  customerName String
+  customerEmail String?
+  customerAddress String?
+  totalAmount  Decimal       @db.Decimal(15, 2)
+  taxAmount    Decimal       @default(0) @db.Decimal(15, 2)
+  dueDate      DateTime
+  status       InvoiceStatus @default(DRAFT)
+  notes        String?
+  pdfUrl       String?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items CustomerInvoiceItem[]
+}
+
+model CustomerInvoiceItem {
+  id        String  @id @default(cuid())
+  description String
+  quantity  Decimal @db.Decimal(10, 2)
+  unitPrice Decimal @db.Decimal(15, 2)
+  total     Decimal @db.Decimal(15, 2)
+
+  invoiceId String
+  invoice   CustomerInvoice @relation(fields: [invoiceId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VendorInvoice {
+  id             String        @id @default(cuid())
+  vendorName     String
+  invoiceNumber  String
+  totalAmount    Decimal       @db.Decimal(15, 2)
+  taxAmount      Decimal       @default(0) @db.Decimal(15, 2)
+  dueDate        DateTime
+  status         InvoiceStatus @default(DRAFT)
+  notes          String?
+  documentUrl    String?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Budget {
+  id             String       @id @default(cuid())
+  fiscalYear     Int
+  totalAmount    Decimal      @db.Decimal(15, 2)
+  spentAmount    Decimal      @default(0) @db.Decimal(15, 2)
+  status         BudgetStatus @default(ACTIVE)
+
+  departmentId   String?
+  department     Department? @relation(fields: [departmentId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lineItems BudgetLineItem[]
+}
+
+model BudgetLineItem {
+  id          String  @id @default(cuid())
+  category    String
+  description String?
+  allocated   Decimal @db.Decimal(15, 2)
+  spent       Decimal @default(0) @db.Decimal(15, 2)
+
+  budgetId String
+  budget   Budget @relation(fields: [budgetId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmployeeLoan {
+  id              String        @id @default(cuid())
+  amount          Decimal       @db.Decimal(15, 2)
+  monthlyDeduction Decimal      @db.Decimal(15, 2)
+  remainingBalance Decimal      @db.Decimal(15, 2)
+  totalInstallments Int
+  paidInstallments Int          @default(0)
+  status          ApprovalStatus @default(PENDING)
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ApprovalRequest {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  type        String
+  status      ApprovalStatus @default(PENDING)
+  priority    String         @default("NORMAL")
+  dueDate     DateTime?
+
+  requesterId String
+  requester   Employee @relation(fields: [requesterId], references: [id])
+
+  approverId String?
+  approver   Employee? @relation("ApproverRelation", fields: [approverId], references: [id])
+
+  approvedAt DateTime?
+  comments   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  steps ApprovalStep[]
+}
+
+model ApprovalStep {
+  id       String         @id @default(cuid())
+  stepOrder Int
+  role     Role
+  status   ApprovalStatus @default(PENDING)
+  comment  String?
+
+  requestId String
+  request   ApprovalRequest @relation(fields: [requestId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TaxConfiguration {
+  id          String  @id @default(cuid())
+  name        String
+  rate        Decimal @db.Decimal(5, 2)
+  threshold   Decimal? @db.Decimal(15, 2)
+  isActive    Boolean @default(true)
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  entity     String
+  entityId   String?
+  details    Json?
+  ipAddress  String?
+
+  userId     String?
+  userName   String?
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id      String  @id @default(cuid())
+  title   String
+  message String
+  type    String  @default("INFO")
+  isRead  Boolean @default(false)
+
+  userId      String
+  referenceId String?
+
+  createdAt DateTime @default(now())
+}
