@@ -85,16 +85,19 @@ export function AlertDialogAction({
   children,
   className,
   onClick,
+  disabled,
 }: {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       className={cn(
-        "inline-flex items-center justify-center h-10 px-4 rounded-lg text-sm font-medium bg-foreground text-background hover:opacity-90 transition-colors",
+        "inline-flex items-center justify-center h-10 px-4 rounded-lg text-sm font-medium bg-foreground text-background hover:opacity-90 transition-colors disabled:opacity-50 disabled:pointer-events-none",
         className,
       )}
     >

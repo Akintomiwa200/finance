@@ -16,8 +16,28 @@ import {
   ChevronDown,
   Menu,
   X,
+  ListTree,
+  History,
+  Scale,
+  Truck,
+  BookCheck,
+  ArrowLeftRight,
+  Coins,
+  NotebookPen,
+  ShoppingCart,
+  Barcode,
+  CalendarRange,
+  Trash2,
+  Calendar,
+  LineChart,
+  GitBranch,
+  Percent,
+  CreditCard,
+  FileMinus,
+  RefreshCw,
   TrendingUp,
   HandCoins,
+  ClipboardList,
   PiggyBank,
   ShieldCheck,
   Bell,
@@ -27,10 +47,21 @@ import {
   Calculator,
   FileCheck,
   Clock,
+  CalendarDays,
+  Database,
+  Mail,
+  BellRing,
+  Webhook,
+  Shield,
+  FileSearch,
+  Globe,
+  Plug,
+  Sliders,
   Landmark,
   ReceiptText,
   Package,
   Sigma,
+  BookOpen,
 } from "lucide-react";
 
 interface NavItem {
@@ -82,36 +113,186 @@ const navSections: { title: string; items: NavItem[] }[] = [
         ],
       },
       {
-        label: "Expenses",
-        href: "/expenses",
-        icon: Receipt,
+        label: "General Ledger",
+        href: "/ledger",
+        icon: BookOpen,
         children: [
           {
-            label: "Expense Reports",
-            href: "/expenses/reports",
-            icon: FileSpreadsheet,
+            label: "Chart of Accounts",
+            href: "/ledger/chart-of-accounts",
+            icon: ListTree,
           },
           {
-            label: "Reimbursements",
-            href: "/expenses/reimbursements",
-            icon: TrendingUp,
+            label: "Journal Entries",
+            href: "/ledger/journal-entries",
+            icon: NotebookPen,
+          },
+          {
+            label: "Trial Balance",
+            href: "/ledger/trial-balance",
+            icon: Scale,
+          },
+          {
+            label: "General Ledger Report",
+            href: "/ledger/report",
+            icon: FileText,
           },
         ],
       },
       {
-        label: "Invoices",
-        href: "/invoices",
-        icon: FileText,
+        label: "Petty Cash",
+        href: "/petty-cash",
+        icon: Coins,
         children: [
           {
-            label: "Sales Invoices",
-            href: "/invoices/customer",
-            icon: ReceiptText,
+            label: "Cash Requests",
+            href: "/petty-cash/requests",
+            icon: HandCoins,
           },
           {
-            label: "Purchase Invoices",
-            href: "/invoices/vendor",
-            icon: Package,
+            label: "Reimbursements",
+            href: "/petty-cash/reimbursements",
+            icon: ArrowLeftRight,
+          },
+          {
+            label: "Petty Cash Register",
+            href: "/petty-cash/register",
+            icon: BookCheck,
+          },
+          {
+            label: "Reconciliation",
+            href: "/petty-cash/reconcile",
+            icon: Calculator,
+          },
+        ],
+      },
+      {
+        label: "Accounts Payable",
+        href: "/payables",
+        icon: Package,
+        children: [
+          {
+            label: "Vendors",
+            href: "/payables/vendors",
+            icon: Truck,
+          },
+          {
+            label: "Purchase Orders",
+            href: "/payables/purchase-orders",
+            icon: ShoppingCart,
+          },
+          {
+            label: "Vendor Bills",
+            href: "/payables/vendor-bills",
+            icon: FileText,
+          },
+          {
+            label: "Bill Payments",
+            href: "/payables/bill-payments",
+            icon: CreditCard,
+          },
+        ],
+      },
+      {
+        label: "Accounts Receivable",
+        href: "/receivables",
+        icon: ReceiptText,
+        children: [
+          {
+            label: "Customers",
+            href: "/receivables/customers",
+            icon: Users,
+          },
+          {
+            label: "Sales Invoices",
+            href: "/receivables/sales-invoices",
+            icon: FileSpreadsheet,
+          },
+          {
+            label: "Customer Payments",
+            href: "/receivables/customer-payments",
+            icon: CreditCard,
+          },
+          {
+            label: "Credit Notes",
+            href: "/receivables/credit-notes",
+            icon: FileMinus,
+          },
+        ],
+      },
+      {
+        label: "Cash Management",
+        href: "/cash",
+        icon: PiggyBank,
+        children: [
+          {
+            label: "Bank Accounts",
+            href: "/cash/bank-accounts",
+            icon: Landmark,
+          },
+          {
+            label: "Bank Reconciliation",
+            href: "/cash/bank-reconciliation",
+            icon: RefreshCw,
+          },
+          {
+            label: "Cash Flow Statement",
+            href: "/cash/cash-flow",
+            icon: TrendingUp,
+          },
+          {
+            label: "Deposits & Withdrawals",
+            href: "/cash/transactions",
+            icon: ArrowLeftRight,
+          },
+        ],
+      },
+      {
+        label: "Fixed Assets",
+        href: "/assets",
+        icon: Package,
+        children: [
+          {
+            label: "Asset Register",
+            href: "/assets/register",
+            icon: ClipboardList,
+          },
+          {
+            label: "Depreciation Schedule",
+            href: "/assets/depreciation",
+            icon: CalendarRange,
+          },
+          {
+            label: "Asset Disposal",
+            href: "/assets/disposal",
+            icon: Trash2,
+          },
+        ],
+      },
+      {
+        label: "Tax Management",
+        href: "/tax",
+        icon: Sigma,
+        children: [
+          {
+            label: "Tax Returns",
+            href: "/tax/returns",
+            icon: FileCheck,
+          },
+          {
+            label: "VAT/GST Reports",
+            href: "/tax/vat-reports",
+            icon: FileSpreadsheet,
+          },
+          {
+            label: "Withholding Tax",
+            href: "/tax/withholding",
+            icon: Percent,
+          },
+          {
+            label: "Tax Calendar",
+            href: "/tax/calendar",
+            icon: Calendar,
           },
         ],
       },
@@ -119,6 +300,55 @@ const navSections: { title: string; items: NavItem[] }[] = [
         label: "Budget",
         href: "/budget",
         icon: Wallet,
+        children: [
+          {
+            label: "Annual Budget",
+            href: "/budget/annual",
+            icon: Calendar,
+          },
+          {
+            label: "Budget vs Actual",
+            href: "/budget/vs-actual",
+            icon: TrendingUp,
+          },
+          {
+            label: "Forecasting",
+            href: "/budget/forecast",
+            icon: LineChart,
+          },
+        ],
+      },
+      {
+        label: "Financial Reports",
+        href: "/financial-reports",
+        icon: BarChart3,
+        children: [
+          {
+            label: "Profit & Loss",
+            href: "/reports/pnl",
+            icon: TrendingUp,
+          },
+          {
+            label: "Balance Sheet",
+            href: "/reports/balance-sheet",
+            icon: Scale,
+          },
+          {
+            label: "Trial Balance",
+            href: "/reports/trial-balance",
+            icon: FileText,
+          },
+          {
+            label: "Aging Reports",
+            href: "/reports/aging",
+            icon: Clock,
+          },
+          {
+            label: "Financial Ratios",
+            href: "/reports/ratios",
+            icon: Percent,
+          },
+        ],
       },
     ],
   },
@@ -129,6 +359,23 @@ const navSections: { title: string; items: NavItem[] }[] = [
         label: "Approvals",
         href: "/approvals",
         icon: CheckCircle,
+        children: [
+          {
+            label: "Pending Approvals",
+            href: "/approvals/pending",
+            icon: Clock,
+          },
+          {
+            label: "Approval Workflows",
+            href: "/approvals/workflows",
+            icon: GitBranch,
+          },
+          {
+            label: "Approval History",
+            href: "/approvals/history",
+            icon: History,
+          },
+        ],
       },
       {
         label: "Departments",
@@ -144,6 +391,11 @@ const navSections: { title: string; items: NavItem[] }[] = [
             label: "Cost Centers",
             href: "/departments/cost-centers",
             icon: Landmark,
+          },
+          {
+            label: "Department Budgets",
+            href: "/departments/budgets",
+            icon: Wallet,
           },
         ],
       },
@@ -182,6 +434,11 @@ const navSections: { title: string; items: NavItem[] }[] = [
             href: "/reports/audit",
             icon: ShieldCheck,
           },
+          {
+            label: "Financial Statements",
+            href: "/reports/financial",
+            icon: FileText,
+          },
         ],
       },
     ],
@@ -198,28 +455,193 @@ const navSections: { title: string; items: NavItem[] }[] = [
             label: "Organization",
             href: "/settings/organization",
             icon: Building2,
+            children: [
+              {
+                label: "Company Profile",
+                href: "/settings/organization/profile",
+                icon: Building2,
+              },
+              {
+                label: "Fiscal Year",
+                href: "/settings/organization/fiscal-year",
+                icon: Calendar,
+              },
+              {
+                label: "Currencies",
+                href: "/settings/organization/currencies",
+                icon: DollarSign,
+              },
+            ],
+          },
+          {
+            label: "Accounting",
+            href: "/settings/accounting",
+            icon: BookOpen,
+            children: [
+              {
+                label: "Chart of Accounts",
+                href: "/settings/accounting/chart",
+                icon: ListTree,
+              },
+              {
+                label: "Journal Settings",
+                href: "/settings/accounting/journals",
+                icon: NotebookPen,
+              },
+              {
+                label: "Accounting Periods",
+                href: "/settings/accounting/periods",
+                icon: CalendarRange,
+              },
+            ],
           },
           {
             label: "Tax Configuration",
             href: "/settings/tax",
             icon: Sigma,
+            children: [
+              {
+                label: "Tax Rates",
+                href: "/settings/tax/rates",
+                icon: Percent,
+              },
+              {
+                label: "Tax Authorities",
+                href: "/settings/tax/authorities",
+                icon: Landmark,
+              },
+              {
+                label: "Tax Codes",
+                href: "/settings/tax/codes",
+                icon: Barcode,
+              },
+            ],
+          },
+          {
+            label: "Payroll Settings",
+            href: "/settings/payroll",
+            icon: DollarSign,
+            children: [
+              {
+                label: "Salary Structures",
+                href: "/settings/payroll/structures",
+                icon: FileText,
+              },
+              {
+                label: "Payroll Periods",
+                href: "/settings/payroll/periods",
+                icon: Calendar,
+              },
+              {
+                label: "Statutory Deductions",
+                href: "/settings/payroll/deductions",
+                icon: HandCoins,
+              },
+              {
+                label: "Leave Policies",
+                href: "/settings/payroll/leave",
+                icon: CalendarDays,
+              },
+            ],
           },
           {
             label: "Notifications",
             href: "/settings/notifications",
             icon: Bell,
+            children: [
+              {
+                label: "Email Templates",
+                href: "/settings/notifications/email",
+                icon: Mail,
+              },
+              {
+                label: "Alert Rules",
+                href: "/settings/notifications/alerts",
+                icon: BellRing,
+              },
+              {
+                label: "Webhooks",
+                href: "/settings/notifications/webhooks",
+                icon: Webhook,
+              },
+            ],
           },
           {
             label: "Roles & Permissions",
             href: "/settings/roles",
             icon: Key,
+            children: [
+              {
+                label: "User Roles",
+                href: "/settings/roles/users",
+                icon: Users,
+              },
+              {
+                label: "Permission Matrix",
+                href: "/settings/roles/permissions",
+                icon: Shield,
+              },
+              {
+                label: "Audit Logs",
+                href: "/settings/roles/audit",
+                icon: FileSearch,
+              },
+            ],
+          },
+          {
+            label: "Integrations",
+            href: "/settings/integrations",
+            icon: Plug,
+            children: [
+              {
+                label: "Bank Feeds",
+                href: "/settings/integrations/bank",
+                icon: Landmark,
+              },
+              {
+                label: "API Tokens",
+                href: "/settings/integrations/api",
+                icon: Key,
+              },
+              {
+                label: "Webhooks",
+                href: "/settings/integrations/webhooks",
+                icon: Webhook,
+              },
+            ],
+          },
+          {
+            label: "System Preferences",
+            href: "/settings/preferences",
+            icon: Settings,
+            children: [
+              {
+                label: "General Preferences",
+                href: "/settings/preferences/general",
+                icon: Sliders,
+              },
+              {
+                label: "Regional Settings",
+                href: "/settings/preferences/regional",
+                icon: Globe,
+              },
+              {
+                label: "Security",
+                href: "/settings/preferences/security",
+                icon: ShieldCheck,
+              },
+              {
+                label: "Backup & Restore",
+                href: "/settings/preferences/backup",
+                icon: Database,
+              },
+            ],
           },
         ],
       },
     ],
   },
 ];
-
 // ─── Chevron ─────────────────────────────────────────────────────────────────
 
 function Chevron({ open }: { open: boolean }) {

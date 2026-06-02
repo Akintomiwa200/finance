@@ -5,6 +5,7 @@ import { cn } from "@/src/lib/utils";
 interface AvatarProps {
   className?: string;
   children?: React.ReactNode;
+  style?: React.CSSProperties;
 }
 
 export function Avatar({ className, children }: AvatarProps) {
@@ -20,9 +21,9 @@ export function AvatarImage({ src, alt }: { src?: string; alt?: string }) {
   return <img src={src} alt={alt || ""} className="aspect-square h-full w-full" />;
 }
 
-export function AvatarFallback({ className, children }: AvatarProps) {
+export function AvatarFallback({ className, children, style }: AvatarProps) {
   return (
-    <div className={cn("flex h-full w-full items-center justify-center rounded-full bg-muted text-xs font-medium", className)}>
+    <div className={cn("flex h-full w-full items-center justify-center rounded-full bg-muted text-xs font-medium", className)} style={style}>
       {children}
     </div>
   );

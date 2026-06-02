@@ -26,10 +26,10 @@ export function Navbar() {
           href="/dashboard"
           className="shrink-0 no-underline flex items-center gap-2"
         >
-          <div className="w-8 h-8 rounded-lg bg-accent-500 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+          <div className="w-8 h-8 rounded-lg bg-accent-500 flex items-center hidden md:flex justify-center text-white font-bold text-sm shadow-sm">
             F
           </div>
-          <span className="text-sm font-semibold text-primary hidden sm:inline">
+          <span className="text-sm font-semibold text-primary hidden md:inline">
             FinServ
           </span>
         </Link>

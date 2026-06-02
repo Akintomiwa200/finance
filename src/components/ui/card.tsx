@@ -2,12 +2,15 @@ import { cn } from "@/src/lib/utils";
 
 interface CardProps {
   className?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  onClick?: () => void;
+  style?: React.CSSProperties;
+  id?: string;
 }
 
-export function Card({ className, children }: CardProps) {
+export function Card({ className, children, onClick, style, id }: CardProps) {
   return (
-    <div className={cn("card", className)}>
+    <div className={cn("card", className)} onClick={onClick} style={style} id={id}>
       {children}
     </div>
   );
