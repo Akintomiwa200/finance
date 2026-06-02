@@ -4,7 +4,50 @@ import { hash } from "bcryptjs";
 const db = new PrismaClient();
 
 async function main() {
-  const org = await db.organization.upsert({
+  /* ───── Platform Organization (for Super Admin) ───── */
+  const platformOrg = await db.organization.upsert({
+    where: { slug: "faas-platform" },
+    update: {},
+    create: {
+      name: "FaaS Platform",
+      slug: "faas-platform",
+      email: "super@faas.dev",
+      isPlatform: true,
+    },
+  });
+
+  const platformDept = await db.department.upsert({
+    where: { code: "PLATFORM" },
+    update: {},
+    create: {
+      name: "Platform Administration",
+      code: "PLATFORM",
+      organizationId: platformOrg.id,
+    },
+  });
+
+  /* ───── Super Admin ───── */
+  const superPassword = await hash("superadmin123", 12);
+
+  await db.employee.upsert({
+    where: { email: "super@faas.dev" },
+    update: {},
+    create: {
+      employeeCode: "SUPER001",
+      firstName: "Super",
+      lastName: "Admin",
+      email: "super@faas.dev",
+      passwordHash: superPassword,
+      position: "Platform Owner / Developer",
+      role: "SUPER_ADMIN",
+      departmentId: platformDept.id,
+      organizationId: platformOrg.id,
+      isActive: true,
+    },
+  });
+
+  /* ───── Acme Corp (Sample Tenant) ───── */
+  const acmeOrg = await db.organization.upsert({
     where: { slug: "acme-corp" },
     update: {},
     create: {
@@ -12,6 +55,7 @@ async function main() {
       slug: "acme-corp",
       email: "finance@acmecorp.com",
       phone: "+234-800-000-0000",
+      isPlatform: false,
     },
   });
 
@@ -23,7 +67,7 @@ async function main() {
         name: "Administration",
         code: "ADMIN",
         costCenter: "CC-001",
-        organizationId: org.id,
+        organizationId: acmeOrg.id,
       },
     }),
     db.department.upsert({
@@ -33,7 +77,7 @@ async function main() {
         name: "Finance",
         code: "FIN",
         costCenter: "CC-002",
-        organizationId: org.id,
+        organizationId: acmeOrg.id,
       },
     }),
     db.department.upsert({
@@ -43,7 +87,7 @@ async function main() {
         name: "Human Resources",
         code: "HR",
         costCenter: "CC-003",
-        organizationId: org.id,
+        organizationId: acmeOrg.id,
       },
     }),
     db.department.upsert({
@@ -53,7 +97,7 @@ async function main() {
         name: "Engineering",
         code: "ENG",
         costCenter: "CC-004",
-        organizationId: org.id,
+        organizationId: acmeOrg.id,
       },
     }),
     db.department.upsert({
@@ -63,7 +107,7 @@ async function main() {
         name: "Sales & Marketing",
         code: "SALES",
         costCenter: "CC-005",
-        organizationId: org.id,
+        organizationId: acmeOrg.id,
       },
     }),
   ]);
@@ -83,7 +127,7 @@ async function main() {
       baseSalary: 5000000,
       role: "ADMIN",
       departmentId: departments[1].id,
-      organizationId: org.id,
+      organizationId: acmeOrg.id,
       isActive: true,
     },
   });
@@ -101,7 +145,7 @@ async function main() {
       baseSalary: 4000000,
       role: "FINANCE_MANAGER",
       departmentId: departments[1].id,
-      organizationId: org.id,
+      organizationId: acmeOrg.id,
       isActive: true,
     },
   });
@@ -119,7 +163,7 @@ async function main() {
       baseSalary: 2500000,
       role: "PAYROLL_OFFICER",
       departmentId: departments[1].id,
-      organizationId: org.id,
+      organizationId: acmeOrg.id,
       isActive: true,
     },
   });
@@ -146,13 +190,52 @@ async function main() {
         baseSalary: emp.salary,
         role: "EMPLOYEE",
         departmentId: departments[emp.deptIdx].id,
-        organizationId: org.id,
+        organizationId: acmeOrg.id,
         isActive: true,
       },
     });
   }
 
-  // Tax configuration
+  /* ───── Beta Corp (Second Tenant) ───── */
+  const betaOrg = await db.organization.upsert({
+    where: { slug: "beta-corp" },
+    update: {},
+    create: {
+      name: "Beta Corp",
+      slug: "beta-corp",
+      email: "finance@betacorp.com",
+      isPlatform: false,
+    },
+  });
+
+  const betaDept = await db.department.upsert({
+    where: { code: "BETA-ADMIN" },
+    update: {},
+    create: {
+      name: "Administration",
+      code: "BETA-ADMIN",
+      organizationId: betaOrg.id,
+    },
+  });
+
+  await db.employee.upsert({
+    where: { email: "admin@betacorp.com" },
+    update: {},
+    create: {
+      employeeCode: "BETA001",
+      firstName: "Beta",
+      lastName: "Admin",
+      email: "admin@betacorp.com",
+      passwordHash,
+      position: "Company Admin",
+      role: "ADMIN",
+      departmentId: betaDept.id,
+      organizationId: betaOrg.id,
+      isActive: true,
+    },
+  });
+
+  /* ───── Tax Config ───── */
   await db.taxConfiguration.upsert({
     where: { id: "payee-tax" },
     update: {},
@@ -162,22 +245,23 @@ async function main() {
       rate: 0.01,
       threshold: 300000,
       isActive: true,
-      organizationId: org.id,
+      organizationId: acmeOrg.id,
     },
   });
 
-  // Budget for current fiscal year
+  /* ───── Budgets ───── */
   const currentYear = new Date().getFullYear();
   for (const dept of departments) {
-    const budget = await db.budget.upsert({
-      where: { id: `budget-${dept.code}-${currentYear}` },
+    const budgetId = `budget-${dept.code}-${currentYear}`;
+    await db.budget.upsert({
+      where: { id: budgetId },
       update: {},
       create: {
-        id: `budget-${dept.code}-${currentYear}`,
+        id: budgetId,
         fiscalYear: currentYear,
         totalAmount: 50000000,
         departmentId: dept.id,
-        organizationId: org.id,
+        organizationId: acmeOrg.id,
         lineItems: {
           create: [
             { category: "Salaries", allocated: 30000000 },
@@ -191,9 +275,22 @@ async function main() {
     });
   }
 
-  console.log("Seed completed successfully");
-  console.log(`Organization: ${org.name}`);
-  console.log(`Admin login: admin@acmecorp.com / password123`);
+  console.log("══════════════════════════════════════════");
+  console.log("  Seed completed successfully");
+  console.log("══════════════════════════════════════════");
+  console.log("");
+  console.log("  Super Admin:");
+  console.log("    super@faas.dev / superadmin123");
+  console.log("");
+  console.log("  Tenant Admins:");
+  console.log("    Acme Corp → admin@acmecorp.com / password123");
+  console.log("    Beta Corp → admin@betacorp.com / password123");
+  console.log("");
+  console.log("  Other Users:");
+  console.log("    manager@acmecorp.com / password123");
+  console.log("    payroll@acmecorp.com / password123");
+  console.log("    john@acmecorp.com   / password123");
+  console.log("══════════════════════════════════════════");
 }
 
 main()

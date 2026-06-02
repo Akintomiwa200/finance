@@ -1,11 +1,9 @@
-import { AppShell } from "@/src/components/layout/app-shell";
 import { Card, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 
 export default function BudgetPage() {
   return (
-    <AppShell>
-      <div className="page-container">
+<div className="page-container">
         <div className="page-header">
           <h1 className="page-title">Budget</h1>
           <p className="page-description">Plan and monitor departmental budgets</p>
@@ -17,6 +15,5 @@ export default function BudgetPage() {
           </div>
         </Card>
       </div>
-    </AppShell>
-  );
+);
 }

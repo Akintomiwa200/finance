@@ -1,62 +1,35 @@
 import { cn } from "@/src/lib/utils";
 
-interface Column<T> {
-  header: string;
-  accessorKey: keyof T | ((item: T) => React.ReactNode);
-  className?: string;
-}
+// ─── Shadcn-style sub-components ───────────────────────────────────────────
 
-interface TableProps<T> {
-  columns: Column<T>[];
-  data: T[];
-  onRowClick?: (item: T) => void;
-  className?: string;
-  emptyState?: React.ReactNode;
-}
-
-export function Table<T extends Record<string, unknown>>({
-  columns,
-  data,
-  onRowClick,
-  className,
-  emptyState,
-}: TableProps<T>) {
+export function Table({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={cn("overflow-x-auto", className)}>
-      <table>
-        <thead>
-          <tr>
-            {columns.map((col) => (
-              <th key={col.header} className={col.className}>
-                {col.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.length === 0 && emptyState ? (
-            <tr>
-              <td colSpan={columns.length}>{emptyState}</td>
-            </tr>
-          ) : (
-            data.map((item, idx) => (
-              <tr
-                key={(item.id as string) || idx}
-                onClick={() => onRowClick?.(item)}
-                className={cn(onRowClick && "cursor-pointer")}
-              >
-                {columns.map((col) => (
-                  <td key={col.header} className={col.className}>
-                    {typeof col.accessorKey === "function"
-                      ? col.accessorKey(item)
-                      : (item[col.accessorKey] as React.ReactNode)}
-                  </td>
-                ))}
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+      <table className="w-full">{children}</table>
     </div>
   );
+}
+
+export function TableHeader({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <thead className={cn("border-b border-border", className)}>{children}</thead>;
+}
+
+export function TableBody({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <tbody className={cn("divide-y divide-border", className)}>{children}</tbody>;
+}
+
+export function TableRow({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <tr className={cn("hover:bg-muted/50 transition-colors", className)}>{children}</tr>;
+}
+
+export function TableHead({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <th className={cn("h-10 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider", className)}>
+      {children}
+    </th>
+  );
+}
+
+export function TableCell({ children, className, colSpan }: { children: React.ReactNode; className?: string; colSpan?: number }) {
+  return <td colSpan={colSpan} className={cn("p-4 text-sm", className)}>{children}</td>;
 }

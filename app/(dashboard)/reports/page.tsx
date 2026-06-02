@@ -1,10 +1,8 @@
-import { AppShell } from "@/src/components/layout/app-shell";
 import { Card, CardHeader, CardTitle } from "@/src/components/ui/card";
 
 export default function ReportsPage() {
   return (
-    <AppShell>
-      <div className="page-container">
+<div className="page-container">
         <div className="page-header">
           <h1 className="page-title">Reports</h1>
           <p className="page-description">Financial reports and analytics</p>
@@ -22,6 +20,5 @@ export default function ReportsPage() {
           ))}
         </div>
       </div>
-    </AppShell>
-  );
+);
 }
