@@ -1,10 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -59,26 +59,26 @@ enum BudgetStatus {
 }
 
 model Organization {
-  id         String       @id @default(cuid())
+  id         String   @id @default(cuid())
   name       String
-  slug       String       @unique
+  slug       String   @unique
   email      String?
   phone      String?
   address    String?
   logo       String?
-  isPlatform Boolean      @default(false)
-  isActive   Boolean      @default(true)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  isPlatform Boolean  @default(false)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  departments      Department[]
-  employees        Employee[]
-  budgets          Budget[]
-  payrollRuns      PayrollRun[]
-  customerInvoices CustomerInvoice[]
-  vendorInvoices   VendorInvoice[]
+  departments       Department[]
+  employees         Employee[]
+  budgets           Budget[]
+  payrollRuns       PayrollRun[]
+  customerInvoices  CustomerInvoice[]
+  vendorInvoices    VendorInvoice[]
   taxConfigurations TaxConfiguration[]
-  auditLogs        AuditLog[]
+  auditLogs         AuditLog[]
 }
 
 model Department {
@@ -99,46 +99,46 @@ model Department {
 }
 
 model Employee {
-  id           String     @id @default(cuid())
-  employeeCode String     @unique
+  id           String   @id @default(cuid())
+  employeeCode String   @unique
   firstName    String
   lastName     String
-  email        String     @unique
+  email        String   @unique
   phone        String?
   position     String?
-  baseSalary   Decimal?   @default(0) @db.Decimal(15, 2)
+  baseSalary   Decimal? @default(0) @db.Decimal(15, 2)
   passwordHash String?
   bankName     String?
   bankAccount  String?
   bankCode     String?
   taxId        String?
   hireDate     DateTime?
-  isActive     Boolean    @default(true)
-  role         Role       @default(EMPLOYEE)
+  isActive     Boolean  @default(true)
+  role         Role     @default(EMPLOYEE)
 
-  departmentId String
-  department   Department @relation(fields: [departmentId], references: [id])
+  departmentId   String
+  department     Department   @relation(fields: [departmentId], references: [id])
   organizationId String
-  organization Organization @relation(fields: [organizationId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  payrollItems   PayrollItem[]
-  expenseReports ExpenseReport[]
-  timesheets     Timesheet[]
-  loans          EmployeeLoan[]
-  approvals      ApprovalRequest[]
+  payrollItems      PayrollItem[]
+  expenseReports    ExpenseReport[]
+  timesheets        Timesheet[]
+  loans             EmployeeLoan[]
+  approvals         ApprovalRequest[]
   approvalsApproved ApprovalRequest[] @relation("ApproverRelation")
 }
 
 model Timesheet {
-  id         String   @id @default(cuid())
-  date       DateTime
-  hoursWorked Decimal? @db.Decimal(5, 2)
-  overtime   Decimal? @default(0) @db.Decimal(5, 2)
-  status     ApprovalStatus @default(PENDING)
-  notes      String?
+  id          String         @id @default(cuid())
+  date        DateTime
+  hoursWorked Decimal?       @db.Decimal(5, 2)
+  overtime    Decimal?       @default(0) @db.Decimal(5, 2)
+  status      ApprovalStatus @default(PENDING)
+  notes       String?
 
   employeeId String
   employee   Employee @relation(fields: [employeeId], references: [id])
@@ -155,7 +155,6 @@ model PayrollRun {
   status      PayrollStatus @default(DRAFT)
   processedAt DateTime?
   notes       String?
-
   processedBy String?
 
   organizationId String
@@ -168,15 +167,15 @@ model PayrollRun {
 }
 
 model PayrollItem {
-  id          String   @id @default(cuid())
-  grossPay    Decimal  @db.Decimal(15, 2)
-  deductions  Decimal  @default(0) @db.Decimal(15, 2)
-  taxAmount   Decimal  @default(0) @db.Decimal(15, 2)
-  netPay      Decimal  @db.Decimal(15, 2)
-  allowances  Decimal  @default(0) @db.Decimal(15, 2)
-  bonus       Decimal  @default(0) @db.Decimal(15, 2)
+  id            String  @id @default(cuid())
+  grossPay      Decimal @db.Decimal(15, 2)
+  deductions    Decimal @default(0) @db.Decimal(15, 2)
+  taxAmount     Decimal @default(0) @db.Decimal(15, 2)
+  netPay        Decimal @db.Decimal(15, 2)
+  allowances    Decimal @default(0) @db.Decimal(15, 2)
+  bonus         Decimal @default(0) @db.Decimal(15, 2)
   loanDeduction Decimal @default(0) @db.Decimal(15, 2)
-  overtimePay  Decimal  @default(0) @db.Decimal(15, 2)
+  overtimePay   Decimal @default(0) @db.Decimal(15, 2)
 
   payrollRunId String
   payrollRun   PayrollRun @relation(fields: [payrollRunId], references: [id])
@@ -208,12 +207,12 @@ model ExpenseReport {
 }
 
 model ExpenseItem {
-  id           String   @id @default(cuid())
-  category     String
-  description  String
-  amount       Decimal  @db.Decimal(15, 2)
-  receiptUrl   String?
-  expenseDate  DateTime
+  id          String   @id @default(cuid())
+  category    String
+  description String
+  amount      Decimal  @db.Decimal(15, 2)
+  receiptUrl  String?
+  expenseDate DateTime
 
   expenseReportId String
   expenseReport   ExpenseReport @relation(fields: [expenseReportId], references: [id])
@@ -223,17 +222,17 @@ model ExpenseItem {
 }
 
 model CustomerInvoice {
-  id           String        @id @default(cuid())
-  invoiceNumber String       @unique
-  customerName String
-  customerEmail String?
+  id              String        @id @default(cuid())
+  invoiceNumber   String        @unique
+  customerName    String
+  customerEmail   String?
   customerAddress String?
-  totalAmount  Decimal       @db.Decimal(15, 2)
-  taxAmount    Decimal       @default(0) @db.Decimal(15, 2)
-  dueDate      DateTime
-  status       InvoiceStatus @default(DRAFT)
-  notes        String?
-  pdfUrl       String?
+  totalAmount     Decimal       @db.Decimal(15, 2)
+  taxAmount       Decimal       @default(0) @db.Decimal(15, 2)
+  dueDate         DateTime
+  status          InvoiceStatus @default(DRAFT)
+  notes           String?
+  pdfUrl          String?
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -245,11 +244,11 @@ model CustomerInvoice {
 }
 
 model CustomerInvoiceItem {
-  id        String  @id @default(cuid())
+  id          String  @id @default(cuid())
   description String
-  quantity  Decimal @db.Decimal(10, 2)
-  unitPrice Decimal @db.Decimal(15, 2)
-  total     Decimal @db.Decimal(15, 2)
+  quantity    Decimal @db.Decimal(10, 2)
+  unitPrice   Decimal @db.Decimal(15, 2)
+  total       Decimal @db.Decimal(15, 2)
 
   invoiceId String
   invoice   CustomerInvoice @relation(fields: [invoiceId], references: [id])
@@ -259,15 +258,15 @@ model CustomerInvoiceItem {
 }
 
 model VendorInvoice {
-  id             String        @id @default(cuid())
-  vendorName     String
-  invoiceNumber  String
-  totalAmount    Decimal       @db.Decimal(15, 2)
-  taxAmount      Decimal       @default(0) @db.Decimal(15, 2)
-  dueDate        DateTime
-  status         InvoiceStatus @default(DRAFT)
-  notes          String?
-  documentUrl    String?
+  id            String        @id @default(cuid())
+  vendorName    String
+  invoiceNumber String
+  totalAmount   Decimal       @db.Decimal(15, 2)
+  taxAmount     Decimal       @default(0) @db.Decimal(15, 2)
+  dueDate       DateTime
+  status        InvoiceStatus @default(DRAFT)
+  notes         String?
+  documentUrl   String?
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -277,14 +276,14 @@ model VendorInvoice {
 }
 
 model Budget {
-  id             String       @id @default(cuid())
-  fiscalYear     Int
-  totalAmount    Decimal      @db.Decimal(15, 2)
-  spentAmount    Decimal      @default(0) @db.Decimal(15, 2)
-  status         BudgetStatus @default(ACTIVE)
+  id          String       @id @default(cuid())
+  fiscalYear  Int
+  totalAmount Decimal      @db.Decimal(15, 2)
+  spentAmount Decimal      @default(0) @db.Decimal(15, 2)
+  status      BudgetStatus @default(ACTIVE)
 
   departmentId   String?
-  department     Department? @relation(fields: [departmentId], references: [id])
+  department     Department?  @relation(fields: [departmentId], references: [id])
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
 
@@ -309,13 +308,13 @@ model BudgetLineItem {
 }
 
 model EmployeeLoan {
-  id              String        @id @default(cuid())
-  amount          Decimal       @db.Decimal(15, 2)
-  monthlyDeduction Decimal      @db.Decimal(15, 2)
-  remainingBalance Decimal      @db.Decimal(15, 2)
+  id                String         @id @default(cuid())
+  amount            Decimal        @db.Decimal(15, 2)
+  monthlyDeduction  Decimal        @db.Decimal(15, 2)
+  remainingBalance  Decimal        @db.Decimal(15, 2)
   totalInstallments Int
-  paidInstallments Int          @default(0)
-  status          ApprovalStatus @default(PENDING)
+  paidInstallments  Int            @default(0)
+  status            ApprovalStatus @default(PENDING)
 
   employeeId String
   employee   Employee @relation(fields: [employeeId], references: [id])
@@ -349,11 +348,11 @@ model ApprovalRequest {
 }
 
 model ApprovalStep {
-  id       String         @id @default(cuid())
+  id        String         @id @default(cuid())
   stepOrder Int
-  role     Role
-  status   ApprovalStatus @default(PENDING)
-  comment  String?
+  role      Role
+  status    ApprovalStatus @default(PENDING)
+  comment   String?
 
   requestId String
   request   ApprovalRequest @relation(fields: [requestId], references: [id])
@@ -363,11 +362,11 @@ model ApprovalStep {
 }
 
 model TaxConfiguration {
-  id          String  @id @default(cuid())
-  name        String
-  rate        Decimal @db.Decimal(5, 2)
-  threshold   Decimal? @db.Decimal(15, 2)
-  isActive    Boolean @default(true)
+  id        String   @id @default(cuid())
+  name      String
+  rate      Decimal  @db.Decimal(5, 2)
+  threshold Decimal? @db.Decimal(15, 2)
+  isActive  Boolean  @default(true)
 
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
@@ -377,15 +376,15 @@ model TaxConfiguration {
 }
 
 model AuditLog {
-  id         String   @id @default(cuid())
-  action     String
-  entity     String
-  entityId   String?
-  details    Json?
-  ipAddress  String?
+  id        String  @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  ipAddress String?
 
-  userId     String?
-  userName   String?
+  userId   String?
+  userName String?
 
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
