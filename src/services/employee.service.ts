@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Role } from "../../generated/prisma/enums";
 import { db } from "@/src/lib/db";
 
 export async function getEmployees(organizationId: string) {
