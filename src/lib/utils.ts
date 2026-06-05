@@ -107,3 +107,23 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
     timeoutId = setTimeout(() => fn(...args), delay);
   };
 }
+
+export function compareValues(
+  aValue: unknown,
+  bValue: unknown,
+  direction: "asc" | "desc" = "asc",
+): number {
+  const multiplier = direction === "asc" ? 1 : -1;
+
+  if (typeof aValue === "number" && typeof bValue === "number") {
+    return (aValue - bValue) * multiplier;
+  }
+
+  if (aValue instanceof Date && bValue instanceof Date) {
+    return (aValue.getTime() - bValue.getTime()) * multiplier;
+  }
+
+  const aText = String(aValue ?? "");
+  const bText = String(bValue ?? "");
+  return aText.localeCompare(bText) * multiplier;
+}

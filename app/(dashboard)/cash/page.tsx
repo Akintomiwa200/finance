@@ -1,29 +1,19 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { SectionPage } from "@/src/components/templates/section-page";
+import { Landmark, RefreshCw, TrendingUp, ArrowLeftRight } from "lucide-react";
 
-export default function cash() {
-  const router = useRouter();
+export default function CashPage() {
   return (
-    <div className="space-y-6">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle>Cash Management</CardTitle>
-          <CardDescription>Manage cash and bank accounts</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-12 text-muted-foreground">
-            This page is under development.
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <SectionPage
+      title="Cash Management"
+      description="Manage bank accounts, reconcile transactions, and monitor cash flow."
+      links={[
+        { label: "Bank Accounts", href: "/cash/bank-accounts", description: "Manage your organization's bank accounts", icon: Landmark },
+        { label: "Bank Reconciliation", href: "/cash/bank-reconciliation", description: "Reconcile bank statements with your records", icon: RefreshCw },
+        { label: "Cash Flow Statement", href: "/cash/cash-flow", description: "View and analyze cash flow over time", icon: TrendingUp },
+        { label: "Deposits & Withdrawals", href: "/cash/transactions", description: "Record deposits, withdrawals, and transfers", icon: ArrowLeftRight },
+      ]}
+    />
   );
 }

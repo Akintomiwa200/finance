@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useAuthStore } from "@/src/store/auth-store";
+import { getVisibleModules, type ModuleId } from "@/src/lib/permissions";
 import {
   LayoutDashboard,
   Users,
@@ -71,7 +73,30 @@ interface NavItem {
   children?: NavItem[];
 }
 
-const navSections: { title: string; items: NavItem[] }[] = [
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+function hrefToModuleId(href: string): ModuleId {
+  const path = href.split("/")[1];
+  if (path === "financial-reports") return "financial-reports";
+  if (path === "petty-cash") return "petty-cash";
+  return path as ModuleId;
+}
+
+function filterNavItems(items: NavItem[], visibleModules: ModuleId[]): NavItem[] {
+  return items.filter((item) => {
+    const moduleId = hrefToModuleId(item.href);
+    if (!visibleModules.includes(moduleId)) return false;
+    if (item.children) {
+      item.children = filterNavItems(item.children, visibleModules);
+    }
+    return true;
+  });
+}
+
+const allNavSections: NavSection[] = [
   {
     title: "Main",
     items: [
@@ -315,6 +340,40 @@ const navSections: { title: string; items: NavItem[] }[] = [
             label: "Forecasting",
             href: "/budget/forecast",
             icon: LineChart,
+          },
+        ],
+      },
+      {
+        label: "Invoices",
+        href: "/invoices",
+        icon: ReceiptText,
+        children: [
+          {
+            label: "Customer Invoices",
+            href: "/invoices/customer",
+            icon: FileSpreadsheet,
+          },
+          {
+            label: "Vendor Invoices",
+            href: "/invoices/vendor",
+            icon: FileText,
+          },
+        ],
+      },
+      {
+        label: "Expenses",
+        href: "/expenses",
+        icon: Receipt,
+        children: [
+          {
+            label: "Expense Reports",
+            href: "/expenses/reports",
+            icon: FileText,
+          },
+          {
+            label: "Reimbursements",
+            href: "/expenses/reimbursements",
+            icon: ArrowLeftRight,
           },
         ],
       },
@@ -664,14 +723,22 @@ function NavContent({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const user = useAuthStore((s) => s.user);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const userRole = user?.role || "EMPLOYEE";
+  const visibleModules = getVisibleModules(userRole);
+
+  const navSections = allNavSections
+    .map((section) => ({
+      ...section,
+      items: filterNavItems(section.items, visibleModules),
+    }))
+    .filter((section) => section.items.length > 0);
 
   const isParentActive = (item: NavItem): boolean => {
     if (pathname === item.href) return true;
-    if (item.children)
-      return item.children.some(
-        (c) => pathname === c.href || pathname.startsWith(c.href + "/"),
-      );
+    if (item.children) return item.children.some((child) => isParentActive(child));
     return false;
   };
 
@@ -772,26 +839,51 @@ function NavContent({
                     }`}
                   >
                     {item.children!.map((child) => {
-                      const childActive = pathname === child.href;
+                      const childActive = isParentActive(child);
                       const ChildIcon = child.icon;
                       return (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          onClick={onNavigate}
-                          className={`flex items-center gap-3 mx-2 pl-3 pr-3 py-1.5 rounded-lg text-sm no-underline transition-all duration-150
-                            ${
-                              childActive
-                                ? "text-accent-700 font-medium bg-accent-50"
-                                : "text-muted hover:bg-surface-2 hover:text-secondary"
-                            }`}
-                        >
-                          <ChildIcon
-                            className="shrink-0 w-3.5 h-3.5"
-                            strokeWidth={1.75}
-                          />
-                          {child.label}
-                        </Link>
+                        <div key={child.href}>
+                          <Link
+                            href={child.href}
+                            onClick={onNavigate}
+                            className={`flex items-center gap-3 mx-2 pl-3 pr-3 py-1.5 rounded-lg text-sm no-underline transition-all duration-150
+                              ${
+                                childActive
+                                  ? "text-accent-700 font-medium bg-accent-50"
+                                  : "text-muted hover:bg-surface-2 hover:text-secondary"
+                              }`}
+                          >
+                            <ChildIcon
+                              className="shrink-0 w-3.5 h-3.5"
+                              strokeWidth={1.75}
+                            />
+                            {child.label}
+                          </Link>
+                          {child.children?.map((grandchild) => {
+                            const GrandchildIcon = grandchild.icon;
+                            const grandchildActive = pathname === grandchild.href;
+
+                            return (
+                              <Link
+                                key={grandchild.href}
+                                href={grandchild.href}
+                                onClick={onNavigate}
+                                className={`ml-7 flex items-center gap-2 mx-2 pl-3 pr-3 py-1.5 rounded-lg text-xs no-underline transition-all duration-150
+                                  ${
+                                    grandchildActive
+                                      ? "text-accent-700 font-medium bg-accent-50"
+                                      : "text-muted hover:bg-surface-2 hover:text-secondary"
+                                  }`}
+                              >
+                                <GrandchildIcon
+                                  className="shrink-0 w-3 h-3"
+                                  strokeWidth={1.75}
+                                />
+                                {grandchild.label}
+                              </Link>
+                            );
+                          })}
+                        </div>
                       );
                     })}
                   </div>
@@ -808,10 +900,15 @@ function NavContent({
 // ─── Footer user block ───────────────────────────────────────────────────────
 
 function SidebarFooter({ collapsed }: { collapsed: boolean }) {
+  const user = useAuthStore((s) => s.user);
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "U";
+
   return (
     <div className="border-t border-light p-3 flex items-center gap-3 overflow-hidden">
       <div className="w-8 h-8 shrink-0 rounded-full bg-accent-100 flex items-center justify-center text-xs font-semibold text-accent-700">
-        AD
+        {initials}
       </div>
       <div
         className={`flex-1 min-w-0 transition-all duration-200 ${
@@ -819,10 +916,10 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
         }`}
       >
         <p className="text-sm font-medium text-primary truncate leading-tight">
-          Admin User
+          {user?.name || "User"}
         </p>
         <p className="text-xs text-muted truncate leading-tight mt-0.5">
-          admin@finance.com
+          {user?.email || ""}
         </p>
       </div>
     </div>
@@ -884,6 +981,7 @@ function SidebarHeader({
 // ─── Desktop Sidebar ─────────────────────────────────────────────────────────
 
 export function Sidebar() {
+  const user = useAuthStore((s) => s.user);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -955,10 +1053,10 @@ export function Sidebar() {
           </Link>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-primary leading-tight">
-              FinServ
+              {user?.name || "Finance App"}
             </p>
             <p className="text-xs text-muted leading-tight">
-              Finance as a Service
+              {user?.role?.replace(/_/g, " ") || ""}
             </p>
           </div>
           <button

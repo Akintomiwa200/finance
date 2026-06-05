@@ -966,7 +966,7 @@ export default function BudgetReportPage() {
                       dataKey="budget"
                       nameKey="department"
                       label={({ department, percent }: any) =>
-                        `${department} (${(percent * 100).toFixed(0)}%)`
+                        `${department} (${((percent ?? 0) * 100).toFixed(0)}%)`
                       }
                     >
                       {data.departments.map((_, index) => (

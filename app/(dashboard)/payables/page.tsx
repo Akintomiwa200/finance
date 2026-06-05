@@ -1,29 +1,19 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { SectionPage } from "@/src/components/templates/section-page";
+import { Truck, ShoppingCart, FileText, CreditCard } from "lucide-react";
 
-export default function payables() {
-  const router = useRouter();
+export default function AccountsPayable() {
   return (
-    <div className="space-y-6">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle>Accounts Payable</CardTitle>
-          <CardDescription>Manage vendor bills and payments</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-12 text-muted-foreground">
-            This page is under development.
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <SectionPage
+      title="Accounts Payable"
+      description="Manage vendor bills, purchase orders, and payments."
+      links={[
+        { label: "Vendors", href: "/payables/vendors", description: "Manage your vendor/supplier list", icon: Truck },
+        { label: "Purchase Orders", href: "/payables/purchase-orders", description: "Create and manage purchase orders", icon: ShoppingCart },
+        { label: "Vendor Bills", href: "/payables/vendor-bills", description: "Record and track vendor invoices", icon: FileText },
+        { label: "Bill Payments", href: "/payables/bill-payments", description: "Process payments to vendors", icon: CreditCard },
+      ]}
+    />
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/src/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/src/components/ui/avatar";
 
 const transactions = [
   {

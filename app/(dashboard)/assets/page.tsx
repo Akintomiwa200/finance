@@ -1,29 +1,18 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { SectionPage } from "@/src/components/templates/section-page";
+import { ClipboardList, CalendarRange, Trash2 } from "lucide-react";
 
-export default function assets() {
-  const router = useRouter();
+export default function AssetsPage() {
   return (
-    <div className="space-y-6">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle>Fixed Assets</CardTitle>
-          <CardDescription>Manage your organization's fixed asset register</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-12 text-muted-foreground">
-            This page is under development.
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <SectionPage
+      title="Fixed Assets"
+      description="Manage your organization's fixed assets — register assets, track depreciation, and handle disposals."
+      links={[
+        { label: "Asset Register", href: "/assets/register", description: "View and manage all registered fixed assets", icon: ClipboardList },
+        { label: "Depreciation Schedule", href: "/assets/depreciation", description: "Track asset depreciation over time", icon: CalendarRange },
+        { label: "Asset Disposal", href: "/assets/disposal", description: "Record and manage asset disposals", icon: Trash2 },
+      ]}
+    />
   );
 }

@@ -11,6 +11,7 @@ interface SelectContextValue {
   select: (v: string) => void;
   selectedLabel: string;
   setSelectedLabel: (v: string) => void;
+  disabled: boolean;
 }
 
 const SelectCtx = createContext<SelectContextValue>(null!);
@@ -23,12 +24,14 @@ export function Select({
   defaultValue,
   children,
   className,
+  disabled,
 }: {
   value?: string;
   onValueChange?: (value: string) => void;
   defaultValue?: string;
   children: React.ReactNode;
   className?: string;
+  disabled?: boolean;
 }) {
   const [internalValue, setInternalValue] = useState(defaultValue || "");
   const [open, setOpen] = useState(false);
@@ -57,11 +60,12 @@ export function Select({
   const ctx: SelectContextValue = {
     value,
     open,
-    toggle: () => setOpen((v) => !v),
+    toggle: () => { if (!disabled) setOpen((v) => !v); },
     close: () => setOpen(false),
     select,
     selectedLabel,
     setSelectedLabel,
+    disabled: !!disabled,
   };
 
   return (
@@ -84,9 +88,9 @@ export function SelectTrigger({
   id?: string;
   [key: string]: any;
 }) {
-  const { toggle } = useContext(SelectCtx);
+  const { toggle, disabled } = useContext(SelectCtx);
   return (
-    <button type="button" id={id} onClick={toggle} className={cn("flex h-10 w-full items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring", className)} {...props}>
+    <button type="button" id={id} onClick={toggle} disabled={disabled} className={cn("flex h-10 w-full items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring", disabled && "opacity-50 cursor-not-allowed", className)} {...props}>
       {children}
     </button>
   );
@@ -114,8 +118,8 @@ export function SelectContent({
   children: React.ReactNode;
   className?: string;
 }) {
-  const { open } = useContext(SelectCtx);
-  if (!open) return null;
+  const { open, disabled } = useContext(SelectCtx);
+  if (!open || disabled) return null;
   return (
     <div className={cn("absolute z-50 mt-1 w-full rounded-lg border border-border bg-background shadow-lg py-1", className)}>
       {children}

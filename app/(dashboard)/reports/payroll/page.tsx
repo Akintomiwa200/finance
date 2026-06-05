@@ -450,7 +450,7 @@ export default function PayrollSummaryReportPage() {
         dominantBaseline="central"
         className="text-xs font-medium"
       >
-        {`${(percent * 100).toFixed(0)}%`}
+        {`${((percent ?? 0) * 100).toFixed(0)}%`}
       </text>
     );
   };

@@ -64,7 +64,7 @@ export function OverviewChart() {
             borderRadius: "8px",
             boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
           }}
-          formatter={(value: number) => [`$${value.toLocaleString()}`, ""]}
+          formatter={(value) => [`$${Number(value ?? 0).toLocaleString()}`, ""]}
         />
         <Legend />
         <Area

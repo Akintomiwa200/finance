@@ -1,7 +1,7 @@
 import { cn } from "@/src/lib/utils";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
+  variant?: "default" | "primary" | "secondary" | "outline" | "ghost" | "danger" | "destructive" | "link";
   size?: "sm" | "md" | "lg" | "icon";
   loading?: boolean;
 }
@@ -19,11 +19,14 @@ export function Button({
     "inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50";
 
   const variants = {
+    default: "bg-brand-600 text-white hover:bg-brand-700",
     primary: "bg-brand-600 text-white hover:bg-brand-700",
     secondary: "bg-muted text-foreground hover:bg-border",
     outline: "border border-border bg-transparent hover:bg-muted",
     ghost: "hover:bg-muted",
     danger: "bg-danger text-white hover:bg-red-700",
+    destructive: "bg-danger text-white hover:bg-red-700",
+    link: "h-auto p-0 text-brand-600 underline-offset-4 hover:underline",
   };
 
   const sizes = {

@@ -1,29 +1,19 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { SectionPage } from "@/src/components/templates/section-page";
+import { Users, FileSpreadsheet, CreditCard, FileMinus } from "lucide-react";
 
-export default function receivables() {
-  const router = useRouter();
+export default function AccountsReceivable() {
   return (
-    <div className="space-y-6">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle>Accounts Receivable</CardTitle>
-          <CardDescription>Manage customer invoices and payments</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-12 text-muted-foreground">
-            This page is under development.
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <SectionPage
+      title="Accounts Receivable"
+      description="Manage customers, sales invoices, and incoming payments."
+      links={[
+        { label: "Customers", href: "/receivables/customers", description: "Manage your customer list", icon: Users },
+        { label: "Sales Invoices", href: "/receivables/sales-invoices", description: "Create and send sales invoices", icon: FileSpreadsheet },
+        { label: "Customer Payments", href: "/receivables/customer-payments", description: "Track incoming customer payments", icon: CreditCard },
+        { label: "Credit Notes", href: "/receivables/credit-notes", description: "Issue credit notes to customers", icon: FileMinus },
+      ]}
+    />
   );
 }

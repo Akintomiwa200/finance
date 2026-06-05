@@ -5,9 +5,11 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
+import { useAuthStore } from "@/src/store/auth-store";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setUser, setToken } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -30,6 +32,13 @@ export default function LoginPage() {
       setError("Invalid email or password");
       setLoading(false);
     } else {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const userData = await res.json();
+          setUser(userData);
+        }
+      } catch {}
       router.push("/dashboard");
       router.refresh();
     }

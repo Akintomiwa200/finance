@@ -1,29 +1,19 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { SectionPage } from "@/src/components/templates/section-page";
+import { FileCheck, FileSpreadsheet, Percent, Calendar } from "lucide-react";
 
-export default function tax() {
-  const router = useRouter();
+export default function TaxPage() {
   return (
-    <div className="space-y-6">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle>Tax Management</CardTitle>
-          <CardDescription>Manage tax returns, compliance, and reporting</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-12 text-muted-foreground">
-            This page is under development.
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <SectionPage
+      title="Tax Management"
+      description="Manage tax returns, VAT/GST reports, withholding tax, and stay on top of deadlines."
+      links={[
+        { label: "Tax Returns", href: "/tax/returns", description: "File and manage tax returns", icon: FileCheck },
+        { label: "VAT/GST Reports", href: "/tax/vat-reports", description: "Generate VAT and GST reports", icon: FileSpreadsheet },
+        { label: "Withholding Tax", href: "/tax/withholding", description: "Manage withholding tax deductions and remittances", icon: Percent },
+        { label: "Tax Calendar", href: "/tax/calendar", description: "View upcoming tax filing deadlines and events", icon: Calendar },
+      ]}
+    />
   );
 }

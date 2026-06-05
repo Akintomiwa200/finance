@@ -1,0 +1,976 @@
+/* Uifry landing — sections below hero only (navbar + hero are Tailwind components) */
+
+.uifry-landing {
+  background: #2d2a32;
+  overflow-x: hidden;
+}
+
+.uifry-landing .uifry-top a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.uifry-landing .uifry-top a:hover {
+  color: inherit;
+}
+
+.uifry-landing .uifry-top h1 {
+  font-size: 3.6rem;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: #111;
+}
+
+.uifry-landing .uifry-top button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.uifry-landing .phone-frame {
+  background: #fff;
+  border-radius: 42px;
+  border: 2px solid #e0e0e0;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+.uifry-landing .phone-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 26px;
+  background: #111;
+  border-radius: 0 0 18px 18px;
+  z-index: 10;
+}
+
+.uifry-landing .phone-screen {
+  padding: 36px 14px 14px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #fff;
+}
+
+.uifry-landing .phone-hello {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.uifry-landing .phone-card {
+  background: #111;
+  border-radius: 14px;
+  padding: 14px;
+  color: #fff;
+}
+
+.uifry-landing .phone-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.uifry-landing .phone-card-logo {
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.uifry-landing .phone-card-visa {
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.uifry-landing .phone-card-number {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: #aaa;
+  margin-bottom: 8px;
+}
+
+.uifry-landing .phone-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.55rem;
+  color: #aaa;
+}
+
+.uifry-landing .phone-stats {
+  display: flex;
+  gap: 10px;
+}
+
+.uifry-landing .phone-stat {
+  flex: 1;
+}
+
+.uifry-landing .phone-stat-label {
+  font-size: 0.55rem;
+  color: #aaa;
+}
+
+.uifry-landing .phone-stat-val {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.uifry-landing .phone-tx-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #f9f9f9;
+  border-radius: 10px;
+}
+
+.uifry-landing .phone-tx-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff9966, #ff5e62);
+  flex-shrink: 0;
+}
+
+.uifry-landing .phone-tx-info {
+  flex: 1;
+}
+
+.uifry-landing .phone-tx-amount {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.uifry-landing .phone-tx-name {
+  font-size: 0.6rem;
+  color: #888;
+}
+
+.uifry-landing .phone-on-hold {
+  background: #ff4444;
+  color: #fff;
+  font-size: 0.45rem;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.uifry-landing .phone-tx-section-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.uifry-landing .phone-nav {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0 4px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: auto;
+}
+
+.uifry-landing .phone-nav-item.active {
+  color: #ff4444;
+}
+
+.uifry-landing .features-section {
+  background: #2d2a32;
+  padding: 80px;
+  display: flex;
+  align-items: center;
+  gap: 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.uifry-landing .features-phone-wrap {
+  flex: 0 0 280px;
+  position: relative;
+}
+
+.uifry-landing .features-blob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 160, 60, 0.5) 0%,
+    rgba(255, 80, 60, 0.3) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.uifry-landing .orb-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+}
+
+.uifry-landing .features-right {
+  flex: 1;
+}
+
+.uifry-landing .section-label-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ff4444;
+  margin-bottom: 10px;
+}
+
+.uifry-landing .features-h2 {
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #fff;
+  margin-bottom: 36px;
+  line-height: 1.1;
+}
+
+.uifry-landing .feature-item {
+  margin-bottom: 28px;
+}
+
+.uifry-landing .feature-item-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.uifry-landing .feature-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255, 68, 68, 0.15);
+  border: 1.5px solid rgba(255, 68, 68, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.uifry-landing .feature-item-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.uifry-landing .feature-item-desc {
+  font-size: 0.82rem;
+  color: #aaa;
+  line-height: 1.65;
+  max-width: 400px;
+}
+
+.uifry-landing .advantages-section {
+  background: #fff;
+  padding: 80px;
+  display: flex;
+  align-items: center;
+  gap: 80px;
+  position: relative;
+  overflow: hidden;
+  min-height: 500px;
+}
+
+.uifry-landing .advantages-left {
+  flex: 1;
+}
+
+.uifry-landing .advantages-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ff4444;
+  margin-bottom: 10px;
+}
+
+.uifry-landing .advantages-h2 {
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #111;
+  margin-bottom: 32px;
+  line-height: 1.1;
+}
+
+.uifry-landing .adv-feature-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.uifry-landing .adv-icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #ff4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.uifry-landing .adv-feature-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.uifry-landing .adv-feature-desc {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.7;
+  max-width: 440px;
+}
+
+.uifry-landing .advantages-right {
+  flex: 0 0 360px;
+  position: relative;
+}
+
+.uifry-landing .adv-blob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 80, 80, 0.22) 0%,
+    rgba(255, 160, 60, 0.12) 50%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.uifry-landing .custom-section {
+  background: #fff;
+  padding: 80px;
+  display: flex;
+  align-items: center;
+  gap: 80px;
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid #f5f5f5;
+}
+
+.uifry-landing .custom-left {
+  flex: 0 0 360px;
+  position: relative;
+}
+
+.uifry-landing .custom-blob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 160, 60, 0.22) 0%,
+    rgba(255, 80, 80, 0.12) 50%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.uifry-landing .custom-right {
+  flex: 1;
+}
+
+.uifry-landing .custom-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.uifry-landing .custom-icon-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #ff4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.uifry-landing .custom-h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: -0.02em;
+}
+
+.uifry-landing .custom-desc {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.7;
+  max-width: 420px;
+}
+
+.uifry-landing .testimonials-section {
+  background: #fff;
+  padding: 80px;
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid #f5f5f5;
+}
+
+.uifry-landing .test-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.uifry-landing .test-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 10px;
+}
+
+.uifry-landing .test-h2 {
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #111;
+  line-height: 1.1;
+}
+
+.uifry-landing .test-body {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+}
+
+.uifry-landing .test-orbit-wrap {
+  flex: 0 0 400px;
+  height: 420px;
+  position: relative;
+}
+
+.uifry-landing .test-orbit-blob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 80, 80, 0.3) 0%,
+    rgba(255, 160, 60, 0.15) 50%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.uifry-landing .test-orbit-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+}
+
+.uifry-landing .test-avatar {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.uifry-landing .test-avatar.center {
+  width: 120px;
+  height: 120px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  border: 4px solid #fff;
+  z-index: 5;
+}
+
+.uifry-landing .test-quote-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-10px, 30px);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ff4444;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 800;
+  z-index: 6;
+  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.4);
+}
+
+.uifry-landing .test-right {
+  flex: 1;
+}
+
+.uifry-landing .test-quote-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 14px;
+  letter-spacing: -0.02em;
+}
+
+.uifry-landing .test-quote-text {
+  font-size: 0.88rem;
+  color: #555;
+  line-height: 1.75;
+  margin-bottom: 24px;
+}
+
+.uifry-landing .test-mini-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  margin-right: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.uifry-landing .test-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #111;
+  margin-top: 14px;
+}
+
+.uifry-landing .faq-section {
+  background: #2d2a32;
+  padding: 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.uifry-landing .faq-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ff4444;
+  margin-bottom: 10px;
+}
+
+.uifry-landing .faq-h2 {
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 40px;
+}
+
+.uifry-landing .faq-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.uifry-landing .faq-card {
+  border-radius: 12px;
+  padding: 24px 26px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.uifry-landing .faq-card.light {
+  background: #fff;
+}
+
+.uifry-landing .faq-card.colored {
+  background: #ff4444;
+}
+
+.uifry-landing .faq-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  line-height: 1.25;
+}
+
+.uifry-landing .faq-card.light .faq-card-title {
+  color: #111;
+}
+
+.uifry-landing .faq-card.colored .faq-card-title {
+  color: #fff;
+}
+
+.uifry-landing .faq-card-text {
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.uifry-landing .faq-card.light .faq-card-text {
+  color: #555;
+}
+
+.uifry-landing .faq-card.colored .faq-card-text {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.uifry-landing .faq-star-tr {
+  position: absolute;
+  top: 60px;
+  right: 80px;
+  font-size: 2rem;
+  color: #fff;
+}
+
+.uifry-landing .faq-star-br {
+  position: absolute;
+  bottom: 40px;
+  right: 80px;
+  font-size: 2rem;
+  color: #fff;
+}
+
+.uifry-landing .faq-blob {
+  position: absolute;
+  bottom: -60px;
+  left: -40px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 80, 80, 0.45) 0%,
+    rgba(255, 160, 60, 0.2) 50%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.uifry-landing .cta-outer {
+  background: #fff;
+  padding: 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.uifry-landing .cta-red-blob {
+  position: absolute;
+  top: 20px;
+  left: -30px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 80, 80, 0.38) 0%,
+    rgba(255, 160, 60, 0.18) 50%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.uifry-landing .cta-card {
+  background: #111;
+  border-radius: 24px;
+  padding: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+}
+
+.uifry-landing .cta-orb-circle {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.uifry-landing .cta-left {
+  position: relative;
+  z-index: 2;
+  max-width: 360px;
+}
+
+.uifry-landing .cta-h2 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 14px;
+  letter-spacing: -0.025em;
+}
+
+.uifry-landing .cta-desc {
+  font-size: 0.85rem;
+  color: #aaa;
+  line-height: 1.65;
+  margin-bottom: 32px;
+}
+
+.uifry-landing .btn-download-app {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: #111;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.uifry-landing .btn-download-app:hover {
+  opacity: 0.88;
+}
+
+.uifry-landing .cta-phones {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+}
+
+.uifry-landing .footer {
+  background: #2d2a32;
+  padding: 60px 80px 32px;
+}
+
+.uifry-landing .footer-top {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr 1.6fr;
+  gap: 40px;
+  margin-bottom: 48px;
+}
+
+.uifry-landing .footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+.uifry-landing .footer-logo-icon {
+  width: 28px;
+  height: 28px;
+  background: #ff4444;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+}
+
+.uifry-landing .footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.uifry-landing .footer-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #aaa;
+}
+
+.uifry-landing .footer-contact-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: rgba(255, 68, 68, 0.15);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  flex-shrink: 0;
+}
+
+.uifry-landing .footer-col-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.uifry-landing .footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+}
+
+.uifry-landing .footer-links a {
+  color: #aaa;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.2s;
+}
+
+.uifry-landing .footer-links a:hover {
+  color: #fff;
+}
+
+.uifry-landing .footer-newsletter-desc {
+  font-size: 0.82rem;
+  color: #aaa;
+  margin-bottom: 16px;
+}
+
+.uifry-landing .footer-email-row {
+  display: flex;
+  gap: 0;
+}
+
+.uifry-landing .footer-email-input {
+  flex: 1;
+  padding: 12px 16px;
+  background: #fff;
+  border: none;
+  outline: none;
+  border-radius: 8px 0 0 8px;
+  font-size: 0.82rem;
+  color: #111;
+}
+
+.uifry-landing .footer-email-input::placeholder {
+  color: #999;
+}
+
+.uifry-landing .footer-subscribe-btn {
+  background: #111;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.uifry-landing .footer-subscribe-btn:hover {
+  background: #333;
+}
+
+.uifry-landing .footer-divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 24px;
+}
+
+.uifry-landing .footer-bottom {
+  display: flex;
+  justify-content: center;
+}
+
+.uifry-landing .footer-copy {
+  font-size: 0.8rem;
+  color: #aaa;
+}
+
+@media (max-width: 1024px) {
+  .uifry-landing .features-section,
+  .uifry-landing .advantages-section,
+  .uifry-landing .custom-section,
+  .uifry-landing .testimonials-section,
+  .uifry-landing .faq-section,
+  .uifry-landing .cta-outer,
+  .uifry-landing .footer {
+    padding: 60px 32px;
+  }
+
+  .uifry-landing .footer-top {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .uifry-landing .features-section,
+  .uifry-landing .advantages-section,
+  .uifry-landing .custom-section {
+    flex-direction: column;
+  }
+
+  .uifry-landing .faq-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .uifry-landing .test-body {
+    flex-direction: column;
+  }
+
+  .uifry-landing .footer-top {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Progress } from "@/components/ui/progress";
+import { Progress } from "@/src/components/ui/progress";
 
 const categories = [
   { name: "Shopping", amount: "$4,800", percentage: 35, color: "bg-violet-500" },

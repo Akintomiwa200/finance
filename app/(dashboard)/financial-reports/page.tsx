@@ -1,29 +1,20 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { SectionPage } from "@/src/components/templates/section-page";
+import { TrendingUp, Scale, FileText, Clock, Percent } from "lucide-react";
 
-export default function() {
-  const router = useRouter();
+export default function FinancialReports() {
   return (
-    <div className="space-y-6">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle>Financial Reports</CardTitle>
-          <CardDescription>Access comprehensive financial reports</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-12 text-muted-foreground">
-            This page is under development.
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <SectionPage
+      title="Financial Reports"
+      description="Access key financial statements and analysis reports."
+      links={[
+        { label: "Profit & Loss", href: "/reports/pnl", description: "View profit and loss statements", icon: TrendingUp },
+        { label: "Balance Sheet", href: "/reports/balance-sheet", description: "View balance sheet reports", icon: Scale },
+        { label: "Trial Balance", href: "/reports/trial-balance", description: "Run trial balance reports", icon: FileText },
+        { label: "Aging Reports", href: "/reports/aging", description: "View receivable and payable aging", icon: Clock },
+        { label: "Financial Ratios", href: "/reports/ratios", description: "Calculate and analyze financial ratios", icon: Percent },
+      ]}
+    />
   );
 }
