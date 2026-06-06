@@ -52,7 +52,9 @@ function PhoneMockup({ variant }: { variant: PhoneVariant }) {
               Hello <strong className="font-bold text-[#111]">Sami</strong>
             </p>
           ) : (
-            <span className="font-semibold text-[#111]">{isMiddle ? "22 May" : ""}</span>
+            <span className="font-semibold text-[#111]">
+              {isMiddle ? "22 May" : ""}
+            </span>
           )}
           <MiniAvatar />
         </div>
@@ -62,7 +64,11 @@ function PhoneMockup({ variant }: { variant: PhoneVariant }) {
             <div className="-mt-1 self-end text-slate-900">
               <BarChart3 size={16} />
             </div>
-            <svg viewBox="0 0 168 72" className="h-[72px] w-full" aria-hidden="true">
+            <svg
+              viewBox="0 0 168 72"
+              className="h-[72px] w-full"
+              aria-hidden="true"
+            >
               <path
                 d="M4 52 C28 48 36 18 58 24 S92 8 118 16 S148 28 164 22"
                 fill="none"
@@ -90,13 +96,19 @@ function PhoneMockup({ variant }: { variant: PhoneVariant }) {
             </span>
             <strong className="text-[0.82rem] italic">VISA</strong>
           </div>
-          <p className="mb-2 text-[0.55rem] tracking-[0.14em] text-[#f7f7f7]">0000 8888 2222 3333</p>
-          <small className="text-[0.46rem] text-white/60">VALID THRU&nbsp;&nbsp; 07/24</small>
+          <p className="mb-2 text-[0.55rem] tracking-[0.14em] text-[#f7f7f7]">
+            0000 8888 2222 3333
+          </p>
+          <small className="text-[0.46rem] text-white/60">
+            VALID THRU&nbsp;&nbsp; 07/24
+          </small>
         </div>
 
         {isMiddle ? (
           <div className="pr-2 text-right">
-            <span className="block text-[0.86rem] font-extrabold text-[#111]">$1000</span>
+            <span className="block text-[0.86rem] font-extrabold text-[#111]">
+              $1000
+            </span>
             <small className="text-[0.48rem] text-[#999]">per day</small>
           </div>
         ) : (
@@ -106,14 +118,18 @@ function PhoneMockup({ variant }: { variant: PhoneVariant }) {
                 <ArrowUp size={10} className="text-emerald-500" />
                 Expense
               </small>
-              <strong className="mt-0.5 block text-[0.72rem] text-[#111]">$4,264</strong>
+              <strong className="mt-0.5 block text-[0.72rem] text-[#111]">
+                $4,264
+              </strong>
             </div>
             <div className="min-h-[39px] rounded-[9px] bg-[#f6f8fa] px-[9px] py-[7px]">
               <small className="flex items-center gap-[3px] text-[0.48rem] text-[#9aa0a6]">
                 <ArrowDown size={10} className="text-[#ff5555]" />
                 Income
               </small>
-              <strong className="mt-0.5 block text-[0.72rem] text-[#111]">$3,897</strong>
+              <strong className="mt-0.5 block text-[0.72rem] text-[#111]">
+                $3,897
+              </strong>
             </div>
           </div>
         )}
@@ -140,7 +156,10 @@ function PhoneMockup({ variant }: { variant: PhoneVariant }) {
         <div className="mt-[3px] text-[0.62rem] text-[#222]">Transaction</div>
 
         <div className="mt-auto flex items-center justify-between border-t border-[#f0f0f0] pt-[9px] text-[#b7bdc4]">
-          <Home size={12} className={isFront || !isMiddle ? "text-[#ff5555]" : ""} />
+          <Home
+            size={12}
+            className={isFront || !isMiddle ? "text-[#ff5555]" : ""}
+          />
           <CreditCard size={12} />
           <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-[7px] bg-slate-900 text-white">
             <Zap size={12} fill="currentColor" />
@@ -153,43 +172,277 @@ function PhoneMockup({ variant }: { variant: PhoneVariant }) {
   );
 }
 
-function HeroRibbon() {
+/**
+ * HeroRibbon — Z-shaped ribbon that lives inside the left column.
+ *
+ * PLACEMENT: render this as the last child of the left column div.
+ * The left column must be `flex flex-col` so the ribbon naturally
+ * sits at the bottom. Do NOT make the ribbon `absolute` — it is
+ * a normal in-flow element that pushes the column height.
+ *
+ * SHAPE: three pieces form the Z
+ *   1. Black arm  — top horizontal bar (left-aligned, arrow notch on the left)
+ *   2. SVG diagonal — polygon that precisely bridges top-right of the black
+ *      arm to the bottom-left of the red arm (no skew distortion)
+ *   3. Red arm   — bottom horizontal bar (right-aligned)
+ */
+export function HeroRibbon() {
+  /**
+   * Coordinate system (viewBox 560 × 200)
+   *
+   * Black arm occupies: x 16→316, y 16→64   (left=16, width=300, height=48, top=16)
+   * Red arm occupies:   x 196→556, y 124→188 (left=196, width=360, height=64, bottom=12)
+   *
+   * Diagonal polygon corners — bridges right edge of black arm to left edge of red arm:
+   *   A = (316,  16)  top-right of black arm (top edge)
+   *   B = (356,  64)  bottom-right of black arm (overlap into diagonal)
+   *   C = (236, 188)  bottom-left of red arm (bottom edge)
+   *   D = (196, 140)  top-left of red arm (overlap into diagonal)
+   *
+   * This creates a solid connected Z with no gap between the three pieces.
+   */
   return (
     <div
-      className="pointer-events-none absolute bottom-[25px] left-[163px] z-[8] hidden h-44 w-[438px] origin-bottom-left -rotate-[29deg] lg:block"
+      className="pointer-events-none hidden lg:block"
+      style={{
+        position: "relative",
+        width: 560,
+        height: 200,
+      }}
       aria-hidden="true"
     >
-      <div className="absolute -left-[34px] top-[82px] z-[4] h-0 w-0 border-b-[23px] border-l-[23px] border-t-[23px] border-b-transparent border-l-white border-t-transparent" />
-
-      <div className="absolute left-0 top-10 flex h-[66px] w-[424px] items-center gap-[15px] bg-black py-3 pl-[46px] pr-5 text-white [clip-path:polygon(0_0,100%_0,100%_62%,11%_100%,0_80%)]">
-        <div className="flex items-center gap-2.5">
-          <Trophy className="h-6 w-6 shrink-0 rounded-full border border-[#ff5555] p-1 text-[#ff5555]" />
+      {/* ── Top arm: black bar ── */}
+      <div
+        style={{
+          position: "absolute",
+          left: 16,
+          top: 16,
+          width: 400,
+          height: 48,
+          background: "#000",
+          borderRadius: "0 8px 0 0",
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+          padding: "0 18px 0 24px",
+          color: "#fff",
+          zIndex: 3,
+          transform: "rotate(-5deg)",
+          transformOrigin: "top left",
+        }}
+      >
+        {/* Achievement badge */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            flexShrink: 0,
+          }}
+        >
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 26,
+              height: 26,
+              borderRadius: "50%",
+              border: "1px solid #ff5555",
+              color: "#ff5555",
+              flexShrink: 0,
+            }}
+          >
+            <Trophy style={{ width: 13, height: 13 }} />
+          </span>
           <div>
-            <small className="mb-[3px] block text-[0.46rem] text-white/80">Achievements</small>
-            <strong className="block text-[0.5rem] font-bold">Best Finance App On Playstore</strong>
+            <small
+              style={{
+                display: "block",
+                fontSize: "0.43rem",
+                color: "rgba(255,255,255,0.7)",
+                marginBottom: 1,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Achievements
+            </small>
+            <strong
+              style={{
+                display: "block",
+                fontSize: "0.5rem",
+                fontWeight: 700,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Best Finance App On Playstore
+            </strong>
           </div>
         </div>
-        <div className="h-[34px] w-px shrink-0 bg-white/25" />
-        <div className="flex items-center gap-2.5">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#ff5555] text-xs text-[#ff5555]">
+
+        {/* Divider */}
+        <div
+          style={{
+            width: 1,
+            height: 30,
+            background: "rgba(255,255,255,0.22)",
+            flexShrink: 0,
+          }}
+        />
+
+        {/* Finance badge */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            flexShrink: 0,
+          }}
+        >
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 26,
+              height: 26,
+              borderRadius: "50%",
+              border: "1px solid #ff5555",
+              color: "#ff5555",
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              flexShrink: 0,
+            }}
+          >
             $
           </span>
           <div>
-            <small className="mb-[3px] block text-[0.46rem] text-white/80">Finance</small>
-            <strong className="block text-[0.5rem] font-bold">Most Popular Accounting App</strong>
+            <small
+              style={{
+                display: "block",
+                fontSize: "0.43rem",
+                color: "rgba(255,255,255,0.7)",
+                marginBottom: 1,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Finance
+            </small>
+            <strong
+              style={{
+                display: "block",
+                fontSize: "0.5rem",
+                fontWeight: 700,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Most Popular Accounting App
+            </strong>
           </div>
         </div>
       </div>
 
-      <div className="absolute bottom-0 right-px block h-[85px] w-[221px] rounded-md bg-[#ff5555] text-black [clip-path:polygon(0_12%,27%_0,27%_100%,100%_100%,100%_43%,0_43%)]">
-        <span className="absolute left-[15px] top-[29px] w-[100px] -rotate-45 text-[0.5rem] font-extrabold leading-tight">
+      {/* ── SVG diagonal (Z cross-stroke) ── */}
+      {/*
+       * Polygon bridges the rotated black arm to the rotated red arm.
+       *
+       * Black arm (-5° around 16,16):  right edge ~414→419, top ~-19→29
+       * Red arm   (+5° around 220,124): left edge ~220→214, bottom ~124→188
+       *
+       *   A (414, -5)  — near top-right of rotated black arm
+       *   B (418, 28)  — near bottom-right of rotated black arm
+       *   C (215, 185) — near bottom-left of rotated red arm
+       *   D (220, 124) — top-left of rotated red arm
+       */}
+      <svg
+        viewBox="0 0 560 200"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: 2,
+          pointerEvents: "none",
+        }}
+      >
+        <polygon points="414,-5 418,28 215,185 220,124" fill="#ff5555" />
+        {/* Label rotated along the diagonal axis */}
+        <text
+          x="317"
+          y="82"
+          fontSize="8"
+          fontWeight="800"
+          fill="#000"
+          textAnchor="middle"
+          transform="rotate(-35 317 82)"
+          letterSpacing="0.05em"
+        >
           Make The Best Financial Decisions
-        </span>
-        <div className="absolute bottom-0 right-0 flex h-14 w-24 items-center gap-3.5 border-l border-black/45 pl-[11px]">
-          <LandingSpark size={25} inline />
+        </text>
+      </svg>
+
+      {/* ── Bottom arm: red bar ── */}
+      <div
+        style={{
+          position: "absolute",
+          left: 220,
+          bottom: 12,
+          width: 200,
+          height: 64,
+          paddingLeft: "80px",
+          background: "#ff5555",
+          borderRadius: "0 0 8px 0",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "0 16px",
+          zIndex: 1,
+          transform: "rotate(5deg)",
+          transformOrigin: "top left",
+        }}
+      >
+        <div
+          style={{
+            width: 1,
+            height: 36,
+            background: "rgba(0,0,0,0.2)",
+            flexShrink: 0,
+          }}
+        />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            flexShrink: 0,
+          }}
+        >
+          <LandingSpark size={24} />
           <div>
-            <strong className="block text-[0.54rem] font-extrabold">Uifry Premium</strong>
-            <small className="mt-0.5 block text-[0.5rem]">Free Trial</small>
+            <strong
+              style={{
+                display: "block",
+                fontSize: "0.52rem",
+                fontWeight: 800,
+                color: "#000",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Uifry Premium
+            </strong>
+            <small
+              style={{
+                display: "block",
+                fontSize: "0.48rem",
+                color: "#000",
+                marginTop: 2,
+              }}
+            >
+              Free Trial
+            </small>
           </div>
         </div>
       </div>
@@ -199,30 +452,39 @@ function HeroRibbon() {
 
 export function HomeHero() {
   return (
-    <section className="relative min-h-[calc(100vh-104px)] overflow-hidden bg-white">
+    <section className="relative w-full min-h-[85vh] overflow-hidden bg-white pt-[76px] md:pt-[88px] lg:pt-[104px]">
       {/* Glow behind headline */}
       <div
         className="pointer-events-none absolute left-[236px] top-1 z-0 h-[205px] w-[330px] bg-[radial-gradient(circle_at_50%_38%,rgba(255,85,85,0.52)_0_18%,rgba(255,85,85,0.26)_28%,transparent_62%),radial-gradient(circle_at_50%_82%,rgba(255,205,77,0.5)_0_12%,transparent_36%)] blur-[18px]"
         aria-hidden="true"
       />
 
-      <LandingSpark className="left-[78px] top-[22px] z-[2]" />
-      <LandingSpark className="left-[266px] top-[304px] z-[2] scale-[0.78]" />
-      <LandingSpark className="right-[377px] top-[398px] z-[2] scale-[0.84]" />
+      <LandingSpark className="absolute left-[78px] top-[22px] z-[2]" />
+      <LandingSpark className="absolute left-[266px] top-[304px] z-[2] scale-[0.78]" />
+      <LandingSpark className="absolute right-[377px] top-[398px] z-[2] scale-[0.84]" />
+      <LandingSpark className="absolute left-[20px] top-[480px] z-[2] scale-[0.5] opacity-30" />
+      <LandingSpark className="absolute right-[50px] top-[80px] z-[2] scale-[0.6] opacity-40" />
+      <LandingSpark className="absolute left-[160px] top-[180px] z-[2] scale-[0.35] opacity-20" />
+      <LandingSpark className="absolute right-[180px] top-[520px] z-[2] scale-[0.7] opacity-50" />
+      <LandingSpark className="absolute left-[50%] top-[600px] z-[2] scale-[0.4] opacity-25" />
+      <LandingSpark className="absolute left-[400px] top-[60px] z-[2] scale-[0.55] opacity-35" />
 
-      <div className="relative z-[1] flex min-h-[inherit] flex-col lg:flex-row lg:items-center">
-        {/* Left column */}
-        <div className="relative z-[4] w-full max-w-[565px] shrink-0 px-5 pb-16 pt-10 md:px-8 lg:w-[565px] lg:pl-[142px] lg:pr-0 lg:pt-[62px] lg:pb-[80px]">
+      <div className="relative z-[1] mx-auto max-w-7xl flex min-h-[inherit] flex-col lg:flex-row lg:items-center">
+        {/*
+         * Left column — flex-col so HeroRibbon naturally anchors to the bottom.
+         * pb-0 instead of pb-16 so the ribbon sits flush at the column's bottom edge.
+         */}
+        <div className="relative z-[4] flex w-full max-w-[565px] shrink-0 flex-col px-5 pt-10 lg:w-[565px] lg:pr-0 lg:pt-[62px]">
           <h1 className="mb-5 max-w-[555px] text-[2.6rem] font-extrabold leading-[1.08] tracking-[-0.03em] text-[#111] sm:text-[3.2rem] lg:mb-5 lg:text-[3.6rem] lg:font-extrabold">
             Make The Best
             <br />
             Financial Decisions
           </h1>
           <p className="mb-9 max-w-[400px] text-[0.9rem] font-normal leading-[1.7] text-[#888]">
-            Cum Et Convallis Risus Placerat Aliquam, Nunc. Scelerisque Aliquet Faucibus Tincidunt Eu
-            Adipiscing Sociis Arcu Lorem Porttitor.
+            Cum Et Convallis Risus Placerat Aliquam, Nunc. Scelerisque Aliquet
+            Faucibus Tincidunt Eu Adipiscing Sociis Arcu Lorem Porttitor.
           </p>
-          <div className="flex flex-wrap items-center gap-6">
+          <div className="mb-10 flex flex-wrap items-center gap-6">
             <button
               type="button"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#111] px-7 text-[0.9rem] font-semibold text-white transition-colors hover:bg-[#333]"
@@ -240,12 +502,19 @@ export function HomeHero() {
               Watch Video
             </button>
           </div>
+
+          {/*
+           * HeroRibbon is an in-flow child of the left column.
+           * It is NOT absolutely positioned relative to the section —
+           * it sits naturally after the buttons and anchors the column bottom.
+           */}
+          <HeroRibbon />
         </div>
 
         {/* Right column — phones */}
         <div className="relative z-[3] hidden min-h-[520px] flex-1 lg:block">
           <div className="absolute right-[35px] top-[-11px] z-[1] h-[476px] w-[476px] rotate-[17deg] rounded-full border border-black/70" />
-          <div className="absolute right-[71px] top-[26px] z-[1] h-[403px] w-[403px] rotate-[17deg] rounded-full border border-black/70" />
+          <div className="absolute right-[71px] top-[40px] z-[1] h-[403px] w-[403px] rotate-[17deg] rounded-full border border-black/70" />
           <div className="absolute right-[110px] top-[65px] z-[1] h-[326px] w-[326px] rotate-[17deg] rounded-full border border-black/70" />
           <div className="pointer-events-none absolute bottom-6 right-[190px] z-[1] h-[246px] w-[286px] rounded-full bg-[radial-gradient(circle,rgba(255,85,85,0.46)_0_18%,rgba(255,85,85,0.28)_28%,transparent_68%)] blur-[17px]" />
           <PhoneMockup variant="back" />
@@ -253,8 +522,6 @@ export function HomeHero() {
           <PhoneMockup variant="front" />
         </div>
       </div>
-
-      <HeroRibbon />
     </section>
   );
 }

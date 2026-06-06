@@ -1,41 +1,27 @@
+// src/components/landing/landing-spark.tsx
+// Replace the old CSS-span LandingSpark with the real Figma star SVG
+
 export function LandingSpark({
   className = "",
-  size = 44,
-  inline = false,
+  size = 52,
 }: {
   className?: string;
   size?: number;
-  inline?: boolean;
 }) {
-  const arm = Math.round(size * 0.9);
-  const cross = Math.round(size * 0.58);
-
   return (
-    <span
-      className={
-        inline
-          ? `relative inline-block shrink-0 ${className}`
-          : `pointer-events-none absolute ${className}`
-      }
-      style={{ width: size, height: size }}
+    <svg
+      width={size}
+      height={Math.round(size * 0.952)}
+      viewBox="0 0 61 58"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
       aria-hidden="true"
     >
-      <span
-        className="absolute left-1/2 top-1/2 w-[1.5px] -translate-x-1/2 -translate-y-1/2 rotate-45 bg-black"
-        style={{ height: arm }}
+      <path
+        d="M30.4338 0L31.9386 29.9289L60.8676 22.1115L32.8685 32.7911L49.243 57.8885L30.4338 34.56L11.6247 57.8885L27.9991 32.7911L2.86102e-05 22.1115L28.9291 29.9289L30.4338 0Z"
+        fill="black"
       />
-      <span
-        className="absolute left-1/2 top-1/2 w-[1.5px] -translate-x-1/2 -translate-y-1/2 -rotate-45 bg-black"
-        style={{ height: arm }}
-      />
-      <span
-        className="absolute left-1/2 top-1/2 w-px -translate-x-1/2 -translate-y-1/2 bg-black"
-        style={{ height: cross }}
-      />
-      <span
-        className="absolute left-1/2 top-1/2 h-px -translate-x-1/2 -translate-y-1/2 bg-black"
-        style={{ width: cross }}
-      />
-    </span>
+    </svg>
   );
 }
