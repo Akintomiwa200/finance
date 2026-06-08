@@ -13,8 +13,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Finance as a Service",
-  description: "Enterprise finance management platform — budget, expenses, payroll, and reporting",
+  title: "Uifry — Best Finance App",
+  description: "Uifry — The best finance app on Playstore. Budget, expenses, and financial decisions made easy.",
 };
 
 export default function RootLayout({
