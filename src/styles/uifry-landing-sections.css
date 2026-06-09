@@ -1,7 +1,6 @@
 /* Uifry landing — sections below hero only (navbar + hero are Tailwind components) */
 
 .uifry-landing {
-  background: #2d2a32;
   overflow-x: hidden;
 }
 
@@ -31,7 +30,9 @@
   background: #fff;
   border-radius: 42px;
   border: 2px solid #e0e0e0;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   position: relative;
 }
@@ -938,7 +939,374 @@
   color: #aaa;
 }
 
+/* ── Features section (Nunito Sans — font loaded in layout.tsx) ── */
+
+.uifry-landing .hf-section {
+  font-family: var(--font-nunito), "Nunito Sans", sans-serif;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  gap: 0;
+  min-height: 560px;
+  overflow: hidden;
+  position: relative;
+}
+
+.uifry-landing .hf-phone-side {
+  position: relative;
+  width: 500px;
+  height: 520px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uifry-landing .hf-blob {
+  position: absolute;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 60% 40%,
+    #ff6b35 0%,
+    #ff3b30 30%,
+    #ffd580 70%,
+    transparent 100%
+  );
+  opacity: 0.55;
+  filter: blur(2px);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+}
+
+.uifry-landing .hf-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.uifry-landing .hf-star {
+  position: absolute;
+  left: 32px;
+  top: 60px;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+}
+
+.uifry-landing .hf-phone {
+  position: relative;
+  z-index: 3;
+  width: 210px;
+  height: 440px;
+  background: #1a1a1a;
+  border-radius: 36px;
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.35),
+    0 0 0 1.5px #333,
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.uifry-landing .hf-notch {
+  width: 72px;
+  height: 22px;
+  background: #1a1a1a;
+  border-radius: 0 0 14px 14px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.uifry-landing .hf-screen {
+  flex: 1;
+  background: #f5f5f7;
+  margin: 0 4px 4px 4px;
+  border-radius: 28px;
+  padding: 10px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.uifry-landing .hf-screen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.uifry-landing .hf-hello {
+  font-size: 11px;
+  color: #222;
+  font-weight: 400;
+}
+
+.uifry-landing .hf-hello strong {
+  font-weight: 800;
+}
+
+.uifry-landing .hf-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.uifry-landing .hf-card {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 10px 12px 8px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.uifry-landing .hf-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.uifry-landing .hf-card-brand {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.uifry-landing .hf-card-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ff3b30;
+}
+
+.uifry-landing .hf-visa {
+  font-size: 11px;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+
+.uifry-landing .hf-card-num {
+  font-size: 8.5px;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 4px;
+}
+
+.uifry-landing .hf-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 7.5px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.uifry-landing .hf-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.uifry-landing .hf-stat {
+  flex: 1;
+  background: #fff;
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
+.uifry-landing .hf-stat-label {
+  font-size: 7.5px;
+  color: #888;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.uifry-landing .hf-stat-arrow {
+  font-size: 8px;
+}
+
+.uifry-landing .hf-stat-val {
+  font-size: 11px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.uifry-landing .hf-tx {
+  background: #fff;
+  border-radius: 10px;
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.uifry-landing .hf-tx-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f7971e, #ffd200);
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.uifry-landing .hf-tx-info {
+  flex: 1;
+}
+
+.uifry-landing .hf-tx-amount {
+  font-size: 10px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.uifry-landing .hf-tx-name {
+  font-size: 7.5px;
+  color: #aaa;
+}
+
+.uifry-landing .hf-on-hold {
+  background: #ffe8e8;
+  color: #ff3b30;
+  font-size: 7px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 20px;
+}
+
+.uifry-landing .hf-tx-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.uifry-landing .hf-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 4px 0 2px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: auto;
+}
+
+.uifry-landing .hf-nav-item {
+  font-size: 13px;
+  opacity: 0.4;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.uifry-landing .hf-nav-item.active {
+  opacity: 1;
+}
+
+.uifry-landing .hf-nav-plus {
+  width: 24px;
+  height: 24px;
+  background: #ff3b30;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.uifry-landing .hf-right {
+  flex: 1;
+  max-width: 520px;
+  padding-left: 72px;
+}
+
+.uifry-landing .hf-tag {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: #ff3b30;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.uifry-landing .hf-heading {
+  font-size: 44px;
+  font-weight: 900;
+  color: #0d0d0d;
+  line-height: 1.1;
+  margin: 0 0 32px 0;
+  letter-spacing: -0.5px;
+}
+
+.uifry-landing .hf-feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.uifry-landing .hf-feature {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.uifry-landing .hf-feature-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.uifry-landing .hf-feature-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uifry-landing .hf-feature-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0d0d0d;
+}
+
+.uifry-landing .hf-feature-desc {
+  font-size: 14px;
+  line-height: 1.65;
+  color: #555;
+  font-weight: 400;
+  margin: 0;
+  padding-left: 32px;
+}
+
 @media (max-width: 1024px) {
+  .uifry-landing .hf-section,
   .uifry-landing .features-section,
   .uifry-landing .advantages-section,
   .uifry-landing .custom-section,
@@ -949,6 +1317,19 @@
     padding: 60px 32px;
   }
 
+  .uifry-landing .hf-phone-side {
+    width: 380px;
+    height: 440px;
+  }
+
+  .uifry-landing .hf-right {
+    padding-left: 40px;
+  }
+
+  .uifry-landing .hf-heading {
+    font-size: 34px;
+  }
+
   .uifry-landing .footer-top {
     grid-template-columns: 1fr 1fr;
     gap: 32px;
@@ -956,10 +1337,34 @@
 }
 
 @media (max-width: 768px) {
+  .uifry-landing .hf-section {
+    flex-direction: column;
+    padding: 40px 20px;
+    gap: 40px;
+  }
+
   .uifry-landing .features-section,
   .uifry-landing .advantages-section,
   .uifry-landing .custom-section {
     flex-direction: column;
+  }
+
+  .uifry-landing .hf-phone-side {
+    width: 340px;
+    height: 440px;
+  }
+
+  .uifry-landing .hf-right {
+    padding-left: 0;
+    max-width: 100%;
+  }
+
+  .uifry-landing .hf-heading {
+    font-size: 30px;
+  }
+
+  .uifry-landing .hf-feature-desc {
+    padding-left: 0;
   }
 
   .uifry-landing .faq-grid {

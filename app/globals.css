@@ -37,7 +37,40 @@
   --color-card-foreground: var(--text-primary);
   --color-card-border: var(--border);
 
-  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* ── MongoDB Design Tokens ── */
+  --color-mdb-green: #00ED64;
+  --color-mdb-green-dark: #00684A;
+  --color-mdb-green-mid: #13AA52;
+  --color-mdb-green-soft: #E3FCF7;
+  --color-mdb-teal-deep: #001E2B;
+  --color-mdb-teal: #004257;
+  --color-mdb-teal-mid: #00684A;
+  --color-mdb-accent-purple: #5B3A8C;
+  --color-mdb-accent-orange: #FF6B35;
+  --color-mdb-accent-pink: #E8296B;
+  --color-mdb-accent-blue: #0077E8;
+  --color-mdb-canvas: #FFFFFF;
+  --color-mdb-canvas-dark: #0F1B26;
+  --color-mdb-surface: #F9FBFC;
+  --color-mdb-surface-soft: #F0F4F6;
+  --color-mdb-surface-feature: #E3FCF7;
+  --color-mdb-hairline: #E8EDF0;
+  --color-mdb-hairline-soft: #F0F4F6;
+  --color-mdb-hairline-strong: #C1C7CC;
+  --color-mdb-hairline-dark: rgba(255, 255, 255, 0.15);
+  --color-mdb-ink: #001E2B;
+  --color-mdb-charcoal: #2C3E4A;
+  --color-mdb-slate: #5A6D7A;
+  --color-mdb-steel: #8899A6;
+  --color-mdb-stone: #A0B0BC;
+  --color-mdb-muted: #B8C5CE;
+  --color-mdb-on-dark: #FFFFFF;
+  --color-mdb-on-dark-muted: rgba(255, 255, 255, 0.7);
+  --color-mdb-on-primary: #001E2B;
+
+  --font-sans: 'DM Sans', 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: 'DM Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-code: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 
   --radius-sm: 0.375rem;
@@ -48,7 +81,27 @@
 
 @layer base {
   :root {
-    color-scheme: light;
+    color-scheme: light dark;
+
+    /* ── Landing page theme tokens ── */
+    --lp-bg: #1a1a1a;
+    --lp-text: #ffffff;
+    --lp-text-muted: #999999;
+    --lp-border: rgba(255, 255, 255, 0.1);
+    --lp-card-bg: #222222;
+    --lp-card-alt: #2a2a2a;
+    --lp-label-bg: rgba(255, 85, 85, 0.12);
+    --lp-red: #ff5555;
+    --lp-red-dark: #cc0000;
+    --lp-blue: #4F7EF7;
+    --lp-nav-bg: #1a1a1a;
+    --lp-nav-text: #ffffff;
+    --lp-nav-text-muted: rgba(255, 255, 255, 0.7);
+    --lp-footer-heading: #ffffff;
+    --lp-hero-ribbon-bg: #1a1a1a;
+    --lp-faq-card-bg: #222222;
+    --lp-cta-card-bg: #222222;
+    --lp-faq-number-bg: rgba(255, 85, 85, 0.12);
 
     /* Accent (brand blue) */
     --accent-50: #eff6ff;
@@ -130,6 +183,85 @@
     --transition-fast: 150ms ease;
     --transition-normal: 250ms ease;
     --transition-slow: 350ms ease;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* Accent (shifted for dark) */
+      --accent-50: #172554;
+      --accent-100: #1e3a5f;
+      --accent-200: #1e40af;
+      --accent-300: #2563eb;
+      --accent-400: #3b82f6;
+      --accent-500: #60a5fa;
+      --accent-600: #93c5fd;
+      --accent-700: #bfdbfe;
+      --accent-800: #dbeafe;
+      --accent-900: #eff6ff;
+
+      /* Surface / background */
+      --bg-page: #0a0a0a;
+      --bg-card: #171717;
+      --bg-surface: #1a1a1a;
+      --bg-surface-2: #262626;
+      --bg-surface-3: #333333;
+      --bg-overlay: rgba(0, 0, 0, 0.7);
+
+      /* Text */
+      --text-primary: #fafafa;
+      --text-secondary: #a3a3a3;
+      --text-muted: #808080;
+      --text-subtle: #525252;
+      --text-inverse: #0a0a0a;
+
+      /* Border */
+      --border: #262626;
+      --border-light: #1a1a1a;
+      --border-medium: #404040;
+
+      /* Semantic */
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --info: #60a5fa;
+
+      /* Sidebar (dark mode - deeper) */
+      --sidebar-bg: #020617;
+      --sidebar-fg: #e2e8f0;
+      --sidebar-muted: #1e293b;
+      --sidebar-border: #1e293b;
+      --sidebar-accent: #3b82f6;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+
+      /* Ring */
+      --ring: 96 165 250;
+    }
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --lp-bg: #ffffff;
+      --lp-text: #111111;
+      --lp-text-muted: #666666;
+      --lp-border: rgba(0, 0, 0, 0.08);
+      --lp-card-bg: #ffffff;
+      --lp-card-alt: #f5f5f5;
+      --lp-label-bg: rgba(255, 85, 85, 0.1);
+      --lp-nav-bg: #ffffff;
+      --lp-nav-text: #111111;
+      --lp-nav-text-muted: rgba(0, 0, 0, 0.6);
+      --lp-footer-heading: #ffffff;
+      --lp-hero-ribbon-bg: #ffffff;
+      --lp-faq-card-bg: #ffffff;
+      --lp-cta-card-bg: #ffffff;
+      --lp-faq-number-bg: rgba(255, 85, 85, 0.1);
+    }
   }
 
   .dark {
@@ -276,17 +408,18 @@
 
 /* =============== TYPOGRAPHY =============== */
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  line-height: 1.25;
-  margin: 0;
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  h1 { font-size: 1.875rem; letter-spacing: -0.025em; }
+  h2 { font-size: 1.5rem; letter-spacing: -0.025em; }
+  h3 { font-size: 1.25rem; }
+  h4 { font-size: 1.125rem; }
+  h5 { font-size: 1rem; }
+  h6 { font-size: 0.875rem; }
 }
-h1 { font-size: 1.875rem; letter-spacing: -0.025em; }
-h2 { font-size: 1.5rem; letter-spacing: -0.025em; }
-h3 { font-size: 1.25rem; }
-h4 { font-size: 1.125rem; }
-h5 { font-size: 1rem; }
-h6 { font-size: 0.875rem; }
 p { margin: 0; }
 
 small, .text-sm { font-size: 0.75rem; line-height: 1.5; }
@@ -625,14 +758,7 @@ tbody tr:hover { background-color: var(--bg-surface); }
 
 /* =============== LEGACY .dark OVERRIDES =============== */
 
-.dark .bg-white { background-color: var(--bg-card) !important; }
-.dark .text-gray-900 { color: var(--text-primary) !important; }
-.dark .text-gray-600 { color: var(--text-secondary) !important; }
-.dark .text-gray-500 { color: var(--text-muted) !important; }
-.dark .border-gray-200 { border-color: var(--border) !important; }
-.dark .shadow-sm, .dark .shadow, .dark .shadow-md, .dark .shadow-lg {
-  box-shadow: var(--shadow) !important;
-}
+
 
 /* =============== ANIMATIONS =============== */
 
@@ -681,7 +807,7 @@ tbody tr:hover { background-color: var(--bg-surface); }
 
 /* =============== RESPONSIVE =============== */
 
-@media (max-width: 768px) {
+  @media (max-width: 768px) {
   .sidebar {
     width: 100%;
     position: fixed;

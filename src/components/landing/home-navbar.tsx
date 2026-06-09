@@ -3,7 +3,9 @@
 // src/components/landing/home-navbar.tsx
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { LandingSpark } from "@/src/components/landing/landing-spark";
+import { SplashBlob } from "@/src/components/landing/splash-blob";
 
 const navItems: { label: string; href: string; active?: boolean }[] = [
   { label: "Home", href: "#", active: true },
@@ -27,19 +29,19 @@ function UifryLogo() {
 
 function HamburgerIcon({ open }: { open: boolean }) {
   return (
-    <span className="flex h-6 w-6 flex-col items-center justify-center gap-[5px]">
+    <span className="flex h-5 flex-col items-center justify-center gap-[5px] w-5">
       <span
-        className={`block h-[2px] w-6 rounded-sm bg-black transition-transform duration-250 ${
+        className={`block h-[2px] rounded-sm bg-white transition-all duration-300 w-full ${
           open ? "translate-y-[7px] rotate-45" : ""
         }`}
       />
       <span
-        className={`block h-[2px] w-6 rounded-sm bg-black transition-all duration-250 ${
+        className={`block h-[2px] rounded-sm bg-white transition-all duration-300 w-3/4 self-end ${
           open ? "scale-x-0 opacity-0" : ""
         }`}
       />
       <span
-        className={`block h-[2px] w-6 rounded-sm bg-black transition-transform duration-250 ${
+        className={`block h-[2px] rounded-sm bg-white transition-all duration-300 w-full ${
           open ? "-translate-y-[7px] -rotate-45" : ""
         }`}
       />
@@ -49,14 +51,12 @@ function HamburgerIcon({ open }: { open: boolean }) {
 
 export function HomeNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const router = useRouter();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-40 bg-white" aria-label="Main navigation">
+    <nav className="fixed top-0 left-0 right-0 z-40 bg-[var(--lp-nav-bg)]" aria-label="Main navigation">
       {/* Splash glow that connects navbar to hero */}
-      <div
-        className="pointer-events-none absolute left-[236px] top-0 z-0 h-[205px] w-[330px] bg-[radial-gradient(circle_at_50%_38%,rgba(255,85,85,0.52)_0_18%,rgba(255,85,85,0.26)_28%,transparent_62%),radial-gradient(circle_at_50%_82%,rgba(255,205,77,0.5)_0_12%,transparent_36%)] blur-[18px]"
-        aria-hidden="true"
-      />
+      <SplashBlob className="left-[236px] top-0" />
       {/* ── Main bar ── */}
       <div className="mx-auto max-w-7xl flex min-h-[76px] items-center justify-between px-5 py-4 md:min-h-[88px] md:px-8 lg:min-h-[104px] lg:px-20 lg:py-[18px]">
         {/* LEFT: logo + nav links */}
@@ -64,12 +64,12 @@ export function HomeNavbar() {
           {/* Logo */}
           <a
             href="#"
-            className="flex items-center gap-2 text-[1.35rem] font-extrabold tracking-[-0.04em] text-black no-underline lg:text-[1.58rem]"
+            className="flex items-center gap-2 text-[1.35rem] font-extrabold tracking-[-0.04em] text-[var(--lp-nav-text)] no-underline lg:text-[1.58rem]"
             aria-label="Uifry home"
           >
             <UifryLogo />
             <span className="leading-none">uifry</span>
-            <sup className="ml-0.5 mt-1 text-[0.45rem] font-bold leading-none text-black">
+            <sup className="ml-0.5 mt-1 text-[0.45rem] font-bold leading-none text-[var(--lp-nav-text-muted)]">
               ™
             </sup>
           </a>
@@ -88,8 +88,8 @@ export function HomeNavbar() {
                     href={item.href}
                     className={
                       item.active
-                        ? "text-[0.94rem] font-semibold text-[#ff5555] no-underline"
-                        : "text-[0.94rem] font-medium text-black no-underline transition-colors hover:text-[#ff5555]"
+                        ? "text-[0.94rem] font-semibold text-[var(--lp-red)] no-underline"
+                        : "text-[0.94rem] font-medium text-[var(--lp-nav-text-muted)] no-underline transition-colors hover:text-[var(--lp-red)]"
                     }
                   >
                     {item.label}
@@ -102,16 +102,17 @@ export function HomeNavbar() {
 
         {/* RIGHT: download button + star + hamburger */}
         <div className="flex items-center gap-8 lg:gap-12">
-          {/* Download button — hidden on mobile, shown md+ */}
+          {/* Get Started button — hidden on mobile, shown md+ */}
           <button
             type="button"
-            className="hidden rounded-md bg-black px-7 py-3 text-[0.9rem] font-semibold text-white transition-colors hover:bg-neutral-800 md:block lg:h-[49px] lg:min-w-[145px]"
+            onClick={() => router.push("/login")}
+            className="hidden rounded-full bg-[#ff5555] px-7 py-3 text-[0.9rem] font-semibold text-white transition-all hover:brightness-110 md:block lg:h-[49px] lg:min-w-[145px]"
           >
-            Download
+            Get Started
           </button>
 
           {/* Real Figma star — desktop only */}
-          <LandingSpark className="hidden lg:block" size={52} />
+          <LandingSpark className="hidden lg:block text-gray-300" size={52} />
 
           {/* Hamburger — mobile only */}
           <button
@@ -129,36 +130,36 @@ export function HomeNavbar() {
       {/* ── Mobile dropdown ── */}
       {mobileOpen && (
         <div
-          className="absolute left-0 right-0 top-full z-50 flex flex-col border-t border-gray-100 bg-white px-6 pb-8 pt-4 shadow-[0_8px_32px_rgba(0,0,0,0.10)] md:hidden"
+          className="absolute left-0 right-0 top-full z-50 flex flex-col border-t border-[var(--lp-border)] bg-[var(--lp-nav-bg)] px-6 pb-8 pt-4 shadow-[0_8px_32px_rgba(0,0,0,0.10)] md:hidden"
           role="dialog"
           aria-label="Mobile navigation"
         >
           {/* Mobile nav links */}
           <ul className="mb-5 flex list-none flex-col p-0">
-            {navItems.map((item) => (
-              <li key={item.label}>
-                <a
-                  href={item.href}
-                  className={`block border-b border-gray-100 py-4 text-[1.05rem] no-underline transition-colors last:border-none ${
-                    item.active
-                      ? "font-semibold text-[#ff5555]"
-                      : "font-medium text-black hover:text-[#ff5555]"
-                  }`}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
+              {navItems.map((item) => (
+                <li key={item.label}>
+                  <a
+                    href={item.href}
+                    className={`block border-b border-[var(--lp-border)] py-4 text-[1.05rem] no-underline transition-colors last:border-none ${
+                      item.active
+                        ? "font-semibold text-[var(--lp-red)]"
+                        : "font-medium text-[var(--lp-nav-text-muted)] hover:text-[var(--lp-red)]"
+                    }`}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
           </ul>
 
-          {/* Mobile Download button */}
+          {/* Mobile Get Started button */}
           <button
             type="button"
-            className="w-full rounded-[10px] bg-black py-3 text-[1rem] font-semibold text-white transition-colors hover:bg-neutral-800"
-            onClick={() => setMobileOpen(false)}
+            onClick={() => { router.push("/login"); setMobileOpen(false); }}
+            className="w-full rounded-full bg-[#ff5555] py-3 text-[1rem] font-semibold text-white transition-all hover:brightness-110"
           >
-            Download
+            Get Started
           </button>
         </div>
       )}

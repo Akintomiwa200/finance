@@ -70,7 +70,7 @@ export function Dialog({ open: controlledOpen, onOpenChange, onClose, title, chi
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
           onClick={(e) => e.target === overlayRef.current && close()}
         >
-          <div className={cn("bg-background border border-border rounded-xl shadow-lg w-full mx-4 max-h-[90vh] overflow-y-auto", contentClassName)}>
+          <div className={cn("bg-background border border-border rounded-xl shadow-lg w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto", contentClassName)}>
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <h2 className="text-lg font-semibold">{title || ""}</h2>
               <button onClick={close} className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted" aria-label="Close">
