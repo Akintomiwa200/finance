@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Plus_Jakarta_Sans,
   JetBrains_Mono,
@@ -7,6 +7,8 @@ import {
   DM_Sans,
 } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/src/components/auth-provider";
+import { HelpChat } from "@/src/components/help-chat";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -39,6 +41,9 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "Uifry — Best Finance App",
   description: "Uifry — The best finance app on Playstore. Budget, expenses, and financial decisions made easy.",
+};
+
+export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#001E2B" },
@@ -55,7 +60,10 @@ export default function RootLayout({
       lang="en"
       className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} ${nunitoSans.variable} ${bricolageGrotesque.variable} ${dmSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full"><AuthProvider>
+          {children}
+          <HelpChat />
+        </AuthProvider></body>
     </html>
   );
 }

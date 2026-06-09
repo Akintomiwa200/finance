@@ -76,10 +76,16 @@ export default function HomeTestimonials() {
 
   return (
     <>
-                <section className="relative w-full overflow-hidden bg-[var(--lp-bg)]" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+      <section
+        className="relative w-full overflow-hidden bg-[var(--lp-bg)]"
+        style={{ fontFamily: "var(--font-dm-sans)" }}
+      >
         <SplashBlob className="top-8 left-8 scale-75 -rotate-12 opacity-50" />
         <SplashBlob className="bottom-12 right-6 scale-50 rotate-45 opacity-35" />
-        <LandingSpark className="absolute left-[8%] top-[4%] z-[2] hidden sm:block text-white/30" size={24} />
+        <LandingSpark
+          className="absolute left-[8%] top-[4%] z-[2] hidden sm:block text-white/30"
+          size={24}
+        />
         <LandingSpark
           className="absolute right-[12%] top-[8%] z-[2] scale-[0.6] opacity-40 hidden sm:block text-white/20"
           size={24}
@@ -99,10 +105,16 @@ export default function HomeTestimonials() {
 
         <div className="mx-auto w-full max-w-7xl px-4 py-12 md:px-8 md:py-20 lg:px-20 lg:py-24">
           <div className="text-center mb-8 md:mb-14">
-            <div className="text-[1rem] md:text-[1.4rem] lg:text-[2rem] font-semibold tracking-[0.18em] uppercase text-[var(--lp-red)] mb-2" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+            <div
+              className="text-[1rem] md:text-[1.4rem] lg:text-[2rem] font-semibold tracking-[0.18em] uppercase text-[var(--lp-red)] mb-2"
+              style={{ fontFamily: "var(--font-dm-sans)" }}
+            >
               Testimonial
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-[var(--lp-text)] leading-[1.1] m-0 px-2 sm:px-0" style={{ fontFamily: 'var(--font-bricolage)' }}>
+            <h2
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-[var(--lp-text)] leading-[1.1] m-0 px-2 sm:px-0"
+              style={{ fontFamily: "var(--font-bricolage)" }}
+            >
               What Our Users
               <br />
               Say About Us?
@@ -120,15 +132,30 @@ export default function HomeTestimonials() {
               />
               <div
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[var(--lp-border)] z-[1] pointer-events-none hidden sm:block"
-                style={{ width: "88%", height: "88%", maxWidth: 380, maxHeight: 380 }}
+                style={{
+                  width: "88%",
+                  height: "88%",
+                  maxWidth: 380,
+                  maxHeight: 380,
+                }}
               />
               <div
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[var(--lp-border)] z-[1] pointer-events-none hidden md:block"
-                style={{ width: "65%", height: "65%", maxWidth: 280, maxHeight: 280 }}
+                style={{
+                  width: "65%",
+                  height: "65%",
+                  maxWidth: 280,
+                  maxHeight: 280,
+                }}
               />
               <div
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[var(--lp-border)] z-[1] pointer-events-none hidden lg:block"
-                style={{ width: "43%", height: "43%", maxWidth: 188, maxHeight: 188 }}
+                style={{
+                  width: "43%",
+                  height: "43%",
+                  maxWidth: 188,
+                  maxHeight: 188,
+                }}
               />
 
               <div
@@ -153,8 +180,8 @@ export default function HomeTestimonials() {
                     className="absolute rounded-full overflow-hidden z-[2] border-[3px] border-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] transition-all duration-500 hidden sm:block"
                     style={{
                       ...pos,
-                      width: `clamp(40px, ${pos.width / 440 * 100}%, ${pos.width}px)`,
-                      height: `clamp(40px, ${pos.height / 440 * 100}%, ${pos.height}px)`,
+                      width: `clamp(40px, ${(pos.width / 440) * 100}%, ${pos.width}px)`,
+                      height: `clamp(40px, ${(pos.height / 440) * 100}%, ${pos.height}px)`,
                     }}
                   >
                     <img
@@ -167,28 +194,49 @@ export default function HomeTestimonials() {
               })}
             </div>
 
-            <div className="flex-1 min-w-0 text-center md:text-left">
+            <div className="flex-1 min-w-0 text-center md:text-left w-full">
               <h3
                 key={active.id + "-title"}
                 className="text-[1.2rem] sm:text-[1.35rem] md:text-[1.45rem] lg:text-[1.55rem] font-extrabold text-[var(--lp-text)] m-0 mb-3 md:mb-4 leading-[1.25] transition-all duration-500"
-                style={{ fontFamily: 'var(--font-bricolage)' }}
+                style={{ fontFamily: "var(--font-bricolage)" }}
               >
                 {active.name}
               </h3>
-              <p
-                key={active.id + "-text"}
-                className="text-[0.95rem] sm:text-[1.1rem] md:text-[1.3rem] lg:text-[1.5rem] leading-[1.6] sm:leading-[1.7] md:leading-[1.75] text-[var(--lp-text)] m-0 mb-5 md:mb-7 font-normal transition-all duration-500 text-justify md:text-left bg-white/10 md:bg-transparent rounded-xl md:rounded-none px-4 py-5 md:px-0 md:py-0 shadow-none"
-              >
-                &ldquo;{active.text}&rdquo;
-              </p>
+
+              {/* Mobile card redesign */}
+              <div className="block md:hidden bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6 mb-4 shadow-lg min-h-[50vh] flex items-center gap-4">
+                <svg className="w-10 h-10 shrink-0 self-start mt-1 text-[var(--lp-red)]" viewBox="0 0 24 24" fill="currentColor" opacity="0.7">
+                  <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z"/>
+                </svg>
+                <p
+                  key={active.id + "-text-mobile"}
+                  className="text-[1.35rem] leading-[1.8] text-[var(--lp-text)] m-0 font-normal transition-all duration-500 text-left flex-1"
+                >
+                  {active.text}
+                </p>
+              </div>
+
+              {/* Desktop text - unchanged */}
+              <div className="hidden md:flex items-start gap-3 mb-5 md:mb-7">
+                <svg className="w-8 h-8 shrink-0 mt-1 text-[var(--lp-red)]" viewBox="0 0 24 24" fill="currentColor" opacity="0.6">
+                  <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z"/>
+                </svg>
+                <p
+                  key={active.id + "-text-desktop"}
+                  className="text-[0.95rem] sm:text-[1.1rem] md:text-[1.3rem] lg:text-[1.5rem] leading-[1.6] sm:leading-[1.7] md:leading-[1.75] text-[var(--lp-text)] m-0 font-normal transition-all duration-500 text-justify md:text-left"
+                >
+                  {active.text}
+                </p>
+              </div>
+
               <div className="flex gap-2 mb-3 justify-center md:justify-start">
                 {testimonials.map((t, i) => (
                   <button
                     key={t.id}
                     onClick={() => setActiveIndex(i)}
                     className={`relative w-9 h-9 sm:w-10 sm:h-10 md:w-[42px] md:h-[42px] rounded-full overflow-hidden border-2 shrink-0 transition-all duration-300 ${
-                    i === activeIndex
-                      ? "border-[#ff5555] shadow-[0_2px_8px_rgba(255,85,85,0.35)]"
+                      i === activeIndex
+                        ? "border-[#ff5555] shadow-[0_2px_8px_rgba(255,85,85,0.35)]"
                         : "border-white/40 shadow-[0_2px_8px_rgba(0,0,0,0.25)]"
                     }`}
                   >
@@ -203,7 +251,10 @@ export default function HomeTestimonials() {
                   </button>
                 ))}
               </div>
-              <div className="text-sm sm:text-base font-bold text-[var(--lp-text)]" style={{ fontFamily: 'var(--font-bricolage)' }}>
+              <div
+                className="text-sm sm:text-base font-bold text-[var(--lp-text)]"
+                style={{ fontFamily: "var(--font-bricolage)" }}
+              >
                 {active.name}
               </div>
             </div>

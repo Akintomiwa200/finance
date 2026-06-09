@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   TrendingUp,
@@ -26,6 +26,7 @@ import {
 } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
+import { useAuthStore } from "@/src/store/auth-store";
 import { Badge } from "@/src/components/ui/badge";
 import { Dialog } from "@/src/components/ui/dialog";
 import {
@@ -39,278 +40,177 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { fetchTransactions, createTransaction } from "@/src/lib/api";
 
-// ─── Data ────────────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const fullIncomeData = [
-  { month: "Jan", income: 18500, expenses: 14200 },
-  { month: "Feb", income: 20200, expenses: 16500 },
-  { month: "Mar", income: 19500, expenses: 15800 },
-  { month: "Apr", income: 22800, expenses: 17200 },
-  { month: "May", income: 25200, expenses: 18900 },
-  { month: "Jun", income: 24000, expenses: 18320 },
-  { month: "Jul", income: 23100, expenses: 17700 },
-  { month: "Aug", income: 21900, expenses: 16400 },
-  { month: "Sep", income: 26300, expenses: 19500 },
-  { month: "Oct", income: 24700, expenses: 18100 },
-  { month: "Nov", income: 28100, expenses: 20300 },
-  { month: "Dec", income: 26500, expenses: 19200 },
-];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const PIE_COLORS = ["var(--accent-500)", "var(--accent-400)", "var(--accent-300)", "var(--accent-600)", "var(--accent-700)", "var(--border)", "var(--accent-200)", "var(--accent-800)"];
 
-const pieData = [
-  { name: "Housing", value: 4800, color: "#8B5CF6" },
-  { name: "Food", value: 3200, color: "#60A5FA" },
-  { name: "Transport", value: 2100, color: "#F59E0B" },
-  { name: "Entertainment", value: 1800, color: "#10B981" },
-  { name: "Shopping", value: 2900, color: "#EC4899" },
-  { name: "Others", value: 3520, color: "#6B7280" },
-];
+function formatDate(d: Date): string {
+  const now = new Date();
+  const diff = now.getTime() - d.getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days === 0) return `Today, ${d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  if (days < 30) return `${Math.floor(days / 7)} week${Math.floor(days / 7) > 1 ? "s" : ""} ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
-const allTransactions = [
-  {
-    id: 1,
-    name: "Grocery Store",
-    date: "Today, 2:30 PM",
-    amount: -86.5,
-    status: "completed" as const,
-    category: "Food",
-    account: "Checking",
-  },
-  {
-    id: 2,
-    name: "Freelance Payment",
-    date: "Today, 11:00 AM",
-    amount: 1200.0,
-    status: "completed" as const,
-    category: "Income",
-    account: "Checking",
-  },
-  {
-    id: 3,
-    name: "Electric Bill",
-    date: "Yesterday",
-    amount: -145.0,
-    status: "pending" as const,
-    category: "Utilities",
-    account: "Checking",
-  },
-  {
-    id: 4,
-    name: "Transfer to Savings",
-    date: "Yesterday",
-    amount: -500.0,
-    status: "completed" as const,
-    category: "Transfer",
-    account: "Savings",
-  },
-  {
-    id: 5,
-    name: "Coffee Shop",
-    date: "2 days ago",
-    amount: -5.75,
-    status: "completed" as const,
-    category: "Food",
-    account: "Checking",
-  },
-  {
-    id: 6,
-    name: "Subscription - Netflix",
-    date: "3 days ago",
-    amount: -15.99,
-    status: "completed" as const,
-    category: "Entertainment",
-    account: "Checking",
-  },
-  {
-    id: 7,
-    name: "Client Invoice #1042",
-    date: "3 days ago",
-    amount: 3400.0,
-    status: "completed" as const,
-    category: "Income",
-    account: "Checking",
-  },
-  {
-    id: 8,
-    name: "Gas Station",
-    date: "4 days ago",
-    amount: -48.2,
-    status: "completed" as const,
-    category: "Transport",
-    account: "Checking",
-  },
-  {
-    id: 9,
-    name: "Restaurant",
-    date: "5 days ago",
-    amount: -62.3,
-    status: "completed" as const,
-    category: "Food",
-    account: "Checking",
-  },
-  {
-    id: 10,
-    name: "Phone Bill",
-    date: "6 days ago",
-    amount: -85.0,
-    status: "completed" as const,
-    category: "Utilities",
-    account: "Checking",
-  },
-  {
-    id: 21,
-    name: "SWIFT Transfer — Client Ltd (UK)",
-    date: "Today, 9:15 AM",
-    amount: 4500.0,
-    status: "completed" as const,
-    category: "Income",
-    account: "USD Account",
-  },
-  {
-    id: 22,
-    name: "Alibaba Order",
-    date: "Yesterday",
-    amount: -2340.0,
-    status: "completed" as const,
-    category: "Shopping",
-    account: "USD Account",
-  },
-  {
-    id: 23,
-    name: "TransferWise Fee",
-    date: "2 days ago",
-    amount: -35.0,
-    status: "completed" as const,
-    category: "Transfer",
-    account: "GBP Account",
-  },
-  {
-    id: 24,
-    name: "AWS Cloud Services",
-    date: "3 days ago",
-    amount: -1247.3,
-    status: "pending" as const,
-    category: "Technology",
-    account: "USD Account",
-  },
-  {
-    id: 25,
-    name: "Freelancer.com Payment",
-    date: "4 days ago",
-    amount: 2800.0,
-    status: "completed" as const,
-    category: "Income",
-    account: "EUR Account",
-  },
-  {
-    id: 26,
-    name: "Shopify Payout",
-    date: "5 days ago",
-    amount: 1890.0,
-    status: "completed" as const,
-    category: "Income",
-    account: "CAD Account",
-  },
-  {
-    id: 27,
-    name: "AliExpress Purchase",
-    date: "6 days ago",
-    amount: -156.5,
-    status: "completed" as const,
-    category: "Shopping",
-    account: "USD Account",
-  },
-  {
-    id: 28,
-    name: "Remittance (Western Union)",
-    date: "1 week ago",
-    amount: -500.0,
-    status: "pending" as const,
-    category: "Transfer",
-    account: "Checking",
-  },
-  {
-    id: 29,
-    name: "Google Ads Charge",
-    date: "1 week ago",
-    amount: -890.0,
-    status: "completed" as const,
-    category: "Advertising",
-    account: "USD Account",
-  },
-  {
-    id: 30,
-    name: "International Invoice — TechCorp",
-    date: "1 week ago",
-    amount: 6200.0,
-    status: "completed" as const,
-    category: "Income",
-    account: "GBP Account",
-  },
-];
+function computeMonthlyIncome(transactions: NormalizedTx[]): { month: string; income: number; expenses: number }[] {
+  const monthly: Record<string, { income: number; expenses: number }> = {};
+  MONTHS.forEach((m) => (monthly[m] = { income: 0, expenses: 0 }));
+  transactions.forEach((tx) => {
+    const m = MONTHS[new Date(tx.rawDate).getMonth()];
+    if (tx.amount > 0) monthly[m].income += tx.amount;
+    else monthly[m].expenses += Math.abs(tx.amount);
+  });
+  return MONTHS.map((month) => ({ month, ...monthly[month] }));
+}
 
-const contacts = [
-  {
-    initials: "SA",
-    name: "Savings Account",
-    role: "Internal",
-    accountNumber: "0123456789",
-    bank: "GT Bank",
-    type: "local",
-  },
-  {
-    initials: "JK",
-    name: "John Kim",
-    role: "Vendor",
-    accountNumber: "2098765432",
-    bank: "First Bank",
-    type: "local",
-  },
-  {
-    initials: "JD",
-    name: "James Dean (UK)",
-    role: "International Client",
-    accountNumber: "GB29NWBK60161331926819",
-    bank: "Barclays (UK)",
-    type: "international",
-  },
-  {
-    initials: "LW",
-    name: "Li Wei (China)",
-    role: "Supplier",
-    accountNumber: "ICBC889900112233",
-    bank: "ICBC (China)",
-    type: "international",
-  },
-];
+function computeExpenseBreakdown(transactions: NormalizedTx[]): { name: string; value: number; color: string }[] {
+  const groups: Record<string, number> = {};
+  transactions.filter((tx) => tx.amount < 0).forEach((tx) => {
+    groups[tx.category] = (groups[tx.category] || 0) + Math.abs(tx.amount);
+  });
+  const sorted = Object.entries(groups).sort((a, b) => b[1] - a[1]);
+  const others = sorted.slice(5);
+  const top = sorted.slice(0, 5);
+  const result = top.map(([name, value], i) => ({ name, value: Math.round(value), color: PIE_COLORS[i] }));
+  const othersSum = others.reduce((s, [, v]) => s + v, 0);
+  if (othersSum > 0) result.push({ name: "Others", value: Math.round(othersSum), color: PIE_COLORS[5] });
+  return result;
+}
 
-const categories = [
-  { name: "Housing", amount: 4800, percentage: 28, color: "bg-purple-500" },
-  { name: "Food & Dining", amount: 3200, percentage: 19, color: "bg-blue-400" },
-  {
-    name: "Transportation",
-    amount: 2100,
-    percentage: 12,
-    color: "bg-amber-400",
-  },
-  {
-    name: "Entertainment",
-    amount: 1800,
-    percentage: 10,
-    color: "bg-emerald-400",
-  },
-  { name: "Shopping", amount: 2900, percentage: 17, color: "bg-pink-400" },
-  { name: "Others", amount: 3520, percentage: 14, color: "bg-gray-400" },
-];
+function computeCategoryData(transactions: NormalizedTx[]): { name: string; amount: number; percentage: number; color: string }[] {
+  const expenses = transactions.filter((tx) => tx.amount < 0);
+  const total = expenses.reduce((s, tx) => s + Math.abs(tx.amount), 0);
+  const groups: Record<string, number> = {};
+  expenses.forEach((tx) => {
+    const cat = tx.category;
+    groups[cat] = (groups[cat] || 0) + Math.abs(tx.amount);
+  });
+  const sorted = Object.entries(groups).sort((a, b) => b[1] - a[1]);
+  const colors = ["bg-accent-500", "bg-accent-400", "bg-accent-300", "bg-accent-600", "bg-accent-700", "bg-surface", "bg-accent-200", "bg-accent-800"];
+  return sorted.slice(0, 6).map(([name, amount], i) => ({
+    name,
+    amount: Math.round(amount),
+    percentage: total > 0 ? Math.round((amount / total) * 100) : 0,
+    color: colors[i] || "bg-gray-400",
+  }));
+}
 
-const upcomingBills = [
-  { id: 11, name: "Internet & TV", amount: 89.99, date: "Mar 25" },
-  { id: 10, name: "Phone Bill", amount: 45.0, date: "Mar 28" },
-  { id: 13, name: "Credit Card", amount: 320.0, date: "Apr 5" },
-  { id: 12, name: "Insurance", amount: 210.0, date: "Apr 10" },
-];
+function computeUpcomingBills(transactions: NormalizedTx[]): { id: string; name: string; amount: number; date: string }[] {
+  return transactions
+    .filter((tx) => tx.status === "pending" && tx.amount < 0)
+    .slice(0, 4)
+    .map((tx) => ({
+      id: tx.id,
+      name: tx.name,
+      amount: Math.abs(tx.amount),
+      date: formatDate(new Date(tx.rawDate)),
+    }));
+}
 
-const totalPie = pieData.reduce((s, i) => s + i.value, 0);
+const CATEGORY_ICONS: Record<string, string> = {
+  food: "🍔",
+  restaurant: "🍔",
+  dining: "🍔",
+  shopping: "🛒",
+  entertainment: "🎬",
+  transport: "🚗",
+  utilities: "💡",
+  rent: "🏠",
+  salary: "💰",
+  income: "💰",
+  "health & fitness": "🏥",
+  health: "🏥",
+  education: "📚",
+  transfer: "💸",
+  "international transfer": "🌍",
+  travel: "✈️",
+  subscription: "📺",
+  bills: "📄",
+  other: "📌",
+};
+
+function getCategoryIcon(category: string): string {
+  return CATEGORY_ICONS[category.toLowerCase()] || "📌";
+}
+
+function extractContacts(transactions: NormalizedTx[]): Contact[] {
+  const seen = new Set<string>();
+  const contacts: Contact[] = [];
+
+  // Sort by date descending to get most recent contacts first
+  const sorted = [...transactions].sort(
+    (a, b) => new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime()
+  );
+
+  for (const tx of sorted) {
+    if (!tx.merchant) continue;
+    const key = tx.merchant.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const isInternational = tx.category?.toLowerCase().includes("international");
+    contacts.push({
+      initials: tx.merchant
+        .split(" ")
+        .map((w: string) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2),
+      name: tx.merchant,
+      role: isInternational ? "International" : tx.amount < 0 ? "Payee" : "Payer",
+      accountNumber: tx.reference || "N/A",
+      bank: tx.account || "N/A",
+      type: isInternational ? "international" : "local",
+    });
+  }
+
+  // If no contacts derived from transactions, provide fallback
+  if (contacts.length === 0) {
+    contacts.push(
+      { initials: "SA", name: "Savings Account", role: "Internal", accountNumber: "0123456789", bank: "GT Bank", type: "local" },
+      { initials: "JK", name: "John Kim", role: "Vendor", accountNumber: "2098765432", bank: "First Bank", type: "local" },
+      { initials: "JD", name: "James Dean (UK)", role: "International Client", accountNumber: "GB29NWBK60161331926819", bank: "Barclays (UK)", type: "international" },
+      { initials: "LW", name: "Li Wei (China)", role: "Supplier", accountNumber: "ICBC889900112233", bank: "ICBC (China)", type: "international" },
+    );
+  }
+
+  return contacts;
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface NormalizedTx {
+  id: string;
+  name: string;
+  date: string;
+  rawDate: string;
+  amount: number;
+  status: string;
+  category: string;
+  account: string;
+  merchant?: string;
+  reference?: string;
+  notes?: string;
+  receipt?: string;
+  description?: string;
+}
+
+interface Contact {
+  initials: string;
+  name: string;
+  role: string;
+  accountNumber: string;
+  bank: string;
+  type: "local" | "international";
+}
+
+
 
 // ─── StatCard ────────────────────────────────────────────────────────────────
 
@@ -320,37 +220,26 @@ function StatCard({
   change,
   trend,
   icon: Icon,
-  color,
 }: {
   title: string;
   value: string;
   change: string;
   trend: "up" | "down";
   icon: React.ElementType;
-  color: "blue" | "orange" | "green" | "purple";
 }) {
-  const colors = {
-    blue: "bg-blue-50 text-blue-600",
-    orange: "bg-orange-50 text-orange-600",
-    green: "bg-green-50 text-green-600",
-    purple: "bg-purple-50 text-purple-600",
-  };
-
   return (
     <Card>
       <CardContent className="p-5">
         <div className="flex items-center justify-between mb-3">
-          <div
-            className={`w-10 h-10 rounded-xl ${colors[color]} flex items-center justify-center`}
-          >
+          <div className="w-10 h-10 rounded-xl bg-accent-50 text-accent-600 flex items-center justify-center">
             <Icon className="w-5 h-5" />
           </div>
           {trend === "up" ? (
-            <span className="flex items-center gap-0.5 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+            <span className="flex items-center gap-0.5 text-xs font-medium text-success bg-surface-2 px-2 py-0.5 rounded-full">
               <ArrowUpRight className="w-3 h-3" /> {change}
             </span>
           ) : (
-            <span className="flex items-center gap-0.5 text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+            <span className="flex items-center gap-0.5 text-xs font-medium text-danger bg-surface-2 px-2 py-0.5 rounded-full">
               <ArrowDownRight className="w-3 h-3" /> {change}
             </span>
           )}
@@ -366,70 +255,179 @@ function StatCard({
 
 export default function DashboardPage() {
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
   const [timeRange, setTimeRange] = useState("monthly");
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  // Transactions & activities (mutable)
-  const [transactions, setTransactions] = useState(allTransactions);
-  const [activities, setActivities] = useState([
-    {
-      id: 6,
-      icon: "📺",
-      title: "Netflix Standard Plan",
-      date: "15 Sep 22 at 2:12 pm",
-      amount: "$15.99",
-    },
-    {
-      id: 15,
-      icon: "🛒",
-      title: "Online Shopping",
-      date: "15 Sep 22 at 12:12 pm",
-      amount: "$67.20",
-    },
-    {
-      icon: "📸",
-      title: "Wedding Photography",
-      date: "13 Sep 22 at 1:12 am",
-      amount: "$45,200",
-    },
-    {
-      icon: "👔",
-      title: "Helster Premium Plan",
-      date: "11 Sep 22 at 12:12 pm",
-      amount: "$718",
-    },
-  ]);
+  // Transactions from API
+  const [transactions, setTransactions] = useState<NormalizedTx[]>([]);
 
   // Quick Transfer
-  const [contactsList, setContactsList] = useState(contacts);
-  const [selectedContact, setSelectedContact] = useState<number>(0);
+  const [contactsList, setContactsList] = useState<Contact[]>([]);
+  const [selectedContact, setSelectedContact] = useState<number>(-1);
   const [transferAmount, setTransferAmount] = useState("");
   const [transferModalOpen, setTransferModalOpen] = useState(false);
   const [transferSent, setTransferSent] = useState(false);
-  const [nextTxId, setNextTxId] = useState(31);
   const [addContactOpen, setAddContactOpen] = useState(false);
-  const [contactType, setContactType] = useState<"local" | "international">(
-    "local",
-  );
+  const [contactType, setContactType] = useState<"local" | "international">("local");
 
   // Other modals
-  const [selectedTx, setSelectedTx] = useState<
-    (typeof allTransactions)[number] | null
-  >(null);
+  const [selectedTx, setSelectedTx] = useState<NormalizedTx | null>(null);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [filterCategory, setFilterCategory] = useState("All");
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+  const [appliedFilterCategory, setAppliedFilterCategory] = useState("All");
+  const [appliedFilterStatus, setAppliedFilterStatus] = useState("All");
+  const [appliedFilterDateFrom, setAppliedFilterDateFrom] = useState("");
+  const [appliedFilterDateTo, setAppliedFilterDateTo] = useState("");
 
-  // ── Derived ──
+  // ── Fetch data ──
+
+  useEffect(() => {
+    fetchTransactions({ limit: 200 })
+      .then((data) => {
+        const normalized: NormalizedTx[] = data.transactions.map((tx) => ({
+          id: tx.id,
+          name: tx.title,
+          date: formatDate(new Date(tx.date)),
+          rawDate: tx.date,
+          amount: Number(tx.amount),
+          status: tx.status.toLowerCase(),
+          category: tx.category,
+          account: tx.account || "Checking",
+          merchant: tx.merchant || undefined,
+          reference: tx.reference || undefined,
+          notes: tx.notes || undefined,
+          receipt: tx.receipt || undefined,
+          description: tx.description || undefined,
+        }));
+        setTransactions(normalized);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  // ── Computed from transactions ──
+
+  const fullIncomeData = useMemo(() => computeMonthlyIncome(transactions), [transactions]);
+  const pieData = useMemo(() => computeExpenseBreakdown(transactions), [transactions]);
+  const categories = useMemo(() => computeCategoryData(transactions), [transactions]);
+  const upcomingBills = useMemo(() => computeUpcomingBills(transactions), [transactions]);
+  const totalPie = useMemo(() => pieData.reduce((s, i) => s + i.value, 0), [pieData]);
+  const monthlyComparison = useMemo(() => {
+    const now = new Date();
+    const currentMonth = transactions.filter((t) => new Date(t.rawDate).getMonth() === now.getMonth() && new Date(t.rawDate).getFullYear() === now.getFullYear());
+    const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevMonth = transactions.filter((t) => new Date(t.rawDate).getMonth() === prevDate.getMonth() && new Date(t.rawDate).getFullYear() === prevDate.getFullYear());
+    const income = currentMonth.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+    const expenses = currentMonth.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+    const prevIncome = prevMonth.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+    const prevExpenses = prevMonth.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+    const spentPct = income > 0 ? +((expenses / income) * 100).toFixed(1) : 0;
+    const savingsRate = income > 0 ? +(((income - expenses) / income) * 100).toFixed(1) : 0;
+    return { income, expenses, prevIncome, prevExpenses, spentPct, savingsRate };
+  }, [transactions]);
+  const budgetData = useMemo(() => {
+    const map: Record<string, { spent: number; color: string }> = {
+      Housing: { spent: 0, color: "bg-accent-500" },
+      Food: { spent: 0, color: "bg-accent-500" },
+      Transport: { spent: 0, color: "bg-accent-500" },
+      Utilities: { spent: 0, color: "bg-accent-500" },
+      Entertainment: { spent: 0, color: "bg-accent-500" },
+    };
+    const now = new Date();
+    transactions
+      .filter((t) => t.amount < 0 && new Date(t.rawDate).getMonth() === now.getMonth() && new Date(t.rawDate).getFullYear() === now.getFullYear())
+      .forEach((t) => {
+        const cat = t.category.charAt(0).toUpperCase() + t.category.slice(1);
+        if (map[cat]) map[cat].spent += Math.abs(t.amount);
+      });
+    return Object.entries(map)
+      .filter(([, v]) => v.spent > 0)
+      .map(([label, v]) => ({
+        label,
+        spent: Math.round(v.spent),
+        budget: Math.round(Math.max(v.spent * 1.3, v.spent + 500)),
+        color: v.color,
+      }))
+      .slice(0, 3);
+  }, [transactions]);
+
+  // ── Derived from transactions ──
+
+  const billingStats = useMemo(() => {
+    const now = new Date();
+    const paid = transactions
+      .filter((tx) => {
+        const d = new Date(tx.rawDate);
+        return tx.amount < 0 && tx.status === "completed" && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      })
+      .reduce((s, tx) => s + Math.abs(tx.amount), 0);
+    const remaining = transactions
+      .filter((tx) => {
+        const d = new Date(tx.rawDate);
+        return tx.amount < 0 && tx.status === "pending" && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      })
+      .reduce((s, tx) => s + Math.abs(tx.amount), 0);
+    return { paid, remaining };
+  }, [transactions]);
+
+  const recentActivities = useMemo(() => {
+    return [...transactions]
+      .sort((a, b) => new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime())
+      .slice(0, 5)
+      .map((tx) => ({
+        id: tx.id,
+        icon: getCategoryIcon(tx.category),
+        title: tx.name,
+        date: tx.date,
+        amount: `${tx.amount > 0 ? "+" : ""}$${Math.abs(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      }));
+  }, [transactions]);
+
+  useEffect(() => {
+    if (transactions.length > 0) {
+      setContactsList(extractContacts(transactions));
+    }
+  }, [transactions]);
+
+  useEffect(() => {
+    setSelectedContact((prev) => {
+      if (contactsList.length === 0) return -1;
+      if (prev < 0) return 0;
+      if (prev >= contactsList.length) return contactsList.length - 1;
+      return prev;
+    });
+  }, [contactsList.length]);
 
   const filteredTransactions = useMemo(() => {
-    if (!searchQuery) return transactions;
-    const q = searchQuery.toLowerCase();
-    return transactions.filter(
-      (tx) =>
-        tx.name.toLowerCase().includes(q) ||
-        tx.category.toLowerCase().includes(q) ||
-        tx.status.toLowerCase().includes(q),
-    );
-  }, [searchQuery, transactions]);
+    let result = transactions;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (tx) =>
+          tx.name.toLowerCase().includes(q) ||
+          tx.category.toLowerCase().includes(q) ||
+          tx.status.toLowerCase().includes(q) ||
+          tx.account.toLowerCase().includes(q),
+      );
+    }
+    if (appliedFilterCategory !== "All") {
+      result = result.filter((tx) => tx.category === appliedFilterCategory);
+    }
+    if (appliedFilterStatus !== "All") {
+      result = result.filter((tx) => tx.status === appliedFilterStatus.toLowerCase());
+    }
+    if (appliedFilterDateFrom) {
+      result = result.filter((tx) => new Date(tx.rawDate) >= new Date(appliedFilterDateFrom));
+    }
+    if (appliedFilterDateTo) {
+      result = result.filter((tx) => new Date(tx.rawDate) <= new Date(appliedFilterDateTo));
+    }
+    return result;
+  }, [searchQuery, transactions, appliedFilterCategory, appliedFilterStatus, appliedFilterDateFrom, appliedFilterDateTo]);
 
   const chartData = useMemo(() => {
     const map: Record<string, number> = {
@@ -440,7 +438,7 @@ export default function DashboardPage() {
     };
     const count = map[timeRange] || 12;
     return fullIncomeData.slice(-count);
-  }, [timeRange]);
+  }, [timeRange, fullIncomeData]);
 
   // Live stat values derived from transactions
   const stats = useMemo(() => {
@@ -454,11 +452,21 @@ export default function DashboardPage() {
     const pendingBills = transactions
       .filter((t) => t.status === "pending")
       .reduce((s, t) => s + Math.abs(t.amount), 0);
-    const incomeChange = +((totalIncome / 18500 - 1) * 100).toFixed(1);
-    const expenseChange = +(
-      (Math.abs(totalExpenses) / 14200 - 1) *
-      100
-    ).toFixed(1);
+    const sorted = [...transactions].sort((a, b) => new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime());
+    const mid = Math.floor(sorted.length / 2);
+    const recent = sorted.slice(0, mid);
+    const previous = sorted.slice(mid);
+    const recentIncome = recent.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+    const recentExpenses = recent.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+    const prevIncome = previous.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+    const prevExpenses = previous.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+    const incomeChange = prevIncome > 0 ? +((recentIncome / prevIncome - 1) * 100).toFixed(1) : 0;
+    const expenseChange = prevExpenses > 0 ? +((recentExpenses / prevExpenses - 1) * 100).toFixed(1) : 0;
+    const netChange = totalIncome > 0 ? +((balance / totalIncome) * 100).toFixed(1) : 0;
+    const now = new Date();
+    const currentMonthPending = transactions.filter((t) => t.status === "pending" && t.amount < 0 && new Date(t.rawDate).getMonth() === now.getMonth()).reduce((s, t) => s + Math.abs(t.amount), 0);
+    const prevMonthPending = transactions.filter((t) => t.status === "pending" && t.amount < 0 && new Date(t.rawDate).getMonth() === (now.getMonth() - 1 + 12) % 12).reduce((s, t) => s + Math.abs(t.amount), 0);
+    const pendingChange = prevMonthPending > 0 ? +((currentMonthPending / prevMonthPending - 1) * 100).toFixed(1) : 0;
     return {
       totalIncome,
       totalExpenses: Math.abs(totalExpenses),
@@ -466,6 +474,8 @@ export default function DashboardPage() {
       pendingBills,
       incomeChange,
       expenseChange,
+      netChange,
+      pendingChange,
     };
   }, [transactions]);
 
@@ -493,40 +503,34 @@ export default function DashboardPage() {
     if (!amount || amount <= 0 || selectedContact < 0) return;
     const contact = contactsList[selectedContact];
 
-    // Add transaction
     const prefix =
       contact.type === "international"
         ? "International Transfer to"
         : "Local Transfer to";
-    const newTx = {
-      id: nextTxId,
-      name: `${prefix} ${contact.name}`,
-      date: "Just now",
+    const title = `${prefix} ${contact.name}`;
+
+    createTransaction({
+      title,
       amount: -amount,
-      status: "completed" as const,
-      category:
-        contact.type === "international"
-          ? "International Transfer"
-          : "Transfer",
+      type: contact.type === "international" ? "INTERNATIONAL_TRANSFER" : "TRANSFER",
+      category: contact.type === "international" ? "International Transfer" : "Transfer",
       account: contact.bank || "Checking",
-    };
-
-    // Add activity
-    const newActivity = {
-      icon: contact.type === "international" ? "🌍" : "💸",
-      title: `${contact.type === "international" ? "International" : "Local"} Transfer to ${contact.name} (${contact.bank})`,
-      date: new Date().toLocaleString("en-US", {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      }),
-      amount: `$${amount.toFixed(2)}`,
-    };
-
-    setTransactions((prev) => [newTx, ...prev]);
-    setActivities((prev) => [newActivity, ...prev]);
-    setNextTxId((prev) => prev + 1);
+      merchant: contact.name,
+      status: "COMPLETED",
+      date: new Date().toISOString(),
+    }).then((newTx) => {
+      const normalized: NormalizedTx = {
+        id: newTx.id,
+        name: newTx.title,
+        date: "Just now",
+        rawDate: newTx.date,
+        amount: Number(newTx.amount),
+        status: newTx.status.toLowerCase(),
+        category: newTx.category,
+        account: newTx.account || "Checking",
+      };
+      setTransactions((prev) => [normalized, ...prev]);
+    });
 
     setTransferSent(true);
     setTimeout(() => {
@@ -534,9 +538,15 @@ export default function DashboardPage() {
       setTransferSent(false);
       setTransferAmount("");
     }, 2000);
-  }, [transferAmount, selectedContact, nextTxId]);
+  }, [transferAmount, selectedContact, contactsList]);
 
   const displayedTxs = filteredTransactions.slice(0, 5);
+
+  const currentContact = (
+    selectedContact >= 0 && selectedContact < contactsList.length
+      ? contactsList[selectedContact]
+      : null
+  );
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -547,16 +557,16 @@ export default function DashboardPage() {
             Dashboard
           </h1>
           <p className="text-muted-foreground mt-1">
-            Welcome back, Alex! Here's your financial overview.
+            Welcome back, {user?.name || "User"}! Here's your financial overview.
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-none">
-            <Input
+            <input
               placeholder="Search transactions..."
-              className="pl-9 w-full sm:w-[260px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-10 w-full sm:w-[260px] pl-9 pr-3 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             />
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
@@ -607,7 +617,6 @@ export default function DashboardPage() {
           change={`+${stats.incomeChange}%`}
           trend="up"
           icon={TrendingUp}
-          color="blue"
         />
         <StatCard
           title="Total Expenses"
@@ -615,23 +624,20 @@ export default function DashboardPage() {
           change={`+${stats.expenseChange}%`}
           trend="down"
           icon={ShoppingCart}
-          color="orange"
         />
         <StatCard
           title="Net Balance"
           value={`$${stats.balance.toLocaleString()}`}
-          change="+15.3%"
+          change={`+${stats.netChange}%`}
           trend="up"
           icon={DollarSign}
-          color="green"
         />
         <StatCard
           title="Pending Bills"
           value={`$${stats.pendingBills.toLocaleString()}`}
-          change="-3.1%"
-          trend="up"
+          change={`${stats.pendingChange}%`}
+          trend={stats.pendingChange >= 0 ? "up" : "down"}
           icon={CreditCard}
-          color="purple"
         />
       </div>
 
@@ -716,8 +722,8 @@ export default function DashboardPage() {
                       <div
                         className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${
                           tx.amount > 0
-                            ? "bg-green-50 text-green-600"
-                            : "bg-red-50 text-red-600"
+                            ? "bg-accent-50 text-success"
+                            : "bg-accent-50 text-danger"
                         }`}
                       >
                         {tx.amount > 0 ? "↑" : "↓"}
@@ -731,7 +737,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span
-                        className={`text-sm font-semibold ${tx.amount > 0 ? "text-green-600" : ""}`}
+                        className={`text-sm font-semibold ${tx.amount > 0 ? "text-success" : ""}`}
                       >
                         {tx.amount > 0 ? "+" : ""}$
                         {Math.abs(tx.amount).toFixed(2)}
@@ -796,11 +802,15 @@ export default function DashboardPage() {
                   <p className="text-xs text-muted-foreground">
                     Paid this month
                   </p>
-                  <p className="text-lg font-bold">$1,240</p>
+                  <p className="text-lg font-bold">
+                    ${billingStats.paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
                 </div>
                 <div className="flex-1 p-3 rounded-lg bg-muted/50">
                   <p className="text-xs text-muted-foreground">Remaining</p>
-                  <p className="text-lg font-bold">$664.99</p>
+                  <p className="text-lg font-bold">
+                    ${billingStats.remaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -869,26 +879,7 @@ export default function DashboardPage() {
               <CardTitle>Monthly Budget</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {[
-                {
-                  label: "Housing",
-                  spent: 4200,
-                  budget: 5000,
-                  color: "bg-purple-500",
-                },
-                {
-                  label: "Food",
-                  spent: 2800,
-                  budget: 3500,
-                  color: "bg-blue-400",
-                },
-                {
-                  label: "Transport",
-                  spent: 1900,
-                  budget: 2500,
-                  color: "bg-amber-400",
-                },
-              ].map((item, i) => (
+              {budgetData.length > 0 ? budgetData.map((item, i) => (
                 <div key={i}>
                   <div className="flex justify-between text-sm mb-1">
                     <span>{item.label}</span>
@@ -904,7 +895,9 @@ export default function DashboardPage() {
                     />
                   </div>
                 </div>
-              ))}
+              )) : (
+                <p className="text-sm text-muted-foreground text-center py-4">No expense data this month</p>
+              )}
             </CardContent>
           </Card>
 
@@ -930,7 +923,7 @@ export default function DashboardPage() {
                     <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded-lg bg-popover border border-border text-xs text-popover-foreground whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
                       {contact.name} — {contact.bank} ({contact.accountNumber}){" "}
                       <span
-                        className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${contact.type === "international" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}
+                        className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${contact.type === "international" ? "bg-accent-50 text-accent-700" : "bg-accent-50 text-accent-700"}`}
                       >
                         {contact.type === "international"
                           ? "International"
@@ -976,29 +969,29 @@ export default function DashboardPage() {
                   <Send className="w-4 h-4 mr-1" /> Send
                 </Button>
               </div>
-              {selectedContact >= 0 && (
+              {currentContact && (
                 <div className="text-xs text-muted-foreground text-center leading-relaxed">
                   To:{" "}
                   <span className="font-medium text-foreground">
-                    {contactsList[selectedContact].name}
+                    {currentContact.name}
                   </span>
                   <br />
-                  {contactsList[selectedContact].bank} ·{" "}
-                  {contactsList[selectedContact].accountNumber}
+                  {currentContact.bank} ·{" "}
+                  {currentContact.accountNumber}
                   <span
-                    className={`ml-1 inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${contactsList[selectedContact].type === "international" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}
+                    className={`ml-1 inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${currentContact.type === "international" ? "bg-accent-50 text-accent-700" : "bg-accent-50 text-accent-700"}`}
                   >
-                    {contactsList[selectedContact].type === "international"
+                    {currentContact.type === "international"
                       ? "International"
                       : "Local"}
                   </span>
                   <br />
                   <span className="text-muted-foreground">
-                    {contactsList[selectedContact].role}
+                    {currentContact.role}
                   </span>
                 </div>
               )}
-              {selectedContact < 0 && (
+              {!currentContact && (
                 <p className="text-xs text-muted-foreground text-center">
                   Select a contact above to send money
                 </p>
@@ -1069,35 +1062,35 @@ export default function DashboardPage() {
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-muted-foreground">Income</span>
-                <span className="font-medium">$24,580</span>
+                <span className="font-medium">${monthlyComparison.income.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-muted-foreground">Expenses</span>
-                <span className="font-medium">$18,320</span>
+                <span className="font-medium">${monthlyComparison.expenses.toLocaleString()}</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2.5">
                 <div
-                  className="bg-indigo-500 h-2.5 rounded-full"
-                  style={{ width: "74.5%" }}
+                  className="bg-accent-500 h-2.5 rounded-full"
+                  style={{ width: `${Math.min(monthlyComparison.spentPct, 100)}%` }}
                 />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                74.5% of income spent this month
+                {monthlyComparison.spentPct}% of income spent this month
               </p>
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-muted-foreground">Savings Rate</span>
-                <span className="font-medium text-green-600">25.5%</span>
+                <span className="font-medium text-success">{monthlyComparison.savingsRate}%</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2.5">
                 <div
-                  className="bg-green-500 h-2.5 rounded-full"
-                  style={{ width: "25.5%" }}
+                  className="bg-success h-2.5 rounded-full"
+                  style={{ width: `${Math.min(monthlyComparison.savingsRate, 100)}%` }}
                 />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Target: 30% monthly savings
+                {monthlyComparison.savingsRate >= 0 ? "Positive savings this month" : "Exceeding income this month"}
               </p>
             </div>
           </CardContent>
@@ -1109,7 +1102,7 @@ export default function DashboardPage() {
             <CardTitle>Recent Activities</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {activities.map((a, i) => (
+            {recentActivities.map((a, i) => (
               <button
                 key={i}
                 onClick={() =>
@@ -1155,7 +1148,7 @@ export default function DashboardPage() {
                 </p>
               </div>
               <span
-                className={`text-xl font-bold ${selectedTx.amount > 0 ? "text-green-600" : ""}`}
+                className={`text-xl font-bold ${selectedTx.amount > 0 ? "text-success" : ""}`}
               >
                 {selectedTx.amount > 0 ? "+" : ""}$
                 {Math.abs(selectedTx.amount).toFixed(2)}
@@ -1200,7 +1193,13 @@ export default function DashboardPage() {
       {/* ── Filter Modal ── */}
       <Dialog
         open={filterModalOpen}
-        onClose={() => setFilterModalOpen(false)}
+        onClose={() => {
+          setFilterModalOpen(false);
+          setFilterCategory(appliedFilterCategory);
+          setFilterStatus(appliedFilterStatus);
+          setFilterDateFrom(appliedFilterDateFrom);
+          setFilterDateTo(appliedFilterDateTo);
+        }}
         title="Filter Transactions"
       >
         <div className="space-y-4">
@@ -1219,7 +1218,12 @@ export default function DashboardPage() {
               ].map((cat) => (
                 <button
                   key={cat}
-                  className="px-3 py-1.5 text-sm rounded-lg border border-border bg-background hover:bg-muted transition-colors"
+                  onClick={() => setFilterCategory(cat)}
+                  className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                    filterCategory === cat
+                      ? "bg-accent-600 text-white border-accent-600"
+                      : "border-border bg-background hover:bg-muted text-foreground"
+                  }`}
                 >
                   {cat}
                 </button>
@@ -1232,7 +1236,12 @@ export default function DashboardPage() {
               {["All", "Completed", "Pending"].map((s) => (
                 <button
                   key={s}
-                  className="px-3 py-1.5 text-sm rounded-lg border border-border bg-background hover:bg-muted transition-colors"
+                  onClick={() => setFilterStatus(s)}
+                  className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                    filterStatus === s
+                      ? "bg-accent-600 text-white border-accent-600"
+                      : "border-border bg-background hover:bg-muted text-foreground"
+                  }`}
                 >
                   {s}
                 </button>
@@ -1242,22 +1251,48 @@ export default function DashboardPage() {
           <div>
             <p className="text-sm font-medium mb-2">Date Range</p>
             <div className="flex gap-2">
-              <Input type="date" className="flex-1" />
+              <input
+                type="date"
+                value={filterDateFrom}
+                onChange={(e) => setFilterDateFrom(e.target.value)}
+                className="flex-1 h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
               <span className="self-center text-muted-foreground">to</span>
-              <Input type="date" className="flex-1" />
+              <input
+                type="date"
+                value={filterDateTo}
+                onChange={(e) => setFilterDateTo(e.target.value)}
+                className="flex-1 h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
             </div>
           </div>
           <div className="flex gap-2 pt-2">
             <Button
               className="flex-1"
-              onClick={() => setFilterModalOpen(false)}
+              onClick={() => {
+                setAppliedFilterCategory(filterCategory);
+                setAppliedFilterStatus(filterStatus);
+                setAppliedFilterDateFrom(filterDateFrom);
+                setAppliedFilterDateTo(filterDateTo);
+                setFilterModalOpen(false);
+              }}
             >
               Apply Filters
             </Button>
             <Button
               variant="outline"
               className="flex-1"
-              onClick={() => setFilterModalOpen(false)}
+              onClick={() => {
+                setFilterCategory("All");
+                setFilterStatus("All");
+                setFilterDateFrom("");
+                setFilterDateTo("");
+                setAppliedFilterCategory("All");
+                setAppliedFilterStatus("All");
+                setAppliedFilterDateFrom("");
+                setAppliedFilterDateTo("");
+                setFilterModalOpen(false);
+              }}
             >
               Clear
             </Button>
@@ -1273,86 +1308,92 @@ export default function DashboardPage() {
         }}
         title="Confirm Transfer"
       >
-        <div className="space-y-4">
-          {transferSent ? (
-            <div className="flex flex-col items-center gap-3 py-6">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                <Check className="w-8 h-8 text-green-600" />
+        {currentContact ? (
+          <div className="space-y-4">
+            {transferSent ? (
+              <div className="flex flex-col items-center gap-3 py-6">
+                <div className="w-16 h-16 rounded-full bg-accent-50 flex items-center justify-center">
+                  <Check className="w-8 h-8 text-success" />
+                </div>
+                <p className="text-lg font-semibold">Transfer Successful!</p>
+                <p className="text-sm text-muted-foreground text-center">
+                  ${parseFloat(transferAmount).toFixed(2)} sent to{" "}
+                  {currentContact.name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {currentContact.bank} ·{" "}
+                  {currentContact.accountNumber}
+                </p>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${currentContact.type === "international" ? "bg-accent-50 text-accent-700" : "bg-accent-50 text-accent-700"}`}
+                >
+                  {currentContact.type === "international"
+                    ? "🌍 International Transfer"
+                    : "🏦 Local Transfer"}
+                </span>
               </div>
-              <p className="text-lg font-semibold">Transfer Successful!</p>
-              <p className="text-sm text-muted-foreground text-center">
-                ${parseFloat(transferAmount).toFixed(2)} sent to{" "}
-                {contactsList[selectedContact].name}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {contactsList[selectedContact].bank} ·{" "}
-                {contactsList[selectedContact].accountNumber}
-              </p>
-              <span
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${contactsList[selectedContact].type === "international" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}
-              >
-                {contactsList[selectedContact].type === "international"
-                  ? "🌍 International Transfer"
-                  : "🏦 Local Transfer"}
-              </span>
-            </div>
-          ) : (
-            <>
-              <div className="bg-muted rounded-lg p-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Amount</span>
-                  <span className="font-semibold">
-                    ${parseFloat(transferAmount).toFixed(2)}
-                  </span>
+            ) : (
+              <>
+                <div className="bg-muted rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Amount</span>
+                    <span className="font-semibold">
+                      ${parseFloat(transferAmount).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">From</span>
+                    <span>Checking Account</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">To</span>
+                    <span className="text-right">
+                      {currentContact.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Type</span>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${currentContact.type === "international" ? "bg-accent-50 text-accent-700" : "bg-accent-50 text-accent-700"}`}
+                    >
+                      {currentContact.type === "international"
+                        ? "🌍 International"
+                        : "🏦 Local"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Bank</span>
+                    <span>{currentContact.bank}</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-mono">
+                    <span className="text-muted-foreground">Account</span>
+                    <span>{currentContact.accountNumber}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Role</span>
+                    <span>{currentContact.role}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">From</span>
-                  <span>Checking Account</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">To</span>
-                  <span className="text-right">
-                    {contactsList[selectedContact].name}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Type</span>
-                  <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${contactsList[selectedContact].type === "international" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}
-                  >
-                    {contactsList[selectedContact].type === "international"
-                      ? "🌍 International"
-                      : "🏦 Local"}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Bank</span>
-                  <span>{contactsList[selectedContact].bank}</span>
-                </div>
-                <div className="flex justify-between text-sm font-mono">
-                  <span className="text-muted-foreground">Account</span>
-                  <span>{contactsList[selectedContact].accountNumber}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Role</span>
-                  <span>{contactsList[selectedContact].role}</span>
-                </div>
-              </div>
-              <div className="flex gap-2 pt-2">
-                <Button className="flex-1" onClick={handleSendTransfer}>
-                  <Send className="w-4 h-4 mr-1" /> Confirm Transfer
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setTransferModalOpen(false)}
+                <div className="flex gap-2 pt-2">
+                  <Button className="flex-1" onClick={handleSendTransfer}>
+                    <Send className="w-4 h-4 mr-1" /> Confirm Transfer
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setTransferModalOpen(false)}
                 >
                   Cancel
-                </Button>
-              </div>
-            </>
-          )}
-        </div>
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="p-4 text-sm text-muted-foreground text-center">
+            Contact information not available
+          </div>
+        )}
       </Dialog>
 
       {/* ── Add Contact Modal ── */}

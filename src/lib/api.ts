@@ -1,131 +1,152 @@
-import type { ApiResponse, PaginatedResponse, PaginationParams, RequestStatus } from "@/src/types/common";
+import type { ApiResponse, PaginatedResponse } from "@/src/types/common";
 
-type Interceptor = (response: Response) => Response | Promise<Response>;
+export interface ApiTransaction {
+  id: string;
+  title: string;
+  description: string | null;
+  amount: number;
+  type: string;
+  category: string;
+  status: string;
+  date: string;
+  account: string | null;
+  merchant: string | null;
+  reference: string | null;
+  notes: string | null;
+  receipt: string | null;
+  organizationId: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
-class ApiClient {
-  private baseUrl = "";
-  private interceptors: Interceptor[] = [];
-  private requestCount = 0;
-  private requestStatus = new Map<string, RequestStatus>();
+export interface FetchTransactionsParams {
+  search?: string;
+  category?: string;
+  status?: string;
+  type?: string;
+  from?: string;
+  to?: string;
+  sort?: string;
+  order?: string;
+  page?: number;
+  limit?: number;
+}
 
-  setBaseUrl(url: string) {
-    this.baseUrl = url;
-  }
+interface FetchTransactionsResponse {
+  transactions: ApiTransaction[];
+  total: number;
+  page: number;
+  limit: number;
+}
 
-  addInterceptor(fn: Interceptor) {
-    this.interceptors.push(fn);
-  }
-
-  getRequestStatus(key: string): RequestStatus {
-    return this.requestStatus.get(key) ?? "idle";
-  }
-
-  async request<T>(
-    method: string,
-    path: string,
-    body?: unknown,
-    options?: { signal?: AbortSignal; onProgress?: (percent: number) => void }
-  ): Promise<ApiResponse<T>> {
-    const key = `${method}:${path}`;
-    this.requestStatus.set(key, "loading");
-    this.requestCount++;
-
-    try {
-      const url = `${this.baseUrl}${path}`;
-      const headers: Record<string, string> = {};
-
-      if (body && !(body instanceof FormData)) {
-        headers["Content-Type"] = "application/json";
-      }
-
-      let response = await fetch(url, {
-        method,
-        headers,
-        body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
-        signal: options?.signal,
-      });
-
-      for (const interceptor of this.interceptors) {
-        response = await interceptor(response);
-      }
-
-      if (!response.ok) {
-        const errorBody = await response.json().catch(() => null);
-        const message = errorBody?.error ?? errorBody?.message ?? `Request failed with status ${response.status}`;
-        this.requestStatus.set(key, "error");
-        return { success: false, error: message };
-      }
-
-      const result = await response.json();
-      this.requestStatus.set(key, "success");
-      return { success: true, data: result.data ?? result };
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") {
-        this.requestStatus.set(key, "idle");
-        return { success: false, error: "Request cancelled" };
-      }
-      this.requestStatus.set(key, "error");
-      const message = error instanceof Error ? error.message : "Unknown error";
-      return { success: false, error: message };
-    } finally {
-      this.requestCount--;
+export async function fetchTransactions(params: FetchTransactionsParams = {}): Promise<FetchTransactionsResponse> {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== "") {
+      searchParams.set(key, String(value));
     }
   }
+  const res = await fetch(`/api/transactions?${searchParams.toString()}`);
+  if (!res.ok) throw new Error("Failed to fetch transactions");
+  return res.json();
+}
 
-  async get<T>(path: string, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
-    return this.request<T>("GET", path, undefined, options);
-  }
+export async function fetchTransaction(id: string): Promise<ApiTransaction> {
+  const res = await fetch(`/api/transactions/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch transaction");
+  const json = await res.json();
+  return json.transaction;
+}
 
-  async post<T>(path: string, body?: unknown, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
-    return this.request<T>("POST", path, body, options);
-  }
+export async function createTransaction(data: Partial<ApiTransaction>): Promise<ApiTransaction> {
+  const res = await fetch("/api/transactions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to create transaction");
+  const json = await res.json();
+  return json.transaction;
+}
 
-  async patch<T>(path: string, body?: unknown, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
-    return this.request<T>("PATCH", path, body, options);
-  }
+export async function updateTransaction(id: string, data: Partial<ApiTransaction>): Promise<ApiTransaction> {
+  const res = await fetch(`/api/transactions/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to update transaction");
+  const json = await res.json();
+  return json.transaction;
+}
 
-  async put<T>(path: string, body?: unknown, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
-    return this.request<T>("PUT", path, body, options);
-  }
+export async function deleteTransaction(id: string): Promise<void> {
+  const res = await fetch(`/api/transactions/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete transaction");
+}
 
-  async delete<T>(path: string, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
-    return this.request<T>("DELETE", path, undefined, options);
-  }
+// ── Generic API client for service layer ──
 
-  async upload<T>(path: string, formData: FormData, onProgress?: (percent: number) => void): Promise<ApiResponse<T>> {
-    return this.request<T>("POST", path, formData, { onProgress });
-  }
-
-  async getPaginated<T>(
-    path: string,
-    params?: PaginationParams & Record<string, unknown>,
-    options?: { signal?: AbortSignal }
-  ): Promise<PaginatedResponse<T>> {
-    const searchParams = new URLSearchParams();
-    if (params) {
-      for (const [key, value] of Object.entries(params)) {
-        if (value !== undefined && value !== null && value !== "") {
-          searchParams.set(key, String(value));
-        }
-      }
+async function request<T>(method: string, path: string, body?: unknown, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
+  try {
+    const res = await fetch(path, {
+      method,
+      headers: body ? { "Content-Type": "application/json" } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+      signal: options?.signal,
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      return { success: false, error: json.error || `Request failed with ${res.status}` };
     }
-    const query = searchParams.toString();
-    const fullPath = query ? `${path}?${query}` : path;
-    const result = await this.get<PaginatedResponse<T>>(fullPath, options);
-    if (result.success && result.data) {
-      return result.data as PaginatedResponse<T>;
+    return { success: true, data: json };
+  } catch (err: any) {
+    if (err.name === "AbortError") {
+      return { success: false, error: "Request aborted" };
     }
-    return {
-      success: false,
-      data: [],
-      pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
-      error: result.error,
-    };
-  }
-
-  isPending(): boolean {
-    return this.requestCount > 0;
+    return { success: false, error: err.message };
   }
 }
 
-export const api = new ApiClient();
+export const api = {
+  get<T>(path: string, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
+    return request<T>("GET", path, undefined, options);
+  },
+  post<T>(path: string, body?: unknown, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
+    return request<T>("POST", path, body, options);
+  },
+  patch<T>(path: string, body?: unknown, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
+    return request<T>("PATCH", path, body, options);
+  },
+  delete<T>(path: string, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
+    return request<T>("DELETE", path, undefined, options);
+  },
+  request: request,
+  getPaginated<T>(path: string, params?: Record<string, unknown>): Promise<PaginatedResponse<T>> {
+    const query = params ? buildQuery(params) : "";
+    const fullPath = query ? `${path}?${query}` : path;
+    return request<PaginatedResponse<T>>("GET", fullPath).then((res) => {
+      if (res.success && res.data) {
+        return res.data as PaginatedResponse<T>;
+      }
+      return { success: false, data: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 }, error: res.error };
+    });
+  },
+  upload<T>(path: string, formData: FormData): Promise<ApiResponse<T>> {
+    return fetch(path, { method: "POST", body: formData }).then(async (res) => {
+      const json = await res.json();
+      if (!res.ok) return { success: false, error: json.error || "Upload failed" };
+      return { success: true, data: json as T };
+    });
+  },
+};
+
+function buildQuery(params: Record<string, unknown>): string {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParams.set(key, String(value));
+    }
+  }
+  return searchParams.toString();
+}

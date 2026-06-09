@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useAuthStore } from "@/src/store/auth-store";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setUser, setToken } = useAuthStore();
   const [step, setStep] = useState<"email" | "password">("email");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -26,11 +28,34 @@ export default function LoginPage() {
       setLoading(true);
       setError("");
 
-      // Simulate login with random data for testing
-      await new Promise((r) => setTimeout(r, 1000));
+      const form = new FormData(e.currentTarget);
+      const password = form.get("password") as string;
 
-      router.push("/dashboard");
-      router.refresh();
+      try {
+        const result = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (result?.error) {
+          setError("Invalid email or password");
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const userData = await res.json();
+          setUser(userData);
+          setToken("authenticated");
+        }
+
+        router.push("/dashboard");
+      } catch {
+        setError("An unexpected error occurred");
+        setLoading(false);
+      }
     }
   }
 
@@ -417,7 +442,11 @@ export default function LoginPage() {
         {/* ── LEFT PANEL ── */}
         <div className="left-panel">
           {/* Logo */}
-          <Link href="/" className="logo-wrap" style={{ textDecoration: 'none' }}>
+          <Link
+            href="/"
+            className="logo-wrap"
+            style={{ textDecoration: "none" }}
+          >
             <svg
               width="28"
               height="28"
@@ -426,19 +455,26 @@ export default function LoginPage() {
               xmlns="http://www.w3.org/2000/svg"
             >
               <path d="M16 0L4 8V24L16 32L28 24V8L16 0Z" fill="var(--lp-red)" />
-              <path d="M16 4L8 9V23L16 28L24 23V9L16 4Z" fill="var(--lp-red-dark)" />
+              <path
+                d="M16 4L8 9V23L16 28L24 23V9L16 4Z"
+                fill="var(--lp-red-dark)"
+              />
             </svg>
             <span className="logo-text">uifry</span>
           </Link>
 
           {/* Heading */}
           <h1 className="login-heading">Log in to your account</h1>
-          <p className="login-sub">
+          {/*<p className="login-sub">
             Don't have an account? <Link href="/register">Sign Up</Link>
-          </p>
+          </p>*/}
 
           {/* Social buttons */}
-          <button className="social-btn" type="button">
+          <button
+            className="social-btn"
+            type="button"
+            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+          >
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -516,7 +552,10 @@ export default function LoginPage() {
               <button
                 type="button"
                 className="back-btn"
-                onClick={() => { setStep("email"); setError(""); }}
+                onClick={() => {
+                  setStep("email");
+                  setError("");
+                }}
               >
                 ← Back
               </button>
@@ -582,7 +621,12 @@ export default function LoginPage() {
 
           {/* Chat bubble */}
           <div className="chat-bubble">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--lp-text)">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="var(--lp-text)"
+            >
               <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" />
             </svg>
           </div>

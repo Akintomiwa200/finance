@@ -28,6 +28,19 @@ enum ApprovalStatus {
   CANCELLED
 }
 
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+  INTERNATIONAL_TRANSFER
+}
+
+enum TransactionStatus {
+  COMPLETED
+  PENDING
+  FAILED
+}
+
 enum PayrollStatus {
   DRAFT
   COMPUTED
@@ -79,6 +92,7 @@ model Organization {
   vendorInvoices    VendorInvoice[]
   taxConfigurations TaxConfiguration[]
   auditLogs         AuditLog[]
+  transactions      Transaction[]
 }
 
 model Department {
@@ -403,4 +417,27 @@ model Notification {
   referenceId String?
 
   createdAt DateTime @default(now())
+}
+
+model Transaction {
+  id          String            @id @default(cuid())
+  title       String
+  description String?
+  amount      Decimal           @db.Decimal(15, 2)
+  type        TransactionType
+  category    String
+  status      TransactionStatus @default(COMPLETED)
+  date        DateTime
+  account     String?
+  merchant    String?
+  reference   String?
+  notes       String?
+  receipt     String?
+
+  employeeId     String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft, Search, Download,
@@ -8,69 +8,81 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
 import { Badge } from "@/src/components/ui/badge";
+import { fetchTransactions } from "@/src/lib/api";
 
-const allTransactions = [
-  { id: 1, name: "Grocery Store", date: "Today, 2:30 PM", amount: -86.50, status: "completed" as const, category: "Food", account: "Checking" },
-  { id: 2, name: "Freelance Payment", date: "Today, 11:00 AM", amount: 1200.00, status: "completed" as const, category: "Income", account: "Checking" },
-  { id: 3, name: "Electric Bill", date: "Yesterday", amount: -145.00, status: "pending" as const, category: "Utilities", account: "Checking" },
-  { id: 4, name: "Transfer to Savings", date: "Yesterday", amount: -500.00, status: "completed" as const, category: "Transfer", account: "Savings" },
-  { id: 5, name: "Coffee Shop", date: "2 days ago", amount: -5.75, status: "completed" as const, category: "Food", account: "Checking" },
-  { id: 6, name: "Subscription - Netflix", date: "3 days ago", amount: -15.99, status: "completed" as const, category: "Entertainment", account: "Checking" },
-  { id: 7, name: "Client Invoice #1042", date: "3 days ago", amount: 3400.00, status: "completed" as const, category: "Income", account: "Checking" },
-  { id: 8, name: "Gas Station", date: "4 days ago", amount: -48.20, status: "completed" as const, category: "Transport", account: "Checking" },
-  { id: 9, name: "Restaurant", date: "5 days ago", amount: -62.30, status: "completed" as const, category: "Food", account: "Checking" },
-  { id: 10, name: "Phone Bill", date: "6 days ago", amount: -85.00, status: "completed" as const, category: "Utilities", account: "Checking" },
-  { id: 11, name: "Internet & TV", date: "Mar 22", amount: -89.99, status: "completed" as const, category: "Utilities", account: "Checking" },
-  { id: 12, name: "Insurance Premium", date: "Mar 20", amount: -210.00, status: "completed" as const, category: "Insurance", account: "Checking" },
-  { id: 13, name: "Credit Card Payment", date: "Mar 18", amount: -320.00, status: "completed" as const, category: "Bills", account: "Credit Card" },
-  { id: 14, name: "Consulting Fee", date: "Mar 15", amount: 2500.00, status: "completed" as const, category: "Income", account: "Checking" },
-  { id: 15, name: "Amazon Order", date: "Mar 14", amount: -67.20, status: "completed" as const, category: "Shopping", account: "Checking" },
-  { id: 16, name: "Uber Rides", date: "Mar 12", amount: -34.50, status: "pending" as const, category: "Transport", account: "Checking" },
-  { id: 17, name: "Dividend Payout", date: "Mar 10", amount: 150.00, status: "completed" as const, category: "Income", account: "Savings" },
-  { id: 18, name: "Gym Membership", date: "Mar 8", amount: -49.99, status: "completed" as const, category: "Health", account: "Checking" },
-  { id: 19, name: "Freelance Project", date: "Mar 5", amount: 1800.00, status: "completed" as const, category: "Income", account: "Checking" },
-  { id: 20, name: "Water Bill", date: "Mar 3", amount: -42.00, status: "completed" as const, category: "Utilities", account: "Checking" },
-  { id: 21, name: "SWIFT Transfer — Client Ltd (UK)", date: "Today, 9:15 AM", amount: 4500.00, status: "completed" as const, category: "Income", account: "USD Account" },
-  { id: 22, name: "Alibaba Order", date: "Yesterday", amount: -2340.00, status: "completed" as const, category: "Shopping", account: "USD Account" },
-  { id: 23, name: "TransferWise Fee", date: "2 days ago", amount: -35.00, status: "completed" as const, category: "Transfer", account: "GBP Account" },
-  { id: 24, name: "AWS Cloud Services", date: "3 days ago", amount: -1247.30, status: "pending" as const, category: "Technology", account: "USD Account" },
-  { id: 25, name: "Freelancer.com Payment", date: "4 days ago", amount: 2800.00, status: "completed" as const, category: "Income", account: "EUR Account" },
-  { id: 26, name: "Shopify Payout", date: "5 days ago", amount: 1890.00, status: "completed" as const, category: "Income", account: "CAD Account" },
-  { id: 27, name: "AliExpress Purchase", date: "6 days ago", amount: -156.50, status: "completed" as const, category: "Shopping", account: "USD Account" },
-  { id: 28, name: "Remittance (Western Union)", date: "1 week ago", amount: -500.00, status: "pending" as const, category: "Transfer", account: "Checking" },
-  { id: 29, name: "Google Ads Charge", date: "1 week ago", amount: -890.00, status: "completed" as const, category: "Advertising", account: "USD Account" },
-  { id: 30, name: "International Invoice — TechCorp", date: "1 week ago", amount: 6200.00, status: "completed" as const, category: "Income", account: "GBP Account" },
-];
+interface Tx {
+  id: string;
+  name: string;
+  rawDate: string;
+  date: string;
+  amount: number;
+  status: string;
+  category: string;
+  account: string;
+}
+
+function formatDate(d: Date): string {
+  const now = new Date();
+  const diff = now.getTime() - d.getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days === 0) return `Today, ${d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  if (days < 30) return `${Math.floor(days / 7)} week${Math.floor(days / 7) > 1 ? "s" : ""} ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
 export default function TransactionsPage() {
   const router = useRouter();
+  const [transactions, setTransactions] = useState<Tx[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<"date" | "amount">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const perPage = 10;
 
+  useEffect(() => {
+    fetchTransactions({ limit: 200 })
+      .then((data) => {
+        const normalized: Tx[] = data.transactions.map((tx) => ({
+          id: tx.id,
+          name: tx.title,
+          rawDate: tx.date,
+          date: formatDate(new Date(tx.date)),
+          amount: Number(tx.amount),
+          status: tx.status.toLowerCase(),
+          category: tx.category,
+          account: tx.account || "Checking",
+        }));
+        setTransactions(normalized);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
   const filtered = useMemo(() => {
-    let result = allTransactions;
+    let result = transactions;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
         (tx) =>
           tx.name.toLowerCase().includes(q) ||
           tx.category.toLowerCase().includes(q) ||
-          tx.status.toLowerCase().includes(q),
+          tx.status.toLowerCase().includes(q) ||
+          tx.account.toLowerCase().includes(q),
       );
     }
     result = [...result].sort((a, b) => {
       if (sortField === "amount") {
         return sortDir === "desc" ? b.amount - a.amount : a.amount - b.amount;
       }
-      return sortDir === "desc" ? a.id - b.id : b.id - a.id;
+      return sortDir === "desc"
+        ? new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime()
+        : new Date(a.rawDate).getTime() - new Date(b.rawDate).getTime();
     });
     return result;
-  }, [searchQuery, sortField, sortDir]);
+  }, [searchQuery, sortField, sortDir, transactions]);
 
   const totalPages = Math.ceil(filtered.length / perPage);
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
@@ -87,8 +99,8 @@ export default function TransactionsPage() {
 
   const handleDownloadCSV = () => {
     const header = "Name,Date,Amount,Status,Category,Account\n";
-    const rows = allTransactions
-      .map((tx) => `${tx.name},${tx.date},${tx.amount},${tx.status},${tx.category},${tx.account}`)
+    const rows = transactions
+      .map((tx) => `${tx.name},${tx.rawDate},${tx.amount},${tx.status},${tx.category},${tx.account}`)
       .join("\n");
     const blob = new Blob([header + rows], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -109,16 +121,18 @@ export default function TransactionsPage() {
           </Button>
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Transactions</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">{filtered.length} total transactions</p>
+            <p className="text-muted-foreground text-sm mt-0.5">
+              {loading ? "Loading..." : `${filtered.length} total transactions`}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-none">
-            <Input
+            <input
               placeholder="Search transactions..."
-              className="pl-9 w-full sm:w-[240px]"
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+              className="h-10 w-full sm:w-[240px] pl-9 pr-3 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             />
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           </div>
@@ -165,7 +179,7 @@ export default function TransactionsPage() {
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
-                          tx.amount > 0 ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+                          tx.amount > 0 ? "bg-accent-50 text-success" : "bg-accent-50 text-danger"
                         }`}>
                           {tx.amount > 0 ? "↑" : "↓"}
                         </div>
@@ -175,7 +189,7 @@ export default function TransactionsPage() {
                     <td className="py-3 px-4 text-muted-foreground">{tx.date}</td>
                     <td className="py-3 px-4 text-muted-foreground">{tx.category}</td>
                     <td className="py-3 px-4 text-muted-foreground">{tx.account}</td>
-                    <td className={`py-3 px-4 text-right font-semibold ${tx.amount > 0 ? "text-green-600" : ""}`}>
+                    <td className={`py-3 px-4 text-right font-semibold ${tx.amount > 0 ? "text-success" : ""}`}>
                       {tx.amount > 0 ? "+" : ""}${Math.abs(tx.amount).toFixed(2)}
                     </td>
                     <td className="py-3 px-4 text-right">
@@ -190,7 +204,7 @@ export default function TransactionsPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between px-4 py-3 border-t border-border">
             <p className="text-sm text-muted-foreground">
-              Page {page} of {totalPages}
+              Page {page} of {totalPages || 1}
             </p>
             <div className="flex items-center gap-1">
               <button
@@ -224,7 +238,6 @@ export default function TransactionsPage() {
           </div>
         </CardContent>
       </Card>
-
     </div>
   );
 }

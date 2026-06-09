@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/src/store/auth-store";
 import { getVisibleModules, type ModuleId } from "@/src/lib/permissions";
@@ -940,9 +941,7 @@ function SidebarHeader({
       {/* Logo - only visible when NOT collapsed */}
       {!collapsed && (
         <Link href="/dashboard" className="shrink-0 no-underline">
-          <div className="w-8 h-8 rounded-lg bg-accent-500 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-            F
-          </div>
+          <Image src="/logo.svg" alt="Finance App" width={28} height={28} className="shrink-0" />
         </Link>
       )}
 
@@ -1047,9 +1046,7 @@ export function Sidebar() {
         {/* Drawer header with close button */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-light min-h-[60px]">
           <Link href="/dashboard" className="shrink-0 no-underline">
-            <div className="w-8 h-8 rounded-lg bg-accent-500 flex items-center justify-center text-white font-bold text-sm">
-              F
-            </div>
+            <Image src="/logo.svg" alt="Finance App" width={28} height={28} className="shrink-0" />
           </Link>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-primary leading-tight">
