@@ -35,7 +35,7 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
       description={emp.email}
       showBack
       breadcrumbs={[
-        { label: "Employees", href: "/admin/employees" },
+        { label: "Team", href: "/admin/employees" },
         { label: `${emp.firstName} ${emp.lastName}` },
       ]}
       actions={<StatusBadge status={emp.isActive ? "active" : "inactive"} />}
@@ -44,9 +44,7 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
         <CardContent className="pt-6 grid gap-4 sm:grid-cols-2 text-sm">
           <div><span className="text-muted-foreground block mb-1">Employee Code</span><span className="font-mono">{emp.employeeCode}</span></div>
           <div><span className="text-muted-foreground block mb-1">Role</span>{emp.role.replace(/_/g, " ")}</div>
-          <div><span className="text-muted-foreground block mb-1">Company</span>
-            <Button variant="link" className="p-0 h-auto" onClick={() => router.push(`/admin/companies/${emp.organization.id}`)}>{emp.organization.name}</Button>
-          </div>
+          <div><span className="text-muted-foreground block mb-1">Team</span>{emp.organization.name}</div>
           <div><span className="text-muted-foreground block mb-1">Department</span>
             {emp.department ? (
               <Button variant="link" className="p-0 h-auto" onClick={() => router.push(`/admin/departments/${emp.department!.id}`)}>{emp.department.name}</Button>

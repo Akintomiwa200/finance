@@ -11,7 +11,7 @@ export default function PermissionsMatrixPage() {
   const { data: groups, isLoading } = useFetch<PermissionGroup[]>("/api/admin/groups");
 
   return (
-    <PageLayout title="Permission Matrix" description="Module permissions across all privilege groups" showBack breadcrumbs={[{ label: "Roles", href: "/admin/roles" }, { label: "Permissions" }]}>
+    <PageLayout title="Permission Matrix" description="Module permissions across all privilege groups" showBack breadcrumbs={[{ label: "Roles", href: "/admin/roles/groups" }, { label: "Permissions" }]}>
       {isLoading ? (
         <p className="text-muted-foreground">Loading...</p>
       ) : (

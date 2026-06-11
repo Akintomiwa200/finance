@@ -13,7 +13,6 @@ interface Assignment {
   employeeName: string;
   employeeId: string;
   groupName: string;
-  organizationName: string;
 }
 
 export default function AssignmentsPage() {
@@ -27,7 +26,6 @@ export default function AssignmentsPage() {
     employeeName: `${emp.firstName} ${emp.lastName}`,
     employeeId: emp.id,
     groupName: groups?.[i % (groups?.length || 1)]?.name ?? "—",
-    organizationName: emp.organizationName,
   }));
 
   const filtered = assignments.filter((a) =>
@@ -37,12 +35,11 @@ export default function AssignmentsPage() {
   const columns: Column<Assignment>[] = [
     { key: "employee", header: "Employee", cell: (row) => <span className="font-medium">{row.employeeName}</span> },
     { key: "group", header: "Group", cell: (row) => row.groupName },
-    { key: "org", header: "Company", cell: (row) => row.organizationName },
-    { key: "actions", header: "", cell: (row) => <Button variant="ghost" size="sm" onClick={() => router.push(`/admin/employees/${row.employeeId}`)}>View Employee</Button> },
+    { key: "actions", header: "", cell: (row) => <Button variant="ghost" size="sm" onClick={() => router.push(`/admin/employees/${row.employeeId}`)}>View</Button> },
   ];
 
   return (
-    <PageLayout title="Group Assignments" description="Employees assigned to privilege groups (managed by company admins)" showBack breadcrumbs={[{ label: "Roles", href: "/admin/roles" }, { label: "Assignments" }]}>
+    <PageLayout title="Group Assignments" description="Platform team members assigned to privilege groups" showBack breadcrumbs={[{ label: "Roles", href: "/admin/roles/groups" }, { label: "Assignments" }]}>
       <DataTable columns={columns} data={filtered} keyField="id" searchable searchValue={search} onSearchChange={setSearch} emptyTitle="No assignments yet" />
     </PageLayout>
   );

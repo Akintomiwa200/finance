@@ -30,7 +30,6 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ id:
     { key: "name", header: "Employee", cell: (row) => <span className="font-medium">{row.firstName} {row.lastName}</span> },
     { key: "email", header: "Email", cell: (row) => <span className="text-muted-foreground">{row.email}</span> },
     { key: "role", header: "Role", cell: (row) => row.role.replace(/_/g, " ") },
-    { key: "actions", header: "", cell: (row) => <Button variant="ghost" size="sm" onClick={() => router.push(`/admin/employees/${row.id}`)}>View</Button> },
   ];
 
   if (isLoading || !dept) return <PageLayout title={isLoading ? "Loading..." : "Not found"} showBack />;
@@ -54,7 +53,7 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ id:
       </div>
       <div>
         <h2 className="text-lg font-semibold mb-4">Employees</h2>
-        <DataTable columns={columns} data={dept.employees} keyField="id" onRowClick={(row) => router.push(`/admin/employees/${row.id}`)} emptyTitle="No employees in this department" />
+        <DataTable columns={columns} data={dept.employees} keyField="id" emptyTitle="No employees in this department" />
       </div>
     </PageLayout>
   );

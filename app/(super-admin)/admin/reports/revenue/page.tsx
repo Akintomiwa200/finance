@@ -23,7 +23,7 @@ export default function RevenueReportPage() {
   const { data: stats } = useFetch<AdminStats>("/api/admin/stats");
 
   return (
-    <PageLayout title="Revenue Analytics" description="Monthly recurring revenue and billing trends" showBack breadcrumbs={[{ label: "Reports", href: "/admin/reports" }, { label: "Revenue" }]}>
+    <PageLayout title="Revenue Analytics" description="Monthly recurring revenue and billing trends" showBack breadcrumbs={[{ label: "Reports", href: "/admin/reports/revenue" }, { label: "Revenue" }]}>
       {stats && (
         <StatsGrid stats={[
           { label: "Est. MRR", value: formatCurrency(stats.revenueEstimate), change: stats.growthRate, icon: <DollarSign className="h-4 w-4" /> },

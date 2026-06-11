@@ -38,7 +38,7 @@ export default function SystemRolesPage() {
       title="System Roles"
       description="Built-in role definitions and defaults"
       showBack
-      breadcrumbs={[{ label: "Roles", href: "/admin/roles" }, { label: "System Roles" }]}
+      breadcrumbs={[{ label: "Roles", href: "/admin/roles/groups" }, { label: "System Roles" }]}
     >
       <DataTable
         columns={columns}

@@ -10,7 +10,7 @@ export default function GeneralSettingsPage() {
       description="Platform-wide configuration for FaaS Platform"
       showBack
       breadcrumbs={[
-        { label: "Settings", href: "/admin/settings" },
+        { label: "Settings", href: "/admin/settings/general" },
         { label: "General" },
       ]}
     >

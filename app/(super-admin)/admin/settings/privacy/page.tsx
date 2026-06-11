@@ -81,7 +81,7 @@ export default function PrivacySettingsPage() {
       description="Retention rules, compliance, and encryption settings"
       showBack
       breadcrumbs={[
-        { label: "Settings", href: "/admin/settings" },
+        { label: "Settings", href: "/admin/settings/general" },
         { label: "Data & Privacy" },
       ]}
     >

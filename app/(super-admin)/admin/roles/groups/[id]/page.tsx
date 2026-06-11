@@ -21,7 +21,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
       title={group.name}
       description={group.description ?? undefined}
       showBack
-      breadcrumbs={[{ label: "Roles", href: "/admin/roles" }, { label: "Groups", href: "/admin/roles/groups" }, { label: group.name }]}
+      breadcrumbs={[{ label: "Roles", href: "/admin/roles/groups" }, { label: "Groups", href: "/admin/roles/groups" }, { label: group.name }]}
       actions={group.isSystem ? <Badge variant="info">System Group</Badge> : <Button variant="outline" onClick={() => router.push(`/admin/roles/assignments?group=${id}`)}>View Assignments</Button>}
     >
       <div className="grid gap-4 sm:grid-cols-2 mb-6 text-sm">

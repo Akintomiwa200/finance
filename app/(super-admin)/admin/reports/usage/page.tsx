@@ -26,7 +26,7 @@ const apiCalls = [
 
 export default function UsageReportPage() {
   return (
-    <PageLayout title="Usage Analytics" description="Module adoption and API usage across the platform" showBack breadcrumbs={[{ label: "Reports", href: "/admin/reports" }, { label: "Usage" }]}>
+    <PageLayout title="Usage Analytics" description="Module adoption and API usage across the platform" showBack breadcrumbs={[{ label: "Reports", href: "/admin/reports/revenue" }, { label: "Usage" }]}>
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartCard title="Module Adoption (%)">
           <ResponsiveContainer width="100%" height="100%">

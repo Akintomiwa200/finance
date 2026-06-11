@@ -40,10 +40,10 @@ export default function PaymentMethodsPage() {
 
   return (
     <PageLayout
-      title="Payment Methods"
-      description="Tenant payment methods on file"
+      title="Tenant Payment Methods"
+      description="How each customer company pays their subscription"
       showBack
-      breadcrumbs={[{ label: "Billing", href: "/admin/billing" }, { label: "Payment Methods" }]}
+      breadcrumbs={[{ label: "Billing", href: "/admin/billing/plans" }, { label: "Payment Methods" }]}
     >
       <DataTable
         columns={columns}

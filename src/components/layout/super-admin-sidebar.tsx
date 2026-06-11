@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useMobileSidebar } from "@/src/context/mobile-sidebar-context";
 import { cn } from "@/src/lib/utils";
+
 import { SidebarCollapseToggle } from "@/src/components/layout/sidebar-collapse-toggle";
 import { SidebarProfileFooter } from "@/src/components/layout/sidebar-profile-footer";
 import {
@@ -36,10 +37,8 @@ import {
   HeartPulse,
   ShieldCheck,
   Ticket,
-  PieChart,
   DollarSign,
   TrendingUp,
-  LayoutGrid,
   Globe,
   Database,
   Activity,
@@ -72,7 +71,7 @@ const navSections: NavSection[] = [
         ],
       },
       { label: "Departments", href: "/admin/departments", icon: Briefcase },
-      { label: "All Employees", href: "/admin/employees", icon: Users },
+      { label: "Team", href: "/admin/employees", icon: Users },
     ],
   },
   {
@@ -80,10 +79,9 @@ const navSections: NavSection[] = [
     items: [
       {
         label: "Billing",
-        href: "/admin/billing",
+        href: "/admin/billing/plans",
         icon: CreditCard,
         children: [
-          { label: "Overview", href: "/admin/billing", icon: CreditCard },
           { label: "Plans", href: "/admin/billing/plans", icon: Layers },
           { label: "Subscriptions", href: "/admin/billing/subscriptions", icon: Receipt },
           { label: "Invoices", href: "/admin/billing/invoices", icon: FileText },
@@ -92,10 +90,9 @@ const navSections: NavSection[] = [
       },
       {
         label: "Reports",
-        href: "/admin/reports",
+        href: "/admin/reports/revenue",
         icon: BarChart3,
         children: [
-          { label: "Overview", href: "/admin/reports", icon: PieChart },
           { label: "Revenue", href: "/admin/reports/revenue", icon: DollarSign },
           { label: "Growth", href: "/admin/reports/growth", icon: TrendingUp },
           { label: "Usage", href: "/admin/reports/usage", icon: Monitor },
@@ -105,10 +102,9 @@ const navSections: NavSection[] = [
       { label: "Audit Logs", href: "/admin/audit-logs", icon: FileSearch },
       {
         label: "Roles & Groups",
-        href: "/admin/roles",
+        href: "/admin/roles/groups",
         icon: Shield,
         children: [
-          { label: "Overview", href: "/admin/roles", icon: Shield },
           { label: "Privilege Groups", href: "/admin/roles/groups", icon: Layers },
           { label: "Permissions", href: "/admin/roles/permissions", icon: Key },
           { label: "Assignments", href: "/admin/roles/assignments", icon: UserCheck },
@@ -138,10 +134,9 @@ const navSections: NavSection[] = [
       { label: "Modules", href: "/admin/modules", icon: Blocks },
       {
         label: "Settings",
-        href: "/admin/settings",
+        href: "/admin/settings/general",
         icon: Settings,
         children: [
-          { label: "Overview", href: "/admin/settings", icon: LayoutGrid },
           { label: "General", href: "/admin/settings/general", icon: Globe },
           { label: "Security", href: "/admin/settings/security", icon: Shield },
           { label: "Notifications", href: "/admin/settings/notifications", icon: Bell },
@@ -353,21 +348,19 @@ export function SuperAdminSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const { isOpen: mobileOpen, close: closeMobile } = useMobileSidebar();
 
-  const desktopAsideClass = cn(
-    "admin-sidebar hidden md:flex flex-col h-screen sticky top-0 border-r transition-all duration-300 overflow-hidden",
+  const asideClass = cn(
+    "admin-sidebar flex flex-col h-screen sticky top-0 border-r transition-all duration-300 overflow-hidden",
     collapsed ? "w-[68px]" : "w-[248px]",
   );
 
   return (
     <>
-      {/* Desktop only — persistent sidebar */}
-      <aside className={desktopAsideClass}>
+      <aside className={cn("hidden md:flex", asideClass)}>
         <SidebarHeader collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
         <NavContent collapsed={collapsed} />
         <SidebarFooter collapsed={collapsed} />
       </aside>
 
-      {/* Mobile only — overlay + slide-in drawer */}
       <div
         className={cn(
           "md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] transition-opacity duration-300",
@@ -379,13 +372,10 @@ export function SuperAdminSidebar() {
 
       <aside
         className={cn(
-          "admin-sidebar md:hidden fixed left-0 top-0 z-50 flex h-dvh w-[min(288px,88vw)] min-h-0 flex-col border-r shadow-2xl transition-transform duration-300 ease-in-out",
+          "admin-sidebar md:hidden fixed left-0 top-0 z-50 flex h-dvh w-[min(288px,88vw)] flex-col border-r shadow-2xl transition-transform duration-300 ease-in-out",
           mobileOpen ? "translate-x-0" : "-translate-x-full pointer-events-none",
         )}
         aria-hidden={!mobileOpen}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Navigation menu"
       >
         <SidebarHeader collapsed={false} onClose={closeMobile} />
         <NavContent collapsed={false} onNavigate={closeMobile} />

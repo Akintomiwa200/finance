@@ -24,6 +24,7 @@ import { CompanyLogo } from "@/src/components/ui/company-logo";
 import { useCreate } from "@/src/hooks/use-mutation";
 import { useToast } from "@/src/components/ui/use-toast";
 import { cn } from "@/src/lib/utils";
+import { TENANT_PLAN_OPTIONS } from "@/src/lib/tenant-billing-plans";
 
 type CompanyForm = {
   name: string;
@@ -34,11 +35,7 @@ type CompanyForm = {
   logo: string;
 };
 
-const PLAN_OPTIONS = [
-  { value: "starter", label: "Starter" },
-  { value: "professional", label: "Professional" },
-  { value: "enterprise", label: "Enterprise" },
-];
+const PLAN_OPTIONS = TENANT_PLAN_OPTIONS;
 
 function FieldAvatar({
   children,

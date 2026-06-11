@@ -98,7 +98,7 @@ export default function SecuritySettingsPage() {
       description="Authentication and access policies"
       showBack
       breadcrumbs={[
-        { label: "Settings", href: "/admin/settings" },
+        { label: "Settings", href: "/admin/settings/general" },
         { label: "Security" },
       ]}
     >

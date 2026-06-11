@@ -23,7 +23,7 @@ export default function PlatformHealthPage() {
       title="Platform Health"
       description="System uptime, errors, and performance"
       showBack
-      breadcrumbs={[{ label: "Reports", href: "/admin/reports" }, { label: "Platform Health" }]}
+      breadcrumbs={[{ label: "Reports", href: "/admin/reports/revenue" }, { label: "Platform Health" }]}
     >
       <StatsGrid
         stats={[

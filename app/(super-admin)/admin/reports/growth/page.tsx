@@ -22,7 +22,7 @@ export default function GrowthReportPage() {
   const { data: stats } = useFetch<AdminStats>("/api/admin/stats");
 
   return (
-    <PageLayout title="Growth Metrics" description="Platform adoption and user growth" showBack breadcrumbs={[{ label: "Reports", href: "/admin/reports" }, { label: "Growth" }]}>
+    <PageLayout title="Growth Metrics" description="Platform adoption and user growth" showBack breadcrumbs={[{ label: "Reports", href: "/admin/reports/revenue" }, { label: "Growth" }]}>
       {stats && (
         <StatsGrid stats={[
           { label: "Total Companies", value: String(stats.totalOrganizations), change: stats.growthRate, icon: <Building2 className="h-4 w-4" /> },

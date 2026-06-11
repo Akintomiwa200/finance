@@ -143,7 +143,7 @@ export default function NotificationsSettingsPage() {
       description="Email alerts and webhook configuration"
       showBack
       breadcrumbs={[
-        { label: "Settings", href: "/admin/settings" },
+        { label: "Settings", href: "/admin/settings/general" },
         { label: "Notifications" },
       ]}
     >

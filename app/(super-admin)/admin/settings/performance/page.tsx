@@ -84,7 +84,7 @@ export default function PerformanceSettingsPage() {
       description="Caching, CDN, and resource optimization controls"
       showBack
       breadcrumbs={[
-        { label: "Settings", href: "/admin/settings" },
+        { label: "Settings", href: "/admin/settings/general" },
         { label: "Performance" },
       ]}
     >

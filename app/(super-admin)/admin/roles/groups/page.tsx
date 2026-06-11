@@ -41,7 +41,7 @@ export default function GroupsPage() {
       title="Privilege Groups"
       description="Only super admin can create groups. Companies assign staff to these groups."
       showBack
-      breadcrumbs={[{ label: "Roles", href: "/admin/roles" }, { label: "Groups" }]}
+      breadcrumbs={[{ label: "Roles", href: "/admin/roles/groups" }, { label: "Groups" }]}
       actions={
         <Button variant="primary" onClick={() => router.push("/admin/roles/groups/new")}>
           <Plus className="h-4 w-4" /> Create Group

@@ -67,7 +67,7 @@ export function SuperAdminNavbar() {
               placeholder="Search support..."
             />
             <NotificationBell scope="admin" />
-            <NavbarProfile href="/admin/profile" />
+            <NavbarProfile profileHref="/admin/profile" />
           </div>
         </div>
 

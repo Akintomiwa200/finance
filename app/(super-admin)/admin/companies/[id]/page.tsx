@@ -92,8 +92,8 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
       <div className="grid gap-4 md:grid-cols-3">
         <Link href={`/admin/billing/subscriptions?org=${id}`} className="no-underline">
           <Card className="hover:border-accent-200 transition-colors cursor-pointer h-full">
-            <CardHeader className="pb-2"><CardTitle className="text-sm">Billing</CardTitle></CardHeader>
-            <CardContent><p className="text-xs text-muted-foreground">Manage subscription & invoices</p></CardContent>
+            <CardHeader className="pb-2"><CardTitle className="text-sm">Tenant Billing</CardTitle></CardHeader>
+            <CardContent><p className="text-xs text-muted-foreground">Subscription plan, invoices & payment</p></CardContent>
           </Card>
         </Link>
         <Link href={`/admin/modules/${id}`} className="no-underline">
@@ -116,10 +116,10 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold mb-4">Recent Employees</h2>
+        <h2 className="text-lg font-semibold mb-4">Tenant Users</h2>
         <div className="rounded-xl border border-border bg-card divide-y divide-border">
           {org.employees.map((emp) => (
-            <div key={emp.id} className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/admin/employees/${emp.id}`)}>
+            <div key={emp.id} className="flex items-center justify-between px-4 py-3">
               <div>
                 <p className="text-sm font-medium">{emp.firstName} {emp.lastName}</p>
                 <p className="text-xs text-muted-foreground">{emp.email}</p>

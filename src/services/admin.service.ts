@@ -78,8 +78,13 @@ export async function getAdminOrganization(id: string) {
   });
 }
 
+const platformEmployeeWhere = {
+  organization: { isPlatform: true },
+} as const;
+
 export async function getAdminEmployees(): Promise<AdminEmployee[]> {
   const employees = await db.employee.findMany({
+    where: platformEmployeeWhere,
     orderBy: { createdAt: "desc" },
     include: {
       organization: { select: { name: true } },
@@ -103,8 +108,11 @@ export async function getAdminEmployees(): Promise<AdminEmployee[]> {
 }
 
 export async function getAdminEmployee(id: string) {
-  return db.employee.findUnique({
-    where: { id },
+  return db.employee.findFirst({
+    where: {
+      id,
+      ...platformEmployeeWhere,
+    },
     include: {
       organization: true,
       department: true,

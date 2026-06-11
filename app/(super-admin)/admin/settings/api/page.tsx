@@ -80,7 +80,7 @@ export default function ApiDeveloperSettingsPage() {
       description="Developer keys, quotas, and platform API tooling"
       showBack
       breadcrumbs={[
-        { label: "Settings", href: "/admin/settings" },
+        { label: "Settings", href: "/admin/settings/general" },
         { label: "API & Developer" },
       ]}
     >

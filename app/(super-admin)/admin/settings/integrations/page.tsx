@@ -124,7 +124,7 @@ export default function IntegrationsSettingsPage() {
       description="Third-party services and API connections"
       showBack
       breadcrumbs={[
-        { label: "Settings", href: "/admin/settings" },
+        { label: "Settings", href: "/admin/settings/general" },
         { label: "Integrations" },
       ]}
     >

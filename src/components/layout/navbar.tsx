@@ -84,7 +84,7 @@ export function Navbar() {
               placeholder="Search transactions..."
             />
             <NotificationBell scope="dashboard" />
-            <NavbarProfile href="/profile" />
+            <NavbarProfile profileHref="/profile" />
           </div>
         </div>
 

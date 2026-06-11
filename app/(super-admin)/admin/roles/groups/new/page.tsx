@@ -30,7 +30,7 @@ export default function NewGroupPage() {
   };
 
   return (
-    <PageLayout title="Create Privilege Group" showBack breadcrumbs={[{ label: "Roles", href: "/admin/roles" }, { label: "Groups", href: "/admin/roles/groups" }, { label: "New" }]}>
+    <PageLayout title="Create Privilege Group" showBack breadcrumbs={[{ label: "Roles", href: "/admin/roles/groups" }, { label: "Groups", href: "/admin/roles/groups" }, { label: "New" }]}>
       <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
         <Card>
           <CardHeader><CardTitle>Group Details</CardTitle></CardHeader>

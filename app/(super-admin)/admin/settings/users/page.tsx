@@ -83,7 +83,7 @@ export default function UserManagementSettingsPage() {
       description="Directories, SSO, and account lifecycle policies"
       showBack
       breadcrumbs={[
-        { label: "Settings", href: "/admin/settings" },
+        { label: "Settings", href: "/admin/settings/general" },
         { label: "User Management" },
       ]}
     >
