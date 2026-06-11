@@ -3,9 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useMobileSidebar } from "@/src/context/mobile-sidebar-context";
 import { useAuthStore } from "@/src/store/auth-store";
+import { useOrganization } from "@/src/hooks/use-organization";
+import { CompanyLogo } from "@/src/components/ui/company-logo";
 import { getVisibleModules, type ModuleId } from "@/src/lib/permissions";
+import { SidebarCollapseToggle } from "@/src/components/layout/sidebar-collapse-toggle";
+import { SidebarProfileFooter } from "@/src/components/layout/sidebar-profile-footer";
 import {
   LayoutDashboard,
   Users,
@@ -17,7 +22,6 @@ import {
   BarChart3,
   Settings,
   ChevronDown,
-  Menu,
   X,
   ListTree,
   History,
@@ -65,6 +69,8 @@ import {
   Package,
   Sigma,
   BookOpen,
+  LifeBuoy,
+  Radio,
 } from "lucide-react";
 
 interface NavItem {
@@ -504,6 +510,28 @@ const allNavSections: NavSection[] = [
     ],
   },
   {
+    title: "Help & Support",
+    items: [
+      {
+        label: "Support",
+        href: "/support",
+        icon: LifeBuoy,
+        children: [
+          {
+            label: "My Tickets",
+            href: "/support",
+            icon: LifeBuoy,
+          },
+          {
+            label: "Live Fix",
+            href: "/support/live",
+            icon: Radio,
+          },
+        ],
+      },
+    ],
+  },
+  {
     title: "System",
     items: [
       {
@@ -900,30 +928,19 @@ function NavContent({
 
 // ─── Footer user block ───────────────────────────────────────────────────────
 
-function SidebarFooter({ collapsed }: { collapsed: boolean }) {
-  const user = useAuthStore((s) => s.user);
-  const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
-    : "U";
-
+function SidebarFooter({
+  collapsed,
+  compact,
+}: {
+  collapsed: boolean;
+  compact?: boolean;
+}) {
   return (
-    <div className="border-t border-light p-3 flex items-center gap-3 overflow-hidden">
-      <div className="w-8 h-8 shrink-0 rounded-full bg-accent-100 flex items-center justify-center text-xs font-semibold text-accent-700">
-        {initials}
-      </div>
-      <div
-        className={`flex-1 min-w-0 transition-all duration-200 ${
-          collapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100 w-auto"
-        }`}
-      >
-        <p className="text-sm font-medium text-primary truncate leading-tight">
-          {user?.name || "User"}
-        </p>
-        <p className="text-xs text-muted truncate leading-tight mt-0.5">
-          {user?.email || ""}
-        </p>
-      </div>
-    </div>
+    <SidebarProfileFooter
+      collapsed={collapsed}
+      compact={compact}
+      profileHref="/profile"
+    />
   );
 }
 
@@ -932,47 +949,40 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
 function SidebarHeader({
   collapsed,
   onToggle,
+  orgName,
+  orgLogo,
 }: {
   collapsed: boolean;
   onToggle: () => void;
+  orgName?: string;
+  orgLogo?: string | null;
 }) {
   return (
-    <div className="flex items-center justify-between px-3 py-4 border-b border-light min-h-[60px]">
-      {/* Logo - only visible when NOT collapsed */}
+    <div
+      className={`flex items-center border-b border-light min-h-[60px] ${
+        collapsed ? "justify-center px-2 py-4" : "justify-between px-3 py-4"
+      }`}
+    >
       {!collapsed && (
-        <Link href="/dashboard" className="shrink-0 no-underline">
-          <Image src="/logo.svg" alt="Finance App" width={28} height={28} className="shrink-0" />
+        <Link href="/dashboard" className="flex min-w-0 items-center gap-2.5 no-underline">
+          {orgName ? (
+            <>
+              <CompanyLogo name={orgName} logo={orgLogo} size={28} />
+              <span className="truncate text-sm font-semibold text-primary">
+                {orgName}
+              </span>
+            </>
+          ) : (
+            <Image src="/logo.svg" alt="Finance App" width={28} height={28} className="shrink-0" />
+          )}
         </Link>
       )}
 
-      {/* Spacer to keep button on the right when collapsed */}
-      {collapsed && <div className="w-full" />}
+      {collapsed && orgName && (
+        <CompanyLogo name={orgName} logo={orgLogo} size={28} />
+      )}
 
-      {/* Collapse/Expand button - always visible */}
-      <button
-        onClick={onToggle}
-        className={`shrink-0 w-7 h-7 rounded-lg border border-light flex items-center justify-center text-muted hover:bg-surface-2 hover:text-primary transition-all ${
-          !collapsed ? "ml-auto" : "mx-auto"
-        }`}
-        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          {collapsed ? (
-            <path d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-          ) : (
-            <path d="M11 5l-7 7 7 7M19 5l-7 7 7 7" />
-          )}
-        </svg>
-      </button>
+      <SidebarCollapseToggle collapsed={collapsed} onToggle={onToggle} />
     </div>
   );
 }
@@ -981,37 +991,12 @@ function SidebarHeader({
 
 export function Sidebar() {
   const user = useAuthStore((s) => s.user);
+  const { data: organization } = useOrganization();
   const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  // Close drawer on route change / resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) setMobileOpen(false);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Prevent body scroll when drawer is open
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileOpen]);
+  const { isOpen: mobileOpen, close: closeMobile } = useMobileSidebar();
 
   return (
     <>
-      {/* ── Hamburger button (mobile only) ── */}
-      <button
-        className="md:hidden fixed top-4 left-4 z-[60] w-9 h-9 flex items-center justify-center rounded-lg border border-light bg-card text-secondary shadow-sm hover:bg-surface-2 transition-all"
-        onClick={() => setMobileOpen(true)}
-        aria-label="Open navigation"
-      >
-        <Menu className="w-4 h-4" />
-      </button>
-
       {/* ── Desktop sidebar ── */}
       <aside
         className={`hidden md:flex flex-col h-screen sticky top-0 bg-card border-r border-light transition-all duration-300 ease-in-out overflow-hidden ${
@@ -1021,6 +1006,8 @@ export function Sidebar() {
         <SidebarHeader
           collapsed={collapsed}
           onToggle={() => setCollapsed((v) => !v)}
+          orgName={organization?.name}
+          orgLogo={organization?.logo}
         />
         <NavContent collapsed={collapsed} />
         <SidebarFooter collapsed={collapsed} />
@@ -1028,45 +1015,57 @@ export function Sidebar() {
 
       {/* ── Mobile drawer overlay ── */}
       <div
-        className={`md:hidden fixed inset-0 z-40 bg-overlay transition-opacity duration-300 ${
+        className={`md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 ${
           mobileOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
         }`}
-        onClick={() => setMobileOpen(false)}
+        onClick={closeMobile}
         aria-hidden="true"
       />
 
-      {/* ── Mobile drawer ── */}
+      {/* ── Mobile drawer (off-canvas, not desktop sidebar) ── */}
       <aside
-        className={`md:hidden fixed left-0 top-0 bottom-0 z-50 w-72 bg-card flex flex-col shadow-xl transition-transform duration-300 ease-in-out ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        className={`md:hidden fixed left-0 top-0 z-50 flex h-dvh w-[min(288px,88vw)] min-h-0 flex-col bg-card shadow-xl transition-transform duration-300 ease-in-out ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
         }`}
+        aria-hidden={!mobileOpen}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
       >
-        {/* Drawer header with close button */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-light min-h-[60px]">
-          <Link href="/dashboard" className="shrink-0 no-underline">
-            <Image src="/logo.svg" alt="Finance App" width={28} height={28} className="shrink-0" />
+        <div className="flex shrink-0 items-center gap-3 border-b border-light px-4 py-4 min-h-[60px]">
+          <Link href="/dashboard" className="shrink-0 no-underline" onClick={closeMobile}>
+            {organization?.name ? (
+              <CompanyLogo
+                name={organization.name}
+                logo={organization.logo}
+                size={28}
+              />
+            ) : (
+              <Image src="/logo.svg" alt="Finance App" width={28} height={28} className="shrink-0" />
+            )}
           </Link>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-primary leading-tight">
-              {user?.name || "Finance App"}
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-primary leading-tight truncate">
+              {organization?.name || user?.name || "Finance App"}
             </p>
-            <p className="text-xs text-muted leading-tight">
+            <p className="text-xs text-muted leading-tight truncate capitalize">
               {user?.role?.replace(/_/g, " ") || ""}
             </p>
           </div>
           <button
-            onClick={() => setMobileOpen(false)}
-            className="shrink-0 w-7 h-7 rounded-lg border border-light flex items-center justify-center text-muted hover:bg-surface-2 hover:text-primary transition-all"
+            type="button"
+            onClick={closeMobile}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-light text-muted transition-all hover:bg-surface-2 hover:text-primary"
             aria-label="Close navigation"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
-        <NavContent collapsed={false} onNavigate={() => setMobileOpen(false)} />
-        <SidebarFooter collapsed={false} />
+        <NavContent collapsed={false} onNavigate={closeMobile} />
+        <SidebarFooter collapsed={false} compact />
       </aside>
     </>
   );

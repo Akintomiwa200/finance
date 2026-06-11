@@ -171,14 +171,20 @@ class RealtimeService {
 
     this.pollingTimer = setInterval(async () => {
       try {
-        const res = await fetch(`${this.pollingEndpoint}?after=${this.lastPollId}`);
+        const since = this.lastPollId || "";
+        const res = await fetch(
+          `${this.pollingEndpoint}?since=${encodeURIComponent(since)}&after=${encodeURIComponent(since)}`,
+        );
         const data = await res.json();
-        if (data.messages && Array.isArray(data.messages)) {
-          for (const msg of data.messages as RealtimeMessage[]) {
-            this.lastPollId = msg.timestamp;
-            this.dispatch(msg.entity, msg.event, msg);
-            this.dispatch("*", "*", msg);
-          }
+        const messages: RealtimeMessage[] = Array.isArray(data.events)
+          ? data.events
+          : Array.isArray(data.messages)
+            ? data.messages
+            : [];
+        for (const msg of messages) {
+          this.lastPollId = msg.timestamp;
+          this.dispatch(msg.entity, msg.event, msg);
+          this.dispatch("*", "*", msg);
         }
       } catch { /* polling error */ }
     }, intervalMs);

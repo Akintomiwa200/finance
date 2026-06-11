@@ -23,10 +23,7 @@ const initialMessages: Message[] = [
     id: 1,
     role: "system",
     text: "Welcome to Uifry Help! How can we assist you today?",
-    time: new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
+    time: "", // Set on client mount to avoid hydration mismatch
   },
 ];
 
@@ -81,6 +78,12 @@ export function HelpChat() {
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 300);
   }, [open]);
+
+  useEffect(() => {
+    setMessages((prev) =>
+      prev.map((m) => (m.id === 1 && !m.time ? { ...m, time: getTime() } : m))
+    );
+  }, []);
 
   function addMessage(text: string, role: Message["role"]) {
     setMessages((prev) => [

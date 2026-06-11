@@ -19,3 +19,5 @@ export {
 export { useOnScreen } from "./use-on-screen";
 export { useNetwork } from "./use-network";
 export { useCountdown } from "./use-countdown";
+export { useAdminRealtime } from "./use-admin-realtime";
+export { useTheme } from "@/src/context/theme-context";

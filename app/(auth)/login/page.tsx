@@ -49,6 +49,11 @@ export default function LoginPage() {
           const userData = await res.json();
           setUser(userData);
           setToken("authenticated");
+          
+          if (userData.role === "SUPER_ADMIN") {
+            router.push("/admin/dashboard");
+            return;
+          }
         }
 
         router.push("/dashboard");

@@ -1,36 +1,46 @@
 import { create } from "zustand";
 import { realtime } from "@/src/services/realtime.service";
+import { getMockNotifications } from "@/src/lib/mock-notifications";
+import type { AppNotification } from "@/src/types/notification";
 import type { RealtimeMessage } from "@/src/types/common";
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: "INFO" | "SUCCESS" | "WARNING" | "ERROR";
-  isRead: boolean;
-  createdAt: string;
-  referenceId?: string;
-}
-
 interface NotificationState {
-  notifications: Notification[];
+  notifications: AppNotification[];
   unreadCount: number;
   isPolling: boolean;
+  initialized: boolean;
+  scope: "dashboard" | "admin";
 
-  setNotifications: (notifications: Notification[]) => void;
-  addNotification: (notification: Notification) => void;
+  initNotifications: (scope: "dashboard" | "admin") => void;
+  setNotifications: (notifications: AppNotification[]) => void;
+  addNotification: (notification: AppNotification) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   removeNotification: (id: string) => void;
   clearAll: () => void;
   startPolling: (endpoint?: string) => void;
   stopPolling: () => void;
+  getById: (id: string) => AppNotification | undefined;
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: [],
   unreadCount: 0,
   isPolling: false,
+  initialized: false,
+  scope: "dashboard",
+
+  initNotifications: (scope) => {
+    const { initialized, scope: currentScope } = get();
+    if (initialized && currentScope === scope) return;
+    const notifications = getMockNotifications(scope);
+    set({
+      scope,
+      initialized: true,
+      notifications,
+      unreadCount: notifications.filter((n) => !n.isRead).length,
+    });
+  },
 
   setNotifications: (notifications) =>
     set({
@@ -47,7 +57,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   markAsRead: (id) =>
     set((state) => {
       const notifications = state.notifications.map((n) =>
-        n.id === id ? { ...n, isRead: true } : n
+        n.id === id ? { ...n, isRead: true } : n,
       );
       return {
         notifications,
@@ -72,6 +82,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   clearAll: () => set({ notifications: [], unreadCount: 0 }),
 
+  getById: (id) => get().notifications.find((n) => n.id === id),
+
   startPolling: (endpoint) => {
     const { isPolling } = get();
     if (isPolling) return;
@@ -79,7 +91,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
     const unsub = realtime.subscribe("notifications", "*", (msg: RealtimeMessage) => {
       if (msg.event === "notification" && msg.data) {
-        const notif = msg.data as Notification;
+        const notif = msg.data as AppNotification;
         get().addNotification(notif);
       }
     });

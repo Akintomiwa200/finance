@@ -45,7 +45,7 @@ import { fetchTransactions, createTransaction } from "@/src/lib/api";
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const PIE_COLORS = ["var(--accent-500)", "var(--accent-400)", "var(--accent-300)", "var(--accent-600)", "var(--accent-700)", "var(--border)", "var(--accent-200)", "var(--accent-800)"];
+const PIE_COLORS = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444", "#06b6d4", "#ec4899", "#64748b"];
 
 function formatDate(d: Date): string {
   const now = new Date();

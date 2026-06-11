@@ -8,6 +8,9 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/src/components/auth-provider";
+import { ThemeProvider } from "@/src/context/theme-context";
+import { ToastProvider } from "@/src/components/ui/toast";
+import { PlatformSettingsHydrator } from "@/src/components/settings/platform-settings-hydrator";
 import { HelpChat } from "@/src/components/help-chat";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -58,12 +61,27 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} ${nunitoSans.variable} ${bricolageGrotesque.variable} ${dmSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full"><AuthProvider>
-          {children}
-          <HelpChat />
-        </AuthProvider></body>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var m=localStorage.getItem('faas-theme')||'system';var d=m==='dark'||(m==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);document.documentElement.style.colorScheme=d?'dark':'light';var raw=localStorage.getItem('faas-platform-settings');if(raw){var s=JSON.parse(raw).state;if(s&&s.accentColor){document.documentElement.classList.add('accent-'+s.accentColor);}if(s&&s.compactNav){document.documentElement.classList.add('compact-nav');}}catch(e){}})();`,
+          }}
+        />
+      </head>
+      <body className="min-h-full bg-background text-foreground">
+        <ThemeProvider>
+          <ToastProvider>
+            <PlatformSettingsHydrator />
+            <AuthProvider>
+              {children}
+              <HelpChat />
+            </AuthProvider>
+          </ToastProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

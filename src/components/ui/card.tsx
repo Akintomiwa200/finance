@@ -39,3 +39,7 @@ export function CardDescription({ className, children }: CardProps) {
 export function CardContent({ className, children }: CardProps) {
   return <div className={cn("", className)}>{children}</div>;
 }
+
+export function CardFooter({ className, children }: CardProps) {
+  return <div className={cn("border-t border-border px-6 py-4", className)}>{children}</div>;
+}

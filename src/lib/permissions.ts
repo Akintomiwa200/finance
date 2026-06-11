@@ -28,23 +28,25 @@ export type ModuleId =
   | "departments"
   | "reports"
   | "settings"
-  | "expenses";
+  | "expenses"
+  | "invoices"
+  | "support";
 
 const roleModuleAccess: Record<Role, ModuleId[]> = {
   SUPER_ADMIN: [
     "dashboard", "employees", "payroll", "ledger", "petty-cash",
     "payables", "receivables", "cash", "assets", "tax", "budget",
-    "financial-reports", "approvals", "departments", "reports", "settings", "expenses",
+    "financial-reports", "approvals", "departments", "reports", "settings", "expenses", "invoices", "support",
   ],
   ADMIN: [
     "dashboard", "employees", "payroll", "ledger", "petty-cash",
     "payables", "receivables", "cash", "assets", "tax", "budget",
-    "financial-reports", "approvals", "departments", "reports", "settings", "expenses",
+    "financial-reports", "approvals", "departments", "reports", "settings", "expenses", "invoices", "support",
   ],
   FINANCE_MANAGER: [
     "dashboard", "payroll", "ledger", "petty-cash", "payables", "receivables",
     "cash", "assets", "tax", "budget", "financial-reports",
-    "approvals", "reports", "settings", "expenses",
+    "approvals", "reports", "settings", "expenses", "support",
   ],
   ACCOUNTANT_PAYABLE: [
     "dashboard", "payables", "ledger", "tax", "reports",
@@ -59,7 +61,7 @@ const roleModuleAccess: Record<Role, ModuleId[]> = {
     "dashboard", "budget", "departments", "reports", "financial-reports",
   ],
   DEPARTMENT_HEAD: [
-    "dashboard", "employees", "departments", "budget", "approvals", "expenses", "reports",
+    "dashboard", "employees", "departments", "budget", "approvals", "expenses", "reports", "support",
   ],
   AUDITOR: [
     "dashboard", "ledger", "reports", "financial-reports", "tax",
@@ -68,7 +70,7 @@ const roleModuleAccess: Record<Role, ModuleId[]> = {
     "dashboard", "tax", "reports", "ledger",
   ],
   EMPLOYEE: [
-    "dashboard", "expenses",
+    "dashboard", "expenses", "support",
   ],
 };
 
