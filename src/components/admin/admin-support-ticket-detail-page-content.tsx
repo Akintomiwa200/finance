@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { DashCard } from "@/src/components/admin/reports-shared";
+import { AdminSupportTicketDetailSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import {
   ActivityTimeline,
   AdminSupportTabs,
@@ -78,10 +79,7 @@ export function AdminSupportTicketDetailPageContent({ id }: { id: string }) {
   if (isLoading || !data) {
     return (
       <PageLayout title="Loading..." showBack>
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/3" />
-          <div className="h-32 bg-muted rounded" />
-        </div>
+        <AdminSupportTicketDetailSkeleton />
       </PageLayout>
     );
   }

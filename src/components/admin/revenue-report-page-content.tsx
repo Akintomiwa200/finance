@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { ChartSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { useRouter } from "next/navigation";
 import {
   Area,
@@ -23,7 +24,6 @@ import {
   DollarSign,
   FileText,
   Layers,
-  Loader2,
   Receipt,
   TrendingUp,
   Wallet,
@@ -216,9 +216,7 @@ export function RevenueReportPageContent() {
           </div>
           <div className="h-[140px]">
             {isLoading ? (
-              <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
+              <ChartSkeleton className="h-full" />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={monthlyData}>

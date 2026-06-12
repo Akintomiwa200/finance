@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   ShieldCheck,
   Search,
-  Loader2,
   CheckCircle2,
 } from "lucide-react";
 import { useFetch } from "@/src/hooks/use-fetch";
@@ -13,6 +12,7 @@ import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Badge } from "@/src/components/ui/badge";
 import { EmptyState } from "@/src/components/ui/empty-state";
+import { AdminCardGridSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { DashCard, ViewPill } from "@/src/components/admin/reports-shared";
 import {
   RoleTabs,
@@ -91,9 +91,7 @@ export function RolesSystemPageContent() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
+          <AdminCardGridSkeleton count={4} className="md:grid-cols-2 lg:grid-cols-2" />
         ) : filtered.length === 0 ? (
           <EmptyState title="No system roles found" description="Try a different search." />
         ) : (

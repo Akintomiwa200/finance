@@ -1,17 +1,23 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { realtime } from "@/src/services/realtime.service";
 import { useRealtime } from "@/src/hooks/use-realtime";
 
 export function useAdminRealtime(onEvent?: () => void) {
-  const { startPolling } = useRealtime({
-    onMessage: () => onEvent?.(),
+  const onEventRef = useRef(onEvent);
+  onEventRef.current = onEvent;
+
+  useRealtime({
+    onMessage: () => {
+      onEventRef.current?.();
+    },
   });
 
   useEffect(() => {
-    startPolling("/api/realtime/poll", 5000);
-    return () => {};
-  }, [startPolling]);
-
-  return { startPolling };
+    realtime.startPolling("/api/realtime/poll", 5000);
+    return () => {
+      realtime.disconnect();
+    };
+  }, []);
 }

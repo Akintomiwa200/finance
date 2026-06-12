@@ -15,7 +15,6 @@ import {
   FolderKanban,
   Users,
   Building2,
-  Loader2,
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
@@ -23,6 +22,7 @@ import {
 import { useFetch } from "@/src/hooks/use-fetch";
 import { useAdminRealtime } from "@/src/hooks/use-admin-realtime";
 import { Button } from "@/src/components/ui/button";
+import { TableSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { Input } from "@/src/components/ui/input";
 import { EmptyState } from "@/src/components/ui/empty-state";
 import { AddDepartmentModal } from "@/src/components/admin/add-department-modal";
@@ -305,9 +305,8 @@ export function DepartmentsPageContent() {
             </div>
 
             {isLoading ? (
-              <div className="flex items-center justify-center py-20 text-muted-foreground">
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Loading departments…
+              <div className="px-4 pb-5 sm:px-5">
+                <TableSkeleton rows={8} columns={5} />
               </div>
             ) : filtered.length === 0 ? (
               <div className="p-8">

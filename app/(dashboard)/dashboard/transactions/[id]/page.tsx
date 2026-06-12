@@ -13,6 +13,7 @@ import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import { Dialog } from "@/src/components/ui/dialog";
 import { fetchTransaction, updateTransaction, deleteTransaction } from "@/src/lib/api";
+import { TransactionDetailSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 interface Tx {
   id: string;
@@ -121,15 +122,7 @@ export default function TransactionDetailPage({ params }: { params: Promise<{ id
   }, [id, router]);
 
   if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 bg-muted rounded" />
-          <div className="h-64 bg-muted rounded-2xl" />
-          <div className="h-48 bg-muted rounded-2xl" />
-        </div>
-      </div>
-    );
+    return <TransactionDetailSkeleton />;
   }
 
   if (!tx) {

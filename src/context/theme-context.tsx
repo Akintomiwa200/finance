@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { usePlatformSettingsStore } from "@/src/store/platform-settings-store";
 
 export type ThemeMode = "light" | "dark" | "system";
 export type ResolvedTheme = "light" | "dark";
@@ -20,8 +21,32 @@ interface ThemeContextValue {
 }
 
 const STORAGE_KEY = "faas-theme";
+const PLATFORM_SETTINGS_KEY = "faas-platform-settings";
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
+
+function readStoredTheme(): ThemeMode {
+  if (typeof window === "undefined") return "system";
+
+  const stored = localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
+  if (stored === "light" || stored === "dark" || stored === "system") {
+    return stored;
+  }
+
+  try {
+    const raw = localStorage.getItem(PLATFORM_SETTINGS_KEY);
+    if (raw) {
+      const theme = JSON.parse(raw)?.state?.theme;
+      if (theme === "light" || theme === "dark" || theme === "system") {
+        return theme;
+      }
+    }
+  } catch {
+    // ignore malformed storage
+  }
+
+  return "system";
+}
 
 function getSystemTheme(): ResolvedTheme {
   if (typeof window === "undefined") return "light";
@@ -34,27 +59,22 @@ function resolveTheme(mode: ThemeMode): ResolvedTheme {
   return mode === "system" ? getSystemTheme() : mode;
 }
 
-function applyTheme(resolved: ResolvedTheme) {
+function applyTheme(mode: ThemeMode, resolved: ResolvedTheme) {
   const root = document.documentElement;
   root.classList.toggle("dark", resolved === "dark");
-  root.style.colorScheme = resolved;
+  root.style.colorScheme = mode === "system" ? "light dark" : resolved;
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
-    if (stored === "light" || stored === "dark" || stored === "system") {
-      setModeState(stored);
-    }
-  }, []);
+  const [mode, setModeState] = useState<ThemeMode>(() => readStoredTheme());
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
+    resolveTheme(readStoredTheme()),
+  );
 
   useEffect(() => {
     const resolved = resolveTheme(mode);
     setResolvedTheme(resolved);
-    applyTheme(resolved);
+    applyTheme(mode, resolved);
     localStorage.setItem(STORAGE_KEY, mode);
   }, [mode]);
 
@@ -65,7 +85,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const handler = () => {
       const resolved = getSystemTheme();
       setResolvedTheme(resolved);
-      applyTheme(resolved);
+      applyTheme("system", resolved);
     };
 
     media.addEventListener("change", handler);
@@ -74,12 +94,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setMode = useCallback((next: ThemeMode) => {
     setModeState(next);
+    usePlatformSettingsStore.getState().syncTheme(next);
   }, []);
 
   const toggleTheme = useCallback(() => {
     setModeState((current) => {
       const resolved = resolveTheme(current);
-      return resolved === "dark" ? "light" : "dark";
+      const next = resolved === "dark" ? "light" : "dark";
+      usePlatformSettingsStore.getState().syncTheme(next);
+      return next;
     });
   }, []);
 

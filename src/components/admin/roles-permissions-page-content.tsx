@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Key, Search, Loader2 } from "lucide-react";
+import { Key, Search } from "lucide-react";
+import { AdminPermissionsMatrixSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { useFetch } from "@/src/hooks/use-fetch";
 import { useAdminRealtime } from "@/src/hooks/use-admin-realtime";
 import { Input } from "@/src/components/ui/input";
@@ -131,9 +132,7 @@ export function RolesPermissionsPageContent() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
+          <AdminPermissionsMatrixSkeleton rows={10} columns={6} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">

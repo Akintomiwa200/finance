@@ -38,6 +38,7 @@ import {
   LifeBuoy,
   Search,
 } from "lucide-react";
+import { StatCardsSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 export function TenantSupportPageContent() {
   const router = useRouter();
@@ -147,34 +148,38 @@ export function TenantSupportPageContent() {
         </div>
       </DashCard>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <DashCard className="!p-4">
-          <p className="text-xs text-muted-foreground">Open</p>
-          <p className="mt-1 text-2xl font-semibold">
-            {stats.filter((t) => t.status === "OPEN").length}
-          </p>
-          <AlertCircle className="h-6 w-6 text-warning opacity-40 mt-2" />
-        </DashCard>
-        <DashCard className="!p-4">
-          <p className="text-xs text-muted-foreground">In Progress</p>
-          <p className="mt-1 text-2xl font-semibold">
-            {stats.filter((t) => t.status === "IN_PROGRESS").length}
-          </p>
-          <Clock className="h-6 w-6 text-info opacity-40 mt-2" />
-        </DashCard>
-        <DashCard className="!p-4">
-          <p className="text-xs text-muted-foreground">Resolved</p>
-          <p className="mt-1 text-2xl font-semibold">
-            {stats.filter((t) => t.status === "RESOLVED").length}
-          </p>
-          <CheckCircle2 className="h-6 w-6 text-success opacity-40 mt-2" />
-        </DashCard>
-        <DashCard className="!p-4">
-          <p className="text-xs text-muted-foreground">Total</p>
-          <p className="mt-1 text-2xl font-semibold">{stats.length}</p>
-          <MessageSquare className="h-6 w-6 text-brand-600 opacity-40 mt-2" />
-        </DashCard>
-      </div>
+      {isLoading ? (
+        <StatCardsSkeleton count={4} className="mb-6" />
+      ) : (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <DashCard className="!p-4">
+            <p className="text-xs text-muted-foreground">Open</p>
+            <p className="mt-1 text-2xl font-semibold">
+              {stats.filter((t) => t.status === "OPEN").length}
+            </p>
+            <AlertCircle className="h-6 w-6 text-warning opacity-40 mt-2" />
+          </DashCard>
+          <DashCard className="!p-4">
+            <p className="text-xs text-muted-foreground">In Progress</p>
+            <p className="mt-1 text-2xl font-semibold">
+              {stats.filter((t) => t.status === "IN_PROGRESS").length}
+            </p>
+            <Clock className="h-6 w-6 text-info opacity-40 mt-2" />
+          </DashCard>
+          <DashCard className="!p-4">
+            <p className="text-xs text-muted-foreground">Resolved</p>
+            <p className="mt-1 text-2xl font-semibold">
+              {stats.filter((t) => t.status === "RESOLVED").length}
+            </p>
+            <CheckCircle2 className="h-6 w-6 text-success opacity-40 mt-2" />
+          </DashCard>
+          <DashCard className="!p-4">
+            <p className="text-xs text-muted-foreground">Total</p>
+            <p className="mt-1 text-2xl font-semibold">{stats.length}</p>
+            <MessageSquare className="h-6 w-6 text-brand-600 opacity-40 mt-2" />
+          </DashCard>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <TicketStatusPills value={filter} onChange={setFilter} />

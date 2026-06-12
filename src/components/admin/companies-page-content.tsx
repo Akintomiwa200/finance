@@ -18,7 +18,6 @@ import {
   Search,
   Building2,
   Users,
-  Loader2,
 } from "lucide-react";
 import { useFetch } from "@/src/hooks/use-fetch";
 import { useAdminRealtime } from "@/src/hooks/use-admin-realtime";
@@ -26,6 +25,7 @@ import { StatusBadge } from "@/src/components/ui/status-badge";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { EmptyState } from "@/src/components/ui/empty-state";
+import { TableSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import {
   CHART_COLORS,
   getChartTooltipStyle,
@@ -384,9 +384,8 @@ export function CompaniesPageContent() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-16 text-muted-foreground">
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Loading companies…
+          <div className="px-5 pb-5">
+            <TableSkeleton rows={8} columns={5} />
           </div>
         ) : filtered.length === 0 ? (
           <div className="px-5 py-8">

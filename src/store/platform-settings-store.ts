@@ -3,15 +3,14 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { PlatformGeneralSettings } from "@/src/types/platform-settings";
+import type { ThemeMode } from "@/src/context/theme-context";
 import { DEFAULT_PLATFORM_SETTINGS } from "@/src/types/platform-settings";
-import {
-  applyAccentColor,
-  applyCompactNav,
-} from "@/src/lib/apply-platform-personalization";
+import { applyPlatformPersonalization } from "@/src/lib/apply-platform-personalization";
 
 interface PlatformSettingsState extends PlatformGeneralSettings {
   hydrated: boolean;
   setSettings: (settings: Partial<PlatformGeneralSettings>) => void;
+  syncTheme: (theme: ThemeMode) => void;
   applyPersonalization: () => void;
   setHydrated: () => void;
 }
@@ -23,15 +22,25 @@ export const usePlatformSettingsStore = create<PlatformSettingsState>()(
       hydrated: false,
 
       setSettings: (patch) => {
-        set((state) => ({ ...state, ...patch }));
+        const state = get();
+        const hasChange = (
+          Object.entries(patch) as [keyof PlatformGeneralSettings, PlatformGeneralSettings[keyof PlatformGeneralSettings]][]
+        ).some(([key, value]) => state[key] !== value);
+        if (!hasChange) return;
+        set(patch);
         get().applyPersonalization();
       },
 
+      syncTheme: (theme) => {
+        if (get().theme !== theme) {
+          set({ theme });
+        }
+      },
+
       applyPersonalization: () => {
-        const { accentColor, compactNav } = get();
+        const { theme, accentColor, compactNav } = get();
         if (typeof window === "undefined") return;
-        applyAccentColor(accentColor);
-        applyCompactNav(compactNav);
+        applyPlatformPersonalization({ theme, accentColor, compactNav });
       },
 
       setHydrated: () => set({ hydrated: true }),

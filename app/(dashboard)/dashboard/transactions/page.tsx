@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import { fetchTransactions } from "@/src/lib/api";
+import { TransactionsListSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 interface Tx {
   id: string;
@@ -111,6 +112,10 @@ export default function TransactionsPage() {
     URL.revokeObjectURL(url);
   };
 
+  if (loading) {
+    return <TransactionsListSkeleton />;
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
@@ -122,7 +127,7 @@ export default function TransactionsPage() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Transactions</h1>
             <p className="text-muted-foreground text-sm mt-0.5">
-              {loading ? "Loading..." : `${filtered.length} total transactions`}
+              {filtered.length} total transactions
             </p>
           </div>
         </div>

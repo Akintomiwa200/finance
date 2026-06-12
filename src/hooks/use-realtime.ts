@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { realtime } from "@/src/services/realtime.service";
 import type { RealtimeEvent, RealtimeMessage } from "@/src/types/common";
 
@@ -12,30 +12,25 @@ interface UseRealtimeOptions {
 
 export function useRealtime({ entity, event, onMessage }: UseRealtimeOptions = {}) {
   const [lastMessage, setLastMessage] = useState<RealtimeMessage | null>(null);
+  const onMessageRef = useRef(onMessage);
+  onMessageRef.current = onMessage;
 
   useEffect(() => {
+    const handler = (msg: RealtimeMessage) => {
+      setLastMessage(msg);
+      onMessageRef.current?.(msg);
+    };
+
     if (entity && event) {
-      const unsub = realtime.subscribe(entity, event, (msg) => {
-        setLastMessage(msg);
-        onMessage?.(msg);
-      });
-      return unsub;
+      return realtime.subscribe(entity, event, handler);
     }
 
     if (entity) {
-      const unsub = realtime.subscribe(entity, "*", (msg) => {
-        setLastMessage(msg);
-        onMessage?.(msg);
-      });
-      return unsub;
+      return realtime.subscribe(entity, "*", handler);
     }
 
-    const unsub = realtime.subscribeAll((msg) => {
-      setLastMessage(msg);
-      onMessage?.(msg);
-    });
-    return unsub;
-  }, [entity, event, onMessage]);
+    return realtime.subscribeAll(handler);
+  }, [entity, event]);
 
   const connectWebSocket = useCallback((url: string) => {
     realtime.connectWebSocket(url);
@@ -88,8 +83,7 @@ export function useReactiveList<T extends { id: string }>(
   }, [entity]);
 
   useEffect(() => {
-    const unsub = realtime.subscribe(entity, "*", handleMessage);
-    return unsub;
+    return realtime.subscribe(entity, "*", handleMessage);
   }, [entity, handleMessage]);
 
   return items;

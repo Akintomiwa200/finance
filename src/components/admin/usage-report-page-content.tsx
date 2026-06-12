@@ -17,11 +17,11 @@ import {
   ArrowUpRight,
   Blocks,
   Layers,
-  Loader2,
   Monitor,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { ChartSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { useFetch } from "@/src/hooks/use-fetch";
 import { useAdminRealtime } from "@/src/hooks/use-admin-realtime";
 import { Button } from "@/src/components/ui/button";
@@ -140,9 +140,7 @@ export function UsageReportPageContent() {
           </div>
           <div className="h-[140px]">
             {isLoading ? (
-              <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
+              <ChartSkeleton className="h-full" />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={API_CALLS_WEEKLY} barSize={18}>

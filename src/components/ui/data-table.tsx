@@ -11,7 +11,8 @@ import {
 } from "@/src/components/ui/table";
 import { EmptyState } from "@/src/components/ui/empty-state";
 import { Input } from "@/src/components/ui/input";
-import { Search, Loader2 } from "lucide-react";
+import { TableSkeleton } from "@/src/components/layout/dashboard-skeletons";
+import { Search } from "lucide-react";
 
 export interface Column<T> {
   key: string;
@@ -80,10 +81,11 @@ export function DataTable<T>({
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         {isLoading ? (
-          <div className="flex items-center justify-center py-16 text-muted-foreground">
-            <Loader2 className="h-6 w-6 animate-spin mr-2" />
-            Loading...
-          </div>
+          <TableSkeleton
+            rows={6}
+            columns={columns.length}
+            className="rounded-none border-0"
+          />
         ) : data.length === 0 ? (
           <EmptyState
             title={emptyTitle}

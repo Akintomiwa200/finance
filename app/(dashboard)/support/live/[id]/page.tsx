@@ -10,7 +10,7 @@ import {
   LiveFixSessionView,
   LiveFixSessionHeader,
 } from "@/src/components/support/live-fix-session-view";
-import { Loader2 } from "lucide-react";
+import { LiveFixSessionSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 export default function CustomerLiveFixSessionPage({
   params,
@@ -27,10 +27,8 @@ export default function CustomerLiveFixSessionPage({
 
   if (isLoading) {
     return (
-      <PageLayout title="Connecting..." showBack>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
-        </div>
+      <PageLayout title="Live Fix Session" showBack>
+        <LiveFixSessionSkeleton />
       </PageLayout>
     );
   }

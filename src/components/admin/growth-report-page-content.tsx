@@ -13,7 +13,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Building2, Loader2, TrendingUp, UserPlus, Users } from "lucide-react";
+import { Building2, TrendingUp, UserPlus, Users } from "lucide-react";
+import { ChartSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { useFetch } from "@/src/hooks/use-fetch";
 import { useAdminRealtime } from "@/src/hooks/use-admin-realtime";
 import { Button } from "@/src/components/ui/button";
@@ -142,9 +143,7 @@ export function GrowthReportPageContent() {
           </div>
           <div className="h-[140px]">
             {isLoading ? (
-              <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
+              <ChartSkeleton className="h-full" />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={signupTrend}>

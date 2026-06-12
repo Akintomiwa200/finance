@@ -787,7 +787,7 @@ function NavContent({
         <div key={section.title}>
           {/* Section title */}
           <div
-            className={`px-4 pt-4 pb-1.5 text-[11px] font-semibold tracking-wider uppercase whitespace-nowrap transition-all duration-200 ${
+            className={`sidebar-nav-section px-4 pt-4 pb-1.5 text-[11px] font-semibold tracking-wider uppercase whitespace-nowrap transition-all duration-200 ${
               collapsed ? "opacity-0 h-0 py-0 overflow-hidden" : "opacity-100"
             }`}
           >
@@ -804,7 +804,7 @@ function NavContent({
               <div key={item.label}>
                 {/* Parent row */}
                 <div
-                  className={`group relative flex items-center gap-3 mx-2 px-3 py-2 rounded-lg cursor-pointer transition-all duration-150
+                  className={`sidebar-nav-item group relative flex items-center gap-3 mx-2 px-3 py-2 rounded-lg cursor-pointer transition-all duration-150
                     ${
                       parentActive && !hasChildren
                         ? "bg-accent-50 text-accent-700 font-medium"
@@ -877,7 +877,7 @@ function NavContent({
                           <Link
                             href={child.href}
                             onClick={onNavigate}
-                            className={`flex items-center gap-3 mx-2 pl-3 pr-3 py-1.5 rounded-lg text-sm no-underline transition-all duration-150
+                            className={`sidebar-nav-child flex items-center gap-3 mx-2 pl-3 pr-3 py-1.5 rounded-lg text-sm no-underline transition-all duration-150
                               ${
                                 childActive
                                   ? "text-accent-700 font-medium bg-accent-50"

@@ -8,9 +8,9 @@ import {
   Shield,
   Users,
   Layers,
-  Loader2,
   Trash2,
 } from "lucide-react";
+import { ListRowsSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { useFetch } from "@/src/hooks/use-fetch";
 import { useAdminRealtime } from "@/src/hooks/use-admin-realtime";
 import { useDelete } from "@/src/hooks/use-mutation";
@@ -172,9 +172,7 @@ export function RolesGroupsPageContent() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
+          <ListRowsSkeleton rows={6} />
         ) : filtered.length === 0 ? (
           <EmptyState
             title="No privilege groups"

@@ -8,6 +8,7 @@ import { StatsGrid } from "@/src/components/charts/stats-grid";
 import { Button } from "@/src/components/ui/button";
 import { useFetch } from "@/src/hooks/use-fetch";
 import { Users } from "lucide-react";
+import { AdminDetailPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 interface DeptDetail {
   id: string;
@@ -32,7 +33,15 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ id:
     { key: "role", header: "Role", cell: (row) => row.role.replace(/_/g, " ") },
   ];
 
-  if (isLoading || !dept) return <PageLayout title={isLoading ? "Loading..." : "Not found"} showBack />;
+  if (isLoading) {
+    return (
+      <PageLayout title="Loading..." showBack>
+        <AdminDetailPageSkeleton />
+      </PageLayout>
+    );
+  }
+
+  if (!dept) return <PageLayout title="Not found" showBack />;
 
   return (
     <PageLayout

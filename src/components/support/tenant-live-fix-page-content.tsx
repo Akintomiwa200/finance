@@ -12,6 +12,7 @@ import { useSupportRealtime } from "@/src/hooks/use-support-realtime";
 import { formatDate } from "@/src/lib/utils";
 import type { LiveFixSession } from "@/src/types/admin";
 import { Radio, Monitor, Plus } from "lucide-react";
+import { StatCardsSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 export function TenantLiveFixPageContent() {
   const router = useRouter();
@@ -96,22 +97,26 @@ export function TenantLiveFixPageContent() {
         </Link>
       }
     >
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <DashCard className="!p-4 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-muted-foreground">Waiting for agent</p>
-            <p className="mt-1 text-2xl font-semibold">{waitingCount}</p>
-          </div>
-          <Radio className="h-8 w-8 text-warning opacity-50" />
-        </DashCard>
-        <DashCard className="!p-4 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-muted-foreground">Active sessions</p>
-            <p className="mt-1 text-2xl font-semibold">{activeCount}</p>
-          </div>
-          <Monitor className="h-8 w-8 text-success opacity-50" />
-        </DashCard>
-      </div>
+      {isLoading ? (
+        <StatCardsSkeleton count={2} className="mb-6" />
+      ) : (
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <DashCard className="!p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">Waiting for agent</p>
+              <p className="mt-1 text-2xl font-semibold">{waitingCount}</p>
+            </div>
+            <Radio className="h-8 w-8 text-warning opacity-50" />
+          </DashCard>
+          <DashCard className="!p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">Active sessions</p>
+              <p className="mt-1 text-2xl font-semibold">{activeCount}</p>
+            </div>
+            <Monitor className="h-8 w-8 text-success opacity-50" />
+          </DashCard>
+        </div>
+      )}
 
       <DashCard className="mb-6 text-sm">
         <p className="font-medium mb-2">How live fix works</p>

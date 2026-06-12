@@ -3,6 +3,7 @@
 import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PageLayout } from "@/src/components/layout/page-layout";
+import { AdminSettingsFormSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import {
   Card,
   CardContent,
@@ -248,9 +249,7 @@ export default function ModuleConfigPage({
   if (isLoadingOrg || !org) {
     return (
       <PageLayout title="Loading..." showBack>
-        <div className="flex items-center justify-center py-12">
-          <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+        <AdminSettingsFormSkeleton cards={3} />
       </PageLayout>
     );
   }

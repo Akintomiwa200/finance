@@ -13,12 +13,17 @@ export interface PlatformGeneralSettings {
   compactNav: boolean;
 }
 
+export type PlatformPersonalization = Pick<
+  PlatformGeneralSettings,
+  "platformName" | "theme" | "accentColor" | "compactNav"
+>;
+
 export const DEFAULT_PLATFORM_SETTINGS: PlatformGeneralSettings = {
   platformName: "FaaS Platform",
   supportEmail: "support@faas.dev",
   defaultCurrency: "NGN",
   theme: "system",
-  accentColor: "blue",
+  accentColor: "rose",
   timezone: "Africa/Lagos",
   dateFormat: "DD/MM/YYYY",
   compactNav: false,

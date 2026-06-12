@@ -67,7 +67,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var m=localStorage.getItem('faas-theme')||'system';var d=m==='dark'||(m==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);document.documentElement.style.colorScheme=d?'dark':'light';var raw=localStorage.getItem('faas-platform-settings');if(raw){var s=JSON.parse(raw).state;if(s&&s.accentColor){document.documentElement.classList.add('accent-'+s.accentColor);}if(s&&s.compactNav){document.documentElement.classList.add('compact-nav');}}catch(e){}})();`,
+            __html: `(function(){try{var ACCENTS=['blue','purple','emerald','amber','rose'];var raw=localStorage.getItem('faas-platform-settings');var s=raw?JSON.parse(raw).state:null;var m=localStorage.getItem('faas-theme')||(s&&s.theme)||'system';var d=m==='dark'||(m==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);var root=document.documentElement;root.classList.toggle('dark',d);root.style.colorScheme=m==='system'?'light dark':(d?'dark':'light');ACCENTS.forEach(function(a){root.classList.remove('accent-'+a);});if(s){if(s.accentColor)root.classList.add('accent-'+s.accentColor);else root.classList.add('accent-rose');root.classList.toggle('compact-nav',!!s.compactNav);}else{root.classList.add('accent-rose');}}catch(e){}})();`,
           }}
         />
       </head>

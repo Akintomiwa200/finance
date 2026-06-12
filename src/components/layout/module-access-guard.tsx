@@ -6,6 +6,7 @@ import { useAuthStore } from "@/src/store/auth-store";
 import { getEffectiveModules } from "@/src/lib/permissions";
 import { pathnameToModuleId } from "@/src/lib/module-route-access";
 import { useTenantAccess } from "@/src/hooks/use-tenant-access";
+import { DashboardPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 export function ModuleAccessGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -25,6 +26,10 @@ export function ModuleAccessGuard({ children }: { children: React.ReactNode }) {
       router.replace(`/access-denied?module=${encodeURIComponent(moduleId)}`);
     }
   }, [pathname, planModuleIds, isLoading, user?.role, router]);
+
+  if (isLoading) {
+    return <DashboardPageSkeleton />;
+  }
 
   return <>{children}</>;
 }

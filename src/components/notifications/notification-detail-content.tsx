@@ -18,6 +18,7 @@ import {
 } from "@/src/components/notifications/notification-utils";
 import { NOTIFICATION_TABS } from "@/src/types/notification";
 import { formatDate } from "@/src/lib/utils";
+import { NotificationDetailSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 interface NotificationDetailContentProps {
   scope: "dashboard" | "admin";
@@ -27,6 +28,7 @@ interface NotificationDetailContentProps {
 export function NotificationDetailContent({ scope, id }: NotificationDetailContentProps) {
   const router = useRouter();
   const initNotifications = useNotificationStore((s) => s.initNotifications);
+  const initialized = useNotificationStore((s) => s.initialized);
   const getById = useNotificationStore((s) => s.getById);
   const markAsRead = useNotificationStore((s) => s.markAsRead);
 
@@ -43,6 +45,14 @@ export function NotificationDetailContent({ scope, id }: NotificationDetailConte
       markAsRead(notification.id);
     }
   }, [notification, markAsRead]);
+
+  if (!initialized) {
+    return (
+      <PageLayout title="Notification" showBack>
+        <NotificationDetailSkeleton />
+      </PageLayout>
+    );
+  }
 
   if (!notification) {
     return (

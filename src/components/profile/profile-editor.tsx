@@ -37,6 +37,7 @@ import {
   getInitials,
   splitFullName,
 } from "@/src/lib/profile-utils";
+import { ProfilePageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 const profileSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -76,6 +77,7 @@ interface ProfileEditorProps {
 export function ProfileEditor({ workspaceLabel, accessLabel }: ProfileEditorProps) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const hydrated = useAuthStore((s) => s._hydrated);
   const updateProfile = useAuthStore((s) => s.updateProfile);
   const logout = useAuthStore((s) => s.logout);
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
@@ -230,12 +232,8 @@ export function ProfileEditor({ workspaceLabel, accessLabel }: ProfileEditorProp
     router.push("/login");
   }
 
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center py-16 text-muted-foreground">
-        Sign in to manage your profile.
-      </div>
-    );
+  if (!hydrated || !user) {
+    return <ProfilePageSkeleton />;
   }
 
   return (

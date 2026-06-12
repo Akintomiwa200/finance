@@ -20,6 +20,8 @@ function AuthSync({ children }: { children: React.ReactNode }) {
   }, [_hydrated, status]);
 
   useEffect(() => {
+    if (status === "loading") return;
+
     if (status === "authenticated" && session?.user) {
       setUser({
         id: session.user.id as string,
@@ -30,7 +32,10 @@ function AuthSync({ children }: { children: React.ReactNode }) {
         organizationId: (session.user as any).organizationId as string,
       });
       setToken("authenticated");
-    } else if (status === "unauthenticated" && isAuthenticated) {
+      return;
+    }
+
+    if (status === "unauthenticated" && isAuthenticated) {
       setUser(null);
       setToken(null);
     }

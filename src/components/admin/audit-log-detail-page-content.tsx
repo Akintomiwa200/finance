@@ -8,7 +8,6 @@ import {
   Building2,
   Clock,
   Globe,
-  Loader2,
   Shield,
   User,
 } from "lucide-react";
@@ -16,6 +15,10 @@ import { useFetch } from "@/src/hooks/use-fetch";
 import { Button } from "@/src/components/ui/button";
 import { StatusBadge } from "@/src/components/ui/status-badge";
 import { DashCard, ViewPill } from "@/src/components/admin/reports-shared";
+import {
+  FormCardSkeleton,
+  PageHeaderSkeleton,
+} from "@/src/components/layout/dashboard-skeletons";
 import { cn, formatDate } from "@/src/lib/utils";
 
 interface AuditDetail {
@@ -44,9 +47,12 @@ export function AuditLogDetailPageContent({ id }: { id: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24 text-muted-foreground">
-        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-        Loading audit log…
+      <div className="space-y-5">
+        <PageHeaderSkeleton />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-5">
+          <FormCardSkeleton fields={5} />
+          <FormCardSkeleton fields={4} />
+        </div>
       </div>
     );
   }

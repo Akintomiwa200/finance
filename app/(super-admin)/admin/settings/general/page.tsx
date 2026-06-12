@@ -1,20 +1,18 @@
 "use client";
 
-import { PageLayout } from "@/src/components/layout/page-layout";
+import { Globe } from "lucide-react";
 import { GeneralSettingsForm } from "@/src/components/settings/GeneralSettingsForm";
+import { SettingsPageShell } from "@/src/components/admin/settings-shared";
 
 export default function GeneralSettingsPage() {
   return (
-    <PageLayout
-      title="General Settings"
-      description="Platform-wide configuration for FaaS Platform"
-      showBack
-      breadcrumbs={[
-        { label: "Settings", href: "/admin/settings/general" },
-        { label: "General" },
-      ]}
+    <SettingsPageShell
+      activeHref="/admin/settings/general"
+      title="General settings"
+      description="Platform identity, appearance, and regional defaults for the super admin console and tenant-facing surfaces."
+      icon={<Globe className="h-10 w-10 text-brand-600" />}
     >
       <GeneralSettingsForm />
-    </PageLayout>
+    </SettingsPageShell>
   );
 }

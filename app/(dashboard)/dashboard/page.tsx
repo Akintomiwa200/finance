@@ -41,6 +41,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { fetchTransactions, createTransaction } from "@/src/lib/api";
+import { DashboardHomeSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -547,6 +548,10 @@ export default function DashboardPage() {
       ? contactsList[selectedContact]
       : null
   );
+
+  if (loading) {
+    return <DashboardHomeSkeleton />;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">

@@ -5,14 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Save, Loader2, Sun, Moon, Monitor, Palette } from "lucide-react";
+import { AdminSettingsFormSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { Button } from "@/src/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
+import { SettingsSection } from "@/src/components/admin/settings-shared";
 import { Input } from "@/src/components/ui/input";
 import {
   Form,
@@ -90,7 +85,7 @@ export function GeneralSettingsForm() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const { addToast } = useToast();
-  const { mode, setMode } = useTheme();
+  const { mode } = useTheme();
   const setPlatformSettings = usePlatformSettingsStore((s) => s.setSettings);
   const storeSettings = usePlatformSettingsStore();
 
@@ -120,7 +115,6 @@ export function GeneralSettingsForm() {
         if (result.success && result.data) {
           reset(result.data);
           setPlatformSettings(result.data);
-          setMode(result.data.theme);
         } else {
           reset({
             platformName: storeSettings.platformName,
@@ -145,19 +139,14 @@ export function GeneralSettingsForm() {
 
   useEffect(() => {
     if (isLoading) return;
-    setMode(watchedTheme);
-    localStorage.setItem("faas-theme", watchedTheme);
-  }, [watchedTheme, setMode, isLoading]);
-
-  useEffect(() => {
-    if (isLoading) return;
-    setPlatformSettings({ accentColor: watchedAccent });
-  }, [watchedAccent, setPlatformSettings, isLoading]);
-
-  useEffect(() => {
-    if (isLoading) return;
-    setPlatformSettings({ compactNav: watchedCompact });
-  }, [watchedCompact, setPlatformSettings, isLoading]);
+    setPlatformSettings({
+      theme: watchedTheme,
+      accentColor: watchedAccent,
+      compactNav: watchedCompact,
+    });
+    // Only sync live appearance fields while the form is open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedTheme, watchedAccent, watchedCompact, isLoading]);
 
   const onSubmit = async (data: GeneralSettingsValues) => {
     setIsSaving(true);
@@ -170,7 +159,6 @@ export function GeneralSettingsForm() {
         throw new Error(result.error ?? "Failed to save settings");
       }
       setPlatformSettings(result.data);
-      setMode(result.data.theme);
       addToast({
         title: "Settings saved",
         message: "Platform configuration has been updated.",
@@ -188,24 +176,17 @@ export function GeneralSettingsForm() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <AdminSettingsFormSkeleton />;
   }
 
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Platform Identity</CardTitle>
-          <CardDescription>
-            Configure how your platform is identified across the system
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5">
+      <SettingsSection
+        title="Platform Identity"
+        description="Configure how your platform is identified across the system"
+      >
+        <div className="space-y-5">
           <FormField
             control={form.control}
             name="platformName"
@@ -260,17 +241,14 @@ export function GeneralSettingsForm() {
               </FormItem>
             )}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Appearance & Personalization</CardTitle>
-          <CardDescription>
-            Theme and accent changes apply instantly across the admin console
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <SettingsSection
+        title="Appearance & Personalization"
+        description="Theme and accent changes apply instantly across the admin console"
+      >
+        <div className="space-y-6">
           <FormField
             control={form.control}
             name="theme"
@@ -364,15 +342,14 @@ export function GeneralSettingsForm() {
               </FormItem>
             )}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Regional Preferences</CardTitle>
-          <CardDescription>Timezone and date display for reports and logs</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5">
+      <SettingsSection
+        title="Regional Preferences"
+        description="Timezone and date display for reports and logs"
+      >
+        <div className="space-y-5">
           <FormField
             control={form.control}
             name="timezone"
@@ -420,8 +397,8 @@ export function GeneralSettingsForm() {
               </FormItem>
             )}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
       <div className="flex justify-end">
         <Button type="submit" loading={isSaving} className="min-w-[140px]">

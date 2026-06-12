@@ -135,9 +135,10 @@ const navSections: NavSection[] = [
       { label: "Modules", href: "/admin/modules", icon: Blocks },
       {
         label: "Settings",
-        href: "/admin/settings/general",
+        href: "/admin/settings",
         icon: Settings,
         children: [
+          { label: "Overview", href: "/admin/settings", icon: Settings },
           { label: "General", href: "/admin/settings/general", icon: Globe },
           { label: "Security", href: "/admin/settings/security", icon: Shield },
           { label: "Notifications", href: "/admin/settings/notifications", icon: Bell },

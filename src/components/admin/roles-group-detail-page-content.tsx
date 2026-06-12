@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import {
   Users,
   Key,
-  Loader2,
   Pencil,
   UserCheck,
 } from "lucide-react";
@@ -13,6 +12,7 @@ import { useAdminRealtime } from "@/src/hooks/use-admin-realtime";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import { DashCard, ViewPill } from "@/src/components/admin/reports-shared";
+import { AdminSettingsFormSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import {
   RoleTabs,
   StatCard,
@@ -45,11 +45,7 @@ export function RolesGroupDetailPageContent({ groupId }: { groupId: string }) {
   >("/api/admin/groups");
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <AdminSettingsFormSkeleton cards={2} />;
   }
 
   if (!group) {

@@ -81,39 +81,39 @@
 
 @layer base {
   :root {
-    color-scheme: light dark;
+    color-scheme: light;
 
-    /* ── Landing page theme tokens ── */
-    --lp-bg: #1a1a1a;
-    --lp-text: #ffffff;
-    --lp-text-muted: #999999;
-    --lp-border: rgba(255, 255, 255, 0.1);
-    --lp-card-bg: #222222;
-    --lp-card-alt: #2a2a2a;
-    --lp-label-bg: rgba(255, 85, 85, 0.12);
+    /* ── Landing page (light) ── */
+    --lp-bg: #ffffff;
+    --lp-text: #111111;
+    --lp-text-muted: #666666;
+    --lp-border: rgba(0, 0, 0, 0.08);
+    --lp-card-bg: #ffffff;
+    --lp-card-alt: #f5f5f5;
+    --lp-label-bg: rgba(255, 85, 85, 0.1);
     --lp-red: #ff5555;
     --lp-red-dark: #cc0000;
-    --lp-blue: #4F7EF7;
-    --lp-nav-bg: #1a1a1a;
-    --lp-nav-text: #ffffff;
-    --lp-nav-text-muted: rgba(255, 255, 255, 0.7);
-    --lp-footer-heading: #ffffff;
-    --lp-hero-ribbon-bg: #1a1a1a;
-    --lp-faq-card-bg: #222222;
-    --lp-cta-card-bg: #222222;
-    --lp-faq-number-bg: rgba(255, 85, 85, 0.12);
+    --lp-blue: #4f7ef7;
+    --lp-nav-bg: #ffffff;
+    --lp-nav-text: #111111;
+    --lp-nav-text-muted: rgba(0, 0, 0, 0.6);
+    --lp-footer-heading: #111111;
+    --lp-hero-ribbon-bg: #ffffff;
+    --lp-faq-card-bg: #ffffff;
+    --lp-cta-card-bg: #ffffff;
+    --lp-faq-number-bg: rgba(255, 85, 85, 0.1);
 
-    /* Accent (brand blue) */
-    --accent-50: #eff6ff;
-    --accent-100: #dbeafe;
-    --accent-200: #bfdbfe;
-    --accent-300: #93c5fd;
-    --accent-400: #60a5fa;
-    --accent-500: #3b82f6;
-    --accent-600: #2563eb;
-    --accent-700: #1d4ed8;
-    --accent-800: #1e40af;
-    --accent-900: #1e3a8a;
+    /* Brand accent (Uifry coral — matches home page) */
+    --accent-50: #fff1f1;
+    --accent-100: #ffe0e0;
+    --accent-200: #ffc9c9;
+    --accent-300: #ffa3a3;
+    --accent-400: #ff7777;
+    --accent-500: #ff5555;
+    --accent-600: #ff5555;
+    --accent-700: #e63e3e;
+    --accent-800: #cc2e2e;
+    --accent-900: #a61f1f;
 
     /* Surface / background */
     --bg-page: #ffffff;
@@ -146,17 +146,17 @@
     --sidebar-fg: #f8fafc;
     --sidebar-muted: #334155;
     --sidebar-border: #1e293b;
-    --sidebar-accent: #3b82f6;
+    --sidebar-accent: #ff5555;
 
-    /* Admin console sidebar (reference-style light nav) */
+    /* Admin console sidebar (light nav) */
     --admin-nav-bg: #ffffff;
     --admin-nav-border: #e8edf2;
-    --admin-nav-section: #1a365d;
-    --admin-nav-item: #2c5282;
-    --admin-nav-item-muted: #5a7a9e;
-    --admin-nav-hover: #f4f8fc;
-    --admin-nav-active-bg: #e8f2ff;
-    --admin-nav-active-fg: #1d4ed8;
+    --admin-nav-section: #111111;
+    --admin-nav-item: #333333;
+    --admin-nav-item-muted: #666666;
+    --admin-nav-hover: #f5f5f5;
+    --admin-nav-active-bg: #fff1f1;
+    --admin-nav-active-fg: #e63e3e;
     --admin-nav-chevron: #94a3b8;
 
     /* Shadows */
@@ -166,8 +166,8 @@
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
-    /* Ring (accent RGB for focus) */
-    --ring: 59 130 246;
+    /* Ring (brand coral RGB for focus) */
+    --ring: 255 85 85;
 
     /* Neutral palette (kept for direct references) */
     --color-neutral-50: #fafafa;
@@ -196,115 +196,43 @@
     --transition-slow: 350ms ease;
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      /* Accent (shifted for dark) */
-      --accent-50: #172554;
-      --accent-100: #1e3a5f;
-      --accent-200: #1e40af;
-      --accent-300: #2563eb;
-      --accent-400: #3b82f6;
-      --accent-500: #60a5fa;
-      --accent-600: #93c5fd;
-      --accent-700: #bfdbfe;
-      --accent-800: #dbeafe;
-      --accent-900: #eff6ff;
-
-      /* Surface / background */
-      --bg-page: #0a0a0a;
-      --bg-card: #171717;
-      --bg-surface: #1a1a1a;
-      --bg-surface-2: #262626;
-      --bg-surface-3: #333333;
-      --bg-overlay: rgba(0, 0, 0, 0.7);
-
-      /* Text */
-      --text-primary: #fafafa;
-      --text-secondary: #a3a3a3;
-      --text-muted: #808080;
-      --text-subtle: #525252;
-      --text-inverse: #0a0a0a;
-
-      /* Border */
-      --border: #262626;
-      --border-light: #1a1a1a;
-      --border-medium: #404040;
-
-      /* Semantic */
-      --success: #34d399;
-      --warning: #fbbf24;
-      --danger: #f87171;
-      --info: #60a5fa;
-
-      /* Sidebar (dark mode - deeper) */
-      --sidebar-bg: #020617;
-      --sidebar-fg: #e2e8f0;
-      --sidebar-muted: #1e293b;
-      --sidebar-border: #1e293b;
-      --sidebar-accent: #3b82f6;
-
-      --admin-nav-bg: #0c1220;
-      --admin-nav-border: #1e293b;
-      --admin-nav-section: #94a3b8;
-      --admin-nav-item: #cbd5e1;
-      --admin-nav-item-muted: #64748b;
-      --admin-nav-hover: #162032;
-      --admin-nav-active-bg: #1e3a5f;
-      --admin-nav-active-fg: #93c5fd;
-      --admin-nav-chevron: #64748b;
-
-      /* Shadows */
-      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
-      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.3);
-      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.3);
-
-      /* Ring */
-      --ring: 96 165 250;
-    }
-  }
-
-  @media (prefers-color-scheme: light) {
-    :root {
-      --lp-bg: #ffffff;
-      --lp-text: #111111;
-      --lp-text-muted: #666666;
-      --lp-border: rgba(0, 0, 0, 0.08);
-      --lp-card-bg: #ffffff;
-      --lp-card-alt: #f5f5f5;
-      --lp-label-bg: rgba(255, 85, 85, 0.1);
-      --lp-nav-bg: #ffffff;
-      --lp-nav-text: #111111;
-      --lp-nav-text-muted: rgba(0, 0, 0, 0.6);
-      --lp-footer-heading: #ffffff;
-      --lp-hero-ribbon-bg: #ffffff;
-      --lp-faq-card-bg: #ffffff;
-      --lp-cta-card-bg: #ffffff;
-      --lp-faq-number-bg: rgba(255, 85, 85, 0.1);
-    }
-  }
-
   .dark {
     color-scheme: dark;
 
-    /* Accent (shifted for dark) */
-    --accent-50: #172554;
-    --accent-100: #1e3a5f;
-    --accent-200: #1e40af;
-    --accent-300: #2563eb;
-    --accent-400: #3b82f6;
-    --accent-500: #60a5fa;
-    --accent-600: #93c5fd;
-    --accent-700: #bfdbfe;
-    --accent-800: #dbeafe;
-    --accent-900: #eff6ff;
+    /* Landing page (dark — matches home) */
+    --lp-bg: #1a1a1a;
+    --lp-text: #ffffff;
+    --lp-text-muted: #999999;
+    --lp-border: rgba(255, 255, 255, 0.1);
+    --lp-card-bg: #222222;
+    --lp-card-alt: #2a2a2a;
+    --lp-label-bg: rgba(255, 85, 85, 0.12);
+    --lp-nav-bg: #1a1a1a;
+    --lp-nav-text: #ffffff;
+    --lp-nav-text-muted: rgba(255, 255, 255, 0.7);
+    --lp-footer-heading: #ffffff;
+    --lp-hero-ribbon-bg: #1a1a1a;
+    --lp-faq-card-bg: #222222;
+    --lp-cta-card-bg: #222222;
+    --lp-faq-number-bg: rgba(255, 85, 85, 0.12);
 
-    /* Surface / background */
-    --bg-page: #0a0a0a;
-    --bg-card: #171717;
-    --bg-surface: #1a1a1a;
-    --bg-surface-2: #262626;
+    /* Brand accent (dark) */
+    --accent-50: #3d1515;
+    --accent-100: #5c1f1f;
+    --accent-200: #7a2828;
+    --accent-300: #993333;
+    --accent-400: #cc4444;
+    --accent-500: #ff5555;
+    --accent-600: #ff7777;
+    --accent-700: #ff9999;
+    --accent-800: #ffbbbb;
+    --accent-900: #ffe0e0;
+
+    /* Surface / background (matches home page) */
+    --bg-page: #1a1a1a;
+    --bg-card: #222222;
+    --bg-surface: #222222;
+    --bg-surface-2: #2a2a2a;
     --bg-surface-3: #333333;
     --bg-overlay: rgba(0, 0, 0, 0.7);
 
@@ -331,17 +259,17 @@
     --sidebar-fg: #e2e8f0;
     --sidebar-muted: #1e293b;
     --sidebar-border: #1e293b;
-    --sidebar-accent: #3b82f6;
+    --sidebar-accent: #ff5555;
 
-    --admin-nav-bg: #0c1220;
-    --admin-nav-border: #1e293b;
-    --admin-nav-section: #94a3b8;
-    --admin-nav-item: #cbd5e1;
-    --admin-nav-item-muted: #64748b;
-    --admin-nav-hover: #162032;
-    --admin-nav-active-bg: #1e3a5f;
-    --admin-nav-active-fg: #93c5fd;
-    --admin-nav-chevron: #64748b;
+    --admin-nav-bg: #1a1a1a;
+    --admin-nav-border: rgba(255, 255, 255, 0.1);
+    --admin-nav-section: #999999;
+    --admin-nav-item: #ffffff;
+    --admin-nav-item-muted: rgba(255, 255, 255, 0.7);
+    --admin-nav-hover: #2a2a2a;
+    --admin-nav-active-bg: rgba(255, 85, 85, 0.12);
+    --admin-nav-active-fg: #ff7777;
+    --admin-nav-chevron: #666666;
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
@@ -351,7 +279,7 @@
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.3);
 
     /* Ring */
-    --ring: 96 165 250;
+    --ring: 255 119 119;
   }
 
   * {
@@ -425,16 +353,16 @@
 }
 
 .accent-rose {
-  --accent-50: #fff1f2; --accent-100: #ffe4e6; --accent-200: #fecdd3;
-  --accent-300: #fda4af; --accent-400: #fb7185; --accent-500: #f43f5e;
-  --accent-600: #e11d48; --accent-700: #be123c; --accent-800: #9f1239;
-  --accent-900: #881337; --ring: 244 63 94;
+  --accent-50: #fff1f1; --accent-100: #ffe0e0; --accent-200: #ffc9c9;
+  --accent-300: #ffa3a3; --accent-400: #ff7777; --accent-500: #ff5555;
+  --accent-600: #ff5555; --accent-700: #e63e3e; --accent-800: #cc2e2e;
+  --accent-900: #a61f1f; --ring: 255 85 85;
 }
 .dark.accent-rose {
-  --accent-50: #4c0519; --accent-100: #881337; --accent-200: #9f1239;
-  --accent-300: #be123c; --accent-400: #e11d48; --accent-500: #f43f5e;
-  --accent-600: #fb7185; --accent-700: #fda4af; --accent-800: #fecdd3;
-  --accent-900: #fff1f2; --ring: 244 63 94;
+  --accent-50: #3d1515; --accent-100: #5c1f1f; --accent-200: #7a2828;
+  --accent-300: #993333; --accent-400: #cc4444; --accent-500: #ff5555;
+  --accent-600: #ff7777; --accent-700: #ff9999; --accent-800: #ffbbbb;
+  --accent-900: #ffe0e0; --ring: 255 119 119;
 }
 
 /* =============== TYPOGRAPHY =============== */
@@ -840,12 +768,15 @@ tbody tr:hover { background-color: var(--bg-surface); }
 }
 
 .compact-nav .admin-nav-item,
-.compact-nav .admin-nav-child {
+.compact-nav .admin-nav-child,
+.compact-nav .sidebar-nav-item,
+.compact-nav .sidebar-nav-child {
   padding-top: 0.375rem;
   padding-bottom: 0.375rem;
 }
 
-.compact-nav .admin-nav-section {
+.compact-nav .admin-nav-section,
+.compact-nav .sidebar-nav-section {
   padding-top: 0.5rem;
 }
 

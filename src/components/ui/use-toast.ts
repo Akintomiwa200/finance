@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { useToast as useAppToast } from "@/src/components/ui/toast";
 
 type ToastOptions = {
@@ -11,13 +12,16 @@ type ToastOptions = {
 export function useToast() {
   const { addToast } = useAppToast();
 
-  const toast = ({ title, description, variant }: ToastOptions) => {
-    addToast({
-      title: title ?? "",
-      message: description,
-      type: variant === "destructive" ? "error" : "success",
-    });
-  };
+  const toast = useCallback(
+    ({ title, description, variant }: ToastOptions) => {
+      addToast({
+        title: title ?? "",
+        message: description,
+        type: variant === "destructive" ? "error" : "success",
+      });
+    },
+    [addToast],
+  );
 
   return { toast, addToast };
 }

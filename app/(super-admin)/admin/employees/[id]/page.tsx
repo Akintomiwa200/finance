@@ -8,6 +8,7 @@ import { StatusBadge } from "@/src/components/ui/status-badge";
 import { Button } from "@/src/components/ui/button";
 import { useFetch } from "@/src/hooks/use-fetch";
 import { formatDate } from "@/src/lib/utils";
+import { AdminDetailPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 interface EmployeeDetail {
   id: string;
@@ -27,7 +28,15 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
   const router = useRouter();
   const { data: emp, isLoading } = useFetch<EmployeeDetail>(`/api/admin/employees/${id}`);
 
-  if (isLoading || !emp) return <PageLayout title={isLoading ? "Loading..." : "Not found"} showBack />;
+  if (isLoading) {
+    return (
+      <PageLayout title="Loading..." showBack>
+        <AdminDetailPageSkeleton />
+      </PageLayout>
+    );
+  }
+
+  if (!emp) return <PageLayout title="Not found" showBack />;
 
   return (
     <PageLayout

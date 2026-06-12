@@ -6,6 +6,7 @@ import { Sidebar } from "@/src/components/layout/sidebar";
 import { Navbar } from "@/src/components/layout/navbar";
 import { MobileSidebarProvider } from "@/src/context/mobile-sidebar-context";
 import { ModuleAccessGuard } from "@/src/components/layout/module-access-guard";
+import { DashboardShellSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { useAuthStore } from "@/src/store/auth-store";
 
 export default function DashboardLayout({
@@ -26,8 +27,8 @@ export default function DashboardLayout({
     }
   }, [_hydrated, isAuthenticated, user, router]);
 
-  if (!_hydrated) return null;
-  if (!isAuthenticated) return null;
+  if (!_hydrated) return <DashboardShellSkeleton />;
+  if (!isAuthenticated) return <DashboardShellSkeleton />;
 
   return (
     <MobileSidebarProvider>

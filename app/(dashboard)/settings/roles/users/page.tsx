@@ -21,6 +21,7 @@ import {
   ArrowLeft, Plus, Search, Users, Mail, Shield, UserCheck, UserX, Loader2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { TableSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 const ROLES = [
   { value: "FINANCE_MANAGER", label: "Finance Manager", level: "Senior" },
@@ -172,9 +173,7 @@ export default function UserManagement() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
+            <TableSkeleton rows={8} columns={7} className="border-0" />
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Users className="h-12 w-12 mb-3 opacity-30" />

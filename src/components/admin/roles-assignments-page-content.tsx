@@ -6,10 +6,10 @@ import {
   UserCheck,
   Plus,
   Search,
-  Loader2,
   Trash2,
   Users,
 } from "lucide-react";
+import { TableSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { useFetch } from "@/src/hooks/use-fetch";
 import { useAdminRealtime } from "@/src/hooks/use-admin-realtime";
 import { useMutation } from "@/src/hooks/use-mutation";
@@ -266,9 +266,7 @@ export function RolesAssignmentsPageContent() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
+          <TableSkeleton rows={6} columns={4} />
         ) : filtered.length === 0 ? (
           <EmptyState
             title="No assignments yet"

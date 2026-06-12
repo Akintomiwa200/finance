@@ -6,6 +6,7 @@ import { useAuthStore } from "@/src/store/auth-store";
 import { SuperAdminSidebar } from "@/src/components/layout/super-admin-sidebar";
 import { SuperAdminNavbar } from "@/src/components/layout/super-admin-navbar";
 import { MobileSidebarProvider } from "@/src/context/mobile-sidebar-context";
+import { AdminShellSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 export default function SuperAdminLayout({
   children,
@@ -25,8 +26,8 @@ export default function SuperAdminLayout({
     }
   }, [_hydrated, isAuthenticated, user, router]);
 
-  if (!_hydrated) return null;
-  if (!isAuthenticated || user?.role !== "SUPER_ADMIN") return null;
+  if (!_hydrated) return <AdminShellSkeleton />;
+  if (!isAuthenticated || user?.role !== "SUPER_ADMIN") return <AdminShellSkeleton />;
 
   return (
     <MobileSidebarProvider>

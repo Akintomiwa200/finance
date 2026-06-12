@@ -18,6 +18,7 @@ import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Badge } from "@/src/components/ui/badge";
 import { EmptyState } from "@/src/components/ui/empty-state";
+import { AdminCardGridSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { DataTable, type Column } from "@/src/components/ui/data-table";
 import { BillingPlanModal } from "@/src/components/admin/billing-plan-modal";
 import { CHART_COLORS } from "@/src/components/charts/chart-theme";
@@ -268,9 +269,7 @@ export function BillingPlansPageContent() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-20 text-muted-foreground">
-          <Loader2 className="h-6 w-6 animate-spin" />
-        </div>
+        <AdminCardGridSkeleton count={3} />
       ) : filtered.length === 0 ? (
         <EmptyState
           title="No plans found"

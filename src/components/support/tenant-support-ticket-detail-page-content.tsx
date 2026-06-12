@@ -32,6 +32,7 @@ import {
   Radio,
   Monitor,
 } from "lucide-react";
+import { SupportTicketDetailSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 interface TicketDetail {
   ticket: SupportTicket;
@@ -75,11 +76,8 @@ export function TenantSupportTicketDetailPageContent({ id }: { id: string }) {
 
   if (isLoading || !data) {
     return (
-      <PageLayout title="Loading..." showBack>
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/3" />
-          <div className="h-32 bg-muted rounded" />
-        </div>
+      <PageLayout title="Support issue" showBack>
+        <SupportTicketDetailSkeleton />
       </PageLayout>
     );
   }

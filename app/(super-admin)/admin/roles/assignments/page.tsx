@@ -2,14 +2,10 @@
 
 import { Suspense } from "react";
 import { RolesAssignmentsPageContent } from "@/src/components/admin/roles-assignments-page-content";
-import { Loader2 } from "lucide-react";
+import { TableSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 function AssignmentsFallback() {
-  return (
-    <div className="flex justify-center py-24">
-      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-    </div>
-  );
+  return <TableSkeleton rows={6} columns={4} />;
 }
 
 export default function AssignmentsPage() {

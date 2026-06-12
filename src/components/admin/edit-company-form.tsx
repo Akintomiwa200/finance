@@ -13,6 +13,7 @@ import {
   Search,
 } from "lucide-react";
 import { Input } from "@/src/components/ui/input";
+import { AdminSettingsFormSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { Button } from "@/src/components/ui/button";
 import { Switch } from "@/src/components/ui/switch";
 import { CompanyLogo } from "@/src/components/ui/company-logo";
@@ -165,8 +166,8 @@ export function EditCompanyForm({ companyId }: { companyId: string }) {
         description="Loading organization details…"
         onClose={() => router.push(`/admin/companies/${companyId}`)}
       >
-        <div className="flex min-h-[320px] items-center justify-center px-6 pb-10">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="space-y-5 px-6 pb-10">
+          <AdminSettingsFormSkeleton cards={2} />
         </div>
       </CompanyFormShell>
     );

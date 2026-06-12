@@ -17,6 +17,7 @@ import {
   type NotificationCategory,
 } from "@/src/types/notification";
 import { cn } from "@/src/lib/utils";
+import { NotificationListSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 const CATEGORY_ICONS = {
   messages: MessageSquare,
@@ -34,6 +35,7 @@ export function NotificationsPageContent({ scope }: NotificationsPageContentProp
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<PageFilter>("all");
   const initNotifications = useNotificationStore((s) => s.initNotifications);
+  const initialized = useNotificationStore((s) => s.initialized);
   const notifications = useNotificationStore((s) => s.notifications);
   const unreadCount = useNotificationStore((s) => s.unreadCount);
   const markAsRead = useNotificationStore((s) => s.markAsRead);
@@ -84,6 +86,10 @@ export function NotificationsPageContent({ scope }: NotificationsPageContentProp
         ) : undefined
       }
     >
+      {!initialized ? (
+        <NotificationListSkeleton />
+      ) : (
+        <>
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="p-4">
@@ -165,6 +171,8 @@ export function NotificationsPageContent({ scope }: NotificationsPageContentProp
           />
         ))}
       </div>
+        </>
+      )}
     </PageLayout>
   );
 }

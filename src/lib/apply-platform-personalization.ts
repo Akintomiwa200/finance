@@ -19,9 +19,21 @@ export function applyThemeMode(mode: ThemeMode) {
 
   const root = document.documentElement;
   root.classList.toggle("dark", resolved === "dark");
-  root.style.colorScheme = resolved;
+  root.style.colorScheme = mode === "system" ? "light dark" : resolved;
 }
 
 export function applyCompactNav(compact: boolean) {
   document.documentElement.classList.toggle("compact-nav", compact);
+}
+
+export function applyPlatformPersonalization(settings: {
+  theme: ThemeMode;
+  accentColor: AccentColor;
+  compactNav: boolean;
+}) {
+  if (typeof window === "undefined") return;
+  applyThemeMode(settings.theme);
+  applyAccentColor(settings.accentColor);
+  applyCompactNav(settings.compactNav);
+  localStorage.setItem("faas-theme", settings.theme);
 }

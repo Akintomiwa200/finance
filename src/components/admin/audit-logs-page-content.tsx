@@ -4,13 +4,16 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
+  ChartSkeleton,
+  TableSkeleton,
+} from "@/src/components/layout/dashboard-skeletons";
+import {
   Activity,
   ArrowUpRight,
   BarChart3,
   ChevronLeft,
   ChevronRight,
   Cloud,
-  Loader2,
   Lock,
   Minus,
   MoreVertical,
@@ -257,9 +260,7 @@ export function AuditLogsPageContent() {
           </div>
           <div className="h-[140px]">
             {isLoading ? (
-              <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
+              <ChartSkeleton className="h-full" />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dailyChart} barSize={18}>
@@ -431,9 +432,8 @@ export function AuditLogsPageContent() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-20 text-muted-foreground">
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Loading audit logs…
+          <div className="p-4 sm:p-5">
+            <TableSkeleton rows={8} columns={6} />
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-10">
