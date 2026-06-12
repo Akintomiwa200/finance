@@ -37,7 +37,7 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
   const deptColumns: Column<OrgDetail["departments"][0]>[] = [
     { key: "name", header: "Department", cell: (row) => <span className="font-medium">{row.name}</span> },
     { key: "code", header: "Code", cell: (row) => <span className="font-mono text-xs">{row.code}</span> },
-    { key: "employees", header: "Employees", cell: (row) => row._count.employees },
+    { key: "employees", header: "Tenant users", cell: (row) => row._count.employees },
     {
       key: "actions",
       header: "",
@@ -82,7 +82,7 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
 
       <StatsGrid
         stats={[
-          { label: "Employees", value: String(org._count.employees), icon: <Users className="h-4 w-4" /> },
+          { label: "Tenant users", value: String(org._count.employees), icon: <Users className="h-4 w-4" /> },
           { label: "Departments", value: String(org._count.departments), icon: <Briefcase className="h-4 w-4" /> },
           { label: "Transactions", value: String(org._count.transactions), icon: <Receipt className="h-4 w-4" /> },
         ]}
@@ -117,16 +117,27 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
 
       <div>
         <h2 className="text-lg font-semibold mb-4">Tenant Users</h2>
+        <p className="mb-3 text-sm text-muted-foreground">
+          People who work at this company and use the product. Platform owner and internal team are managed separately.
+        </p>
         <div className="rounded-xl border border-border bg-card divide-y divide-border">
-          {org.employees.map((emp) => (
-            <div key={emp.id} className="flex items-center justify-between px-4 py-3">
-              <div>
-                <p className="text-sm font-medium">{emp.firstName} {emp.lastName}</p>
-                <p className="text-xs text-muted-foreground">{emp.email}</p>
+          {org.employees.length === 0 ? (
+            <p className="px-4 py-8 text-center text-sm text-muted-foreground">
+              No tenant users yet
+            </p>
+          ) : (
+            org.employees.map((emp) => (
+              <div key={emp.id} className="flex items-center justify-between px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium">{emp.firstName} {emp.lastName}</p>
+                  <p className="text-xs text-muted-foreground">{emp.email}</p>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {emp.role === "ADMIN" ? "Company admin" : emp.role.replace(/_/g, " ").toLowerCase()}
+                </span>
               </div>
-              <span className="text-xs text-muted-foreground">{emp.role.replace(/_/g, " ")}</span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </PageLayout>

@@ -81,3 +81,12 @@ export function getVisibleModules(role: Role | string): ModuleId[] {
 export function canAccessModule(role: Role | string, moduleId: ModuleId): boolean {
   return getVisibleModules(role).includes(moduleId);
 }
+
+export function getEffectiveModules(
+  role: Role | string,
+  planModuleIds: ModuleId[],
+): ModuleId[] {
+  const roleModules = getVisibleModules(role);
+  if (!planModuleIds.length) return roleModules;
+  return roleModules.filter((id) => planModuleIds.includes(id));
+}

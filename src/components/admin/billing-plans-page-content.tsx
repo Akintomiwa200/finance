@@ -293,7 +293,7 @@ export function BillingPlansPageContent() {
                 <DashCard
                   key={plan.id}
                   className={cn(
-                    "relative overflow-hidden transition-shadow hover:shadow-md",
+                    "relative flex min-h-[22rem] flex-col overflow-hidden p-6 shadow-sm transition-shadow hover:shadow-md sm:min-h-[24rem] sm:p-7",
                     plan.popular && "ring-2 ring-brand-600/25 border-brand-600/30",
                     !plan.active && "opacity-75",
                   )}
@@ -325,19 +325,17 @@ export function BillingPlansPageContent() {
                     </div>
                   </div>
 
-                  {plan.description && (
-                    <p className="relative mt-3 text-sm leading-relaxed text-muted-foreground">
-                      {plan.description}
-                    </p>
-                  )}
+                  <p className="relative mt-4 min-h-[2.75rem] text-sm leading-relaxed text-muted-foreground">
+                    {plan.description ?? "\u00A0"}
+                  </p>
 
-                  <ul className="relative mt-4 space-y-2">
+                  <ul className="relative mt-6 flex-1 space-y-3">
                     <PlanFeature>{userLabel}</PlanFeature>
                     <PlanFeature>{moduleLabel}</PlanFeature>
                     <PlanFeature>Billed monthly to tenant companies</PlanFeature>
                   </ul>
 
-                  <div className="relative mt-6 flex gap-2">
+                  <div className="relative mt-8 flex gap-2 pt-2">
                     <Button
                       variant="outline"
                       className="flex-1 rounded-xl"

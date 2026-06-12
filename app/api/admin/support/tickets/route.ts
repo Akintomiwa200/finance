@@ -18,16 +18,22 @@ export async function POST(req: Request) {
 
   await prepareSupportData();
   const body = await req.json();
-  const ticket = createSupportTicket({
-    title: body.title,
-    description: body.description,
-    status: "OPEN",
-    priority: body.priority ?? "MEDIUM",
-    organizationId: body.organizationId,
-    organizationName: body.organizationName,
-    createdByName: session!.user.name ?? "Super Admin",
-    assignedToName: null,
-  });
+  const ticket = createSupportTicket(
+    {
+      title: body.title,
+      description: body.description,
+      status: "OPEN",
+      priority: body.priority ?? "MEDIUM",
+      organizationId: body.organizationId,
+      organizationName: body.organizationName,
+      createdByName: session!.user.name ?? "Super Admin",
+      assignedToName: null,
+      labels: body.labels ?? [],
+      githubIssueUrl: null,
+      jiraIssueKey: null,
+    },
+    session!.user.name ?? "Super Admin",
+  );
 
   pushRealtimeEvent({
     event: "create",

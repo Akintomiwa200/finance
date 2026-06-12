@@ -27,7 +27,7 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ id:
   const { data: dept, isLoading } = useFetch<DeptDetail>(`/api/admin/departments/${id}`);
 
   const columns: Column<DeptDetail["employees"][0]>[] = [
-    { key: "name", header: "Employee", cell: (row) => <span className="font-medium">{row.firstName} {row.lastName}</span> },
+    { key: "name", header: "User", cell: (row) => <span className="font-medium">{row.firstName} {row.lastName}</span> },
     { key: "email", header: "Email", cell: (row) => <span className="text-muted-foreground">{row.email}</span> },
     { key: "role", header: "Role", cell: (row) => row.role.replace(/_/g, " ") },
   ];
@@ -45,15 +45,15 @@ export default function DepartmentDetailPage({ params }: { params: Promise<{ id:
       ]}
       actions={<Button variant="outline" onClick={() => router.push(`/admin/companies/${dept.organization.id}`)}>View Company</Button>}
     >
-      <StatsGrid stats={[{ label: "Employees", value: String(dept._count.employees), icon: <Users className="h-4 w-4" /> }]} columns={1} />
+      <StatsGrid stats={[{ label: "Tenant users", value: String(dept._count.employees), icon: <Users className="h-4 w-4" /> }]} columns={1} />
       <div className="grid gap-4 sm:grid-cols-2 text-sm">
         <div><span className="text-muted-foreground">Head:</span> {dept.head ?? "—"}</div>
         <div><span className="text-muted-foreground">Cost Center:</span> {dept.costCenter ?? "—"}</div>
         <div className="sm:col-span-2"><span className="text-muted-foreground">Description:</span> {dept.description ?? "—"}</div>
       </div>
       <div>
-        <h2 className="text-lg font-semibold mb-4">Employees</h2>
-        <DataTable columns={columns} data={dept.employees} keyField="id" emptyTitle="No employees in this department" />
+        <h2 className="text-lg font-semibold mb-4">Tenant users</h2>
+        <DataTable columns={columns} data={dept.employees} keyField="id" emptyTitle="No users in this department" />
       </div>
     </PageLayout>
   );

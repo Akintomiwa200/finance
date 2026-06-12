@@ -4,6 +4,8 @@ import { getAdminOrganizations } from "@/src/services/admin.service";
 import { db } from "@/src/lib/db";
 import { pushRealtimeEvent } from "@/src/lib/realtime-bus";
 import { createAuditLog } from "@/src/services/audit.service";
+import { setOrganizationPlan } from "@/src/services/org-subscription.service";
+import { onOrganizationCreated } from "@/src/services/notification-events.service";
 
 export async function GET() {
   const { error } = await requireSuperAdmin();
@@ -19,7 +21,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { name, slug, email, phone, logo } = body;
+    const { name, slug, email, phone, logo, plan } = body;
 
     if (!name || !slug) {
       return NextResponse.json({ error: "Name and slug are required" }, { status: 400 });
@@ -33,6 +35,10 @@ export async function POST(req: Request) {
     const org = await db.organization.create({
       data: { name, slug, email, phone },
     });
+
+    if (plan && typeof plan === "string") {
+      setOrganizationPlan(org.id, plan);
+    }
 
     await db.department.create({
       data: {
@@ -50,6 +56,12 @@ export async function POST(req: Request) {
       userName: session!.user.name ?? "Super Admin",
       details: { name, slug },
     });
+
+    void onOrganizationCreated({
+      organizationId: org.id,
+      organizationName: org.name,
+      createdByUserId: session!.user.id,
+    }).catch((err) => console.error("[notify] organization created", err));
 
     pushRealtimeEvent({
       event: "create",

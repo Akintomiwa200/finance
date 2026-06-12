@@ -8,7 +8,8 @@ import { useMobileSidebar } from "@/src/context/mobile-sidebar-context";
 import { useAuthStore } from "@/src/store/auth-store";
 import { useOrganization } from "@/src/hooks/use-organization";
 import { CompanyLogo } from "@/src/components/ui/company-logo";
-import { getVisibleModules, type ModuleId } from "@/src/lib/permissions";
+import { getEffectiveModules, type ModuleId } from "@/src/lib/permissions";
+import { useTenantAccess } from "@/src/hooks/use-tenant-access";
 import { SidebarCollapseToggle } from "@/src/components/layout/sidebar-collapse-toggle";
 import { SidebarProfileFooter } from "@/src/components/layout/sidebar-profile-footer";
 import {
@@ -753,10 +754,11 @@ function NavContent({
 }) {
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
+  const { planModuleIds } = useTenantAccess();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const userRole = user?.role || "EMPLOYEE";
-  const visibleModules = getVisibleModules(userRole);
+  const visibleModules = getEffectiveModules(userRole, planModuleIds);
 
   const navSections = allNavSections
     .map((section) => ({

@@ -1,66 +1,98 @@
 import type { PermissionGroup } from "@/src/types/admin";
 import { generateId } from "@/src/lib/utils";
+import {
+  PLATFORM_ADMIN_AREAS,
+  PERMISSION_LEVELS,
+} from "@/src/services/platform-permissions.service";
+
+export { PLATFORM_ADMIN_AREAS, PERMISSION_LEVELS };
+
+/** Tenant product modules — used by tenant module management, not platform team roles */
+export const MODULE_PERMISSIONS = [
+  "dashboard", "employees", "payroll", "ledger", "petty-cash",
+  "payables", "receivables", "cash", "assets", "tax", "budget",
+  "financial-reports", "approvals", "departments", "reports", "settings", "expenses",
+] as const;
 
 const groups: PermissionGroup[] = [
   {
     id: "grp_001",
-    name: "Finance Full Access",
-    description: "Complete access to all finance modules",
+    name: "Platform Administrator",
+    description: "Full access to all admin console areas for senior platform staff",
     permissions: {
       dashboard: "full",
-      payroll: "full",
-      ledger: "full",
-      payables: "full",
-      receivables: "full",
+      companies: "full",
+      team: "full",
+      departments: "full",
+      billing: "full",
       reports: "full",
+      "audit-logs": "full",
+      roles: "full",
+      support: "full",
+      modules: "full",
+      settings: "full",
     },
     isSystem: true,
-    assignmentCount: 12,
+    assignmentCount: 0,
     createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: "grp_002",
-    name: "Payroll Officer",
-    description: "Payroll processing and employee management",
+    name: "Billing Operations",
+    description: "Subscription plans, invoices, and revenue reporting",
     permissions: {
       dashboard: "view",
-      employees: "view",
-      payroll: "full",
+      companies: "view",
+      billing: "full",
       reports: "view",
+      "audit-logs": "view",
     },
     isSystem: true,
-    assignmentCount: 8,
+    assignmentCount: 0,
     createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: "grp_003",
-    name: "Accounts Payable",
-    description: "Vendor bills and payment processing",
+    name: "Customer Success",
+    description: "Support tickets, live fix, and tenant visibility for escalations",
     permissions: {
       dashboard: "view",
-      payables: "full",
-      ledger: "view",
+      companies: "view",
+      support: "full",
+      "audit-logs": "view",
       reports: "view",
     },
     isSystem: true,
-    assignmentCount: 5,
+    assignmentCount: 0,
     createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: "grp_004",
-    name: "Department Head",
-    description: "Approvals and department budget oversight",
+    name: "Support Agent",
+    description: "Front-line ticket handling and live fix participation",
     permissions: {
       dashboard: "view",
-      employees: "view",
-      departments: "view",
-      budget: "view",
-      approvals: "approve",
-      expenses: "approve",
+      support: "edit",
+      companies: "view",
     },
     isSystem: true,
-    assignmentCount: 15,
+    assignmentCount: 0,
     createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "grp_005",
+    name: "Platform Developer",
+    description: "Module catalog, integrations, and platform configuration",
+    permissions: {
+      dashboard: "view",
+      modules: "full",
+      settings: "edit",
+      reports: "view",
+      "audit-logs": "view",
+    },
+    isSystem: true,
+    assignmentCount: 0,
+    createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
   },
 ];
 
@@ -111,10 +143,8 @@ export function deletePermissionGroup(id: string): boolean {
   return true;
 }
 
-export const MODULE_PERMISSIONS = [
-  "dashboard", "employees", "payroll", "ledger", "petty-cash",
-  "payables", "receivables", "cash", "assets", "tax", "budget",
-  "financial-reports", "approvals", "departments", "reports", "settings", "expenses",
-] as const;
-
-export const PERMISSION_LEVELS = ["none", "view", "create", "edit", "delete", "approve", "full"] as const;
+export function defaultPermissions(): Record<string, string> {
+  return Object.fromEntries(
+    PLATFORM_ADMIN_AREAS.map((area) => [area, "none"]),
+  );
+}

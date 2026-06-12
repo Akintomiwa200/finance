@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useMobileSidebar } from "@/src/context/mobile-sidebar-context";
 import { cn } from "@/src/lib/utils";
 
@@ -101,7 +102,7 @@ const navSections: NavSection[] = [
       },
       { label: "Audit Logs", href: "/admin/audit-logs", icon: FileSearch },
       {
-        label: "Roles & Groups",
+        label: "Team Roles",
         href: "/admin/roles/groups",
         icon: Shield,
         children: [
@@ -141,7 +142,7 @@ const navSections: NavSection[] = [
           { label: "Security", href: "/admin/settings/security", icon: Shield },
           { label: "Notifications", href: "/admin/settings/notifications", icon: Bell },
           { label: "Integrations", href: "/admin/settings/integrations", icon: Plug },
-          { label: "User Management", href: "/admin/settings/users", icon: Users },
+          { label: "Tenant User Access", href: "/admin/settings/users", icon: Users },
           { label: "Data & Privacy", href: "/admin/settings/privacy", icon: Database },
           { label: "API & Developer", href: "/admin/settings/api", icon: Key },
           { label: "Performance", href: "/admin/settings/performance", icon: Activity },
@@ -344,43 +345,84 @@ function SidebarFooter({
   );
 }
 
+function MobileDrawerHeader({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="flex shrink-0 items-center gap-3 border-b border-[var(--admin-nav-border)] px-4 py-4 min-h-[60px]">
+      <Link href="/admin/dashboard" className="shrink-0 no-underline" onClick={onClose}>
+        <Image src="/logo.svg" alt="Logo" width={28} height={28} className="shrink-0" />
+      </Link>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-[var(--admin-nav-item)] leading-tight">
+          Platform Console
+        </p>
+        <p className="truncate text-xs text-[var(--admin-nav-item-muted)] leading-tight">
+          Super Admin
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={onClose}
+        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--admin-nav-border)] text-[var(--admin-nav-item-muted)] transition-all hover:bg-[var(--admin-nav-hover)] hover:text-[var(--admin-nav-item)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+        aria-label="Close navigation"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
+
 export function SuperAdminSidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { isOpen: mobileOpen, close: closeMobile } = useMobileSidebar();
 
-  const asideClass = cn(
-    "admin-sidebar flex flex-col h-screen sticky top-0 border-r transition-all duration-300 overflow-hidden",
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const desktopAsideClass = cn(
+    "admin-sidebar hidden md:flex flex-col h-screen shrink-0 sticky top-0 border-r transition-all duration-300 overflow-hidden",
     collapsed ? "w-[68px]" : "w-[248px]",
   );
 
+  const mobileDrawer =
+    mounted &&
+    createPortal(
+      <>
+        <div
+          className={cn(
+            "fixed inset-0 z-[100] bg-black/50 backdrop-blur-[2px] transition-opacity duration-300 md:hidden",
+            mobileOpen ? "opacity-100" : "pointer-events-none opacity-0",
+          )}
+          onClick={closeMobile}
+          aria-hidden="true"
+        />
+        <aside
+          className={cn(
+            "admin-sidebar fixed inset-y-0 left-0 z-[110] flex h-dvh w-[min(288px,88vw)] min-h-0 flex-col border-r shadow-2xl transition-transform duration-300 ease-in-out md:hidden",
+            mobileOpen ? "translate-x-0" : "pointer-events-none -translate-x-full",
+          )}
+          aria-hidden={!mobileOpen}
+          role="dialog"
+          aria-modal={mobileOpen}
+          aria-label="Admin navigation menu"
+        >
+          <MobileDrawerHeader onClose={closeMobile} />
+          <NavContent collapsed={false} onNavigate={closeMobile} />
+          <SidebarFooter collapsed={false} compact />
+        </aside>
+      </>,
+      document.body,
+    );
+
   return (
     <>
-      <aside className={cn("hidden md:flex", asideClass)}>
+      <aside className={desktopAsideClass}>
         <SidebarHeader collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
         <NavContent collapsed={collapsed} />
         <SidebarFooter collapsed={collapsed} />
       </aside>
-
-      <div
-        className={cn(
-          "md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] transition-opacity duration-300",
-          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
-        )}
-        onClick={closeMobile}
-        aria-hidden="true"
-      />
-
-      <aside
-        className={cn(
-          "admin-sidebar md:hidden fixed left-0 top-0 z-50 flex h-dvh w-[min(288px,88vw)] flex-col border-r shadow-2xl transition-transform duration-300 ease-in-out",
-          mobileOpen ? "translate-x-0" : "-translate-x-full pointer-events-none",
-        )}
-        aria-hidden={!mobileOpen}
-      >
-        <SidebarHeader collapsed={false} onClose={closeMobile} />
-        <NavContent collapsed={false} onNavigate={closeMobile} />
-        <SidebarFooter collapsed={false} compact />
-      </aside>
+      {mobileDrawer}
     </>
   );
 }

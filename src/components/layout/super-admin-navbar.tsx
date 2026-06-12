@@ -41,7 +41,7 @@ export function SuperAdminNavbar() {
     <header
       ref={headerRef}
       className={cn(
-        "sticky top-0 z-30 shrink-0 bg-background px-[2em] transition-all duration-300 ease-out",
+        "sticky top-0 z-30 shrink-0 bg-background px-4 sm:px-6 md:px-[2em] transition-all duration-300 ease-out",
         searchOpen ? "py-3 md:py-3.5" : "flex h-16 items-center md:h-[4.75rem]",
       )}
     >

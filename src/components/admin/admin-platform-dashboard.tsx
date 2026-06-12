@@ -163,6 +163,11 @@ export function AdminPlatformDashboard() {
     refetchOrgs();
   });
 
+  const tenantOrgs = useMemo(
+    () => (orgs ?? []).filter((o) => !o.isPlatform),
+    [orgs],
+  );
+
   const retentionRate = useMemo(() => {
     if (!stats?.totalOrganizations) return 72;
     return Math.round(
@@ -172,7 +177,7 @@ export function AdminPlatformDashboard() {
 
   const planDistribution = useMemo(() => {
     const plans = { Enterprise: 0, Professional: 0, Starter: 0 };
-    for (const org of orgs ?? []) {
+    for (const org of tenantOrgs) {
       const plan = (org.plan ?? "Enterprise").toLowerCase();
       if (plan.includes("starter")) plans.Starter += 1;
       else if (plan.includes("pro")) plans.Professional += 1;
@@ -184,7 +189,7 @@ export function AdminPlatformDashboard() {
       { name: "Professional", value: Math.round((plans.Professional / total) * 100), count: plans.Professional },
       { name: "Starter", value: Math.round((plans.Starter / total) * 100), count: plans.Starter },
     ];
-  }, [orgs]);
+  }, [tenantOrgs]);
 
   const donutData = planDistribution.map((p, i) => ({
     name: p.name,
@@ -194,25 +199,48 @@ export function AdminPlatformDashboard() {
 
   const topCompanies = useMemo(
     () =>
-      [...(orgs ?? [])]
+      [...tenantOrgs]
         .sort((a, b) => b.employeeCount - a.employeeCount)
         .slice(0, 3)
         .map((org, i) => ({
           id: org.id,
           name: org.name,
           logo: org.logo,
-          channel: org.plan ?? "Enterprise",
+          plan: org.plan ?? "Enterprise",
+          userCount: org.employeeCount,
           active: i === 1,
         })),
-    [orgs],
+    [tenantOrgs],
   );
 
-  const totalEmployees = stats?.totalEmployees ?? 0;
+  const tenantUsers = stats?.tenantUserCount ?? stats?.totalEmployees ?? 0;
+  const platformTeam = stats?.platformTeamCount ?? 0;
   const growth = stats?.growthRate ?? 0;
   const revenue = stats?.revenueEstimate ?? 0;
 
+  const tenantCompanyCount = stats?.totalOrganizations ?? tenantOrgs.length;
+
   return (
-    <div className="space-y-1">
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-xl border border-border bg-card px-4 py-3">
+          <p className="text-xs text-muted-foreground">Tenant companies</p>
+          <p className="text-2xl font-semibold">{stats?.totalOrganizations ?? 0}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card px-4 py-3">
+          <p className="text-xs text-muted-foreground">Tenant users</p>
+          <p className="text-2xl font-semibold">{tenantUsers}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card px-4 py-3">
+          <p className="text-xs text-muted-foreground">Platform team</p>
+          <p className="text-2xl font-semibold">{platformTeam}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card px-4 py-3">
+          <p className="text-xs text-muted-foreground">Active tenants</p>
+          <p className="text-2xl font-semibold">{stats?.activeOrganizations ?? 0}</p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12 xl:gap-5">
         {/* Platform revenue */}
         <DashCard className="flex flex-col justify-between xl:col-span-3">
@@ -395,14 +423,18 @@ export function AdminPlatformDashboard() {
                 </PieChart>
               </ResponsiveContainer>
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <span className="text-lg font-semibold text-foreground">
-                  {totalEmployees >= 1000
-                    ? `${(totalEmployees / 1000).toFixed(0)}K`
-                    : totalEmployees}
-                </span>
+                <div className="text-center">
+                  <span className="text-lg font-semibold text-foreground">
+                    {tenantCompanyCount}
+                  </span>
+                  <p className="text-[10px] text-muted-foreground">By plan</p>
+                </div>
               </div>
             </div>
             <div className="flex flex-wrap gap-3 text-xs sm:flex-col">
+              <p className="w-full text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:mb-1">
+                Subscription plans
+              </p>
               {donutData.map((d) => (
                 <div key={d.name} className="flex items-center gap-2 text-muted-foreground">
                   <span
@@ -433,7 +465,11 @@ export function AdminPlatformDashboard() {
                     <CompanyLogo name={c.name} logo={c.logo} size={36} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-foreground">{c.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">{c.channel}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {c.plan}
+                        {" · "}
+                        {c.userCount === 1 ? "1 user" : `${c.userCount} users`}
+                      </p>
                     </div>
                     {c.active ? (
                       <Headphones className="h-4 w-4 shrink-0 text-muted-foreground" />

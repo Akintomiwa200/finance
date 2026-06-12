@@ -3,7 +3,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  X,
   Search,
   Building2,
   Link2,
@@ -23,8 +22,13 @@ import {
 import { CompanyLogo } from "@/src/components/ui/company-logo";
 import { useCreate } from "@/src/hooks/use-mutation";
 import { useToast } from "@/src/components/ui/use-toast";
-import { cn } from "@/src/lib/utils";
 import { TENANT_PLAN_OPTIONS } from "@/src/lib/tenant-billing-plans";
+import {
+  CompanyFormShell,
+  FieldAvatar,
+  FormFieldRow,
+  uploadCompanyLogo,
+} from "@/src/components/admin/company-form-shared";
 
 type CompanyForm = {
   name: string;
@@ -36,71 +40,6 @@ type CompanyForm = {
 };
 
 const PLAN_OPTIONS = TENANT_PLAN_OPTIONS;
-
-function FieldAvatar({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted",
-        className,
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
-function FormFieldRow({
-  avatar,
-  title,
-  hint,
-  children,
-  trailing,
-}: {
-  avatar: React.ReactNode;
-  title: string;
-  hint?: string;
-  children: React.ReactNode;
-  trailing?: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-start gap-3 border-b border-border/70 py-4 last:border-b-0">
-      {avatar}
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-foreground">{title}</p>
-            {hint && (
-              <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
-            )}
-          </div>
-          {trailing && <div className="shrink-0">{trailing}</div>}
-        </div>
-        <div className="mt-2">{children}</div>
-      </div>
-    </div>
-  );
-}
-
-async function uploadCompanyLogo(file: File): Promise<string> {
-  const formData = new FormData();
-  formData.append("file", file);
-  const res = await fetch("/api/admin/organizations/logo", {
-    method: "POST",
-    body: formData,
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.error ?? "Logo upload failed");
-  }
-  return data.url as string;
-}
 
 export function AddCompanyForm() {
   const router = useRouter();
@@ -121,7 +60,7 @@ export function AddCompanyForm() {
 
   const { mutate, isPending } = useCreate<
     { id: string },
-    { name: string; slug: string; email: string; phone: string; logo?: string }
+    { name: string; slug: string; email: string; phone: string; plan?: string; logo?: string }
   >("/api/admin/organizations");
 
   const slugPreview = useMemo(() => {
@@ -209,6 +148,7 @@ export function AddCompanyForm() {
       slug: form.slug.trim(),
       email: form.email.trim(),
       phone: form.phone.trim(),
+      plan: form.plan,
       ...(logoUrl ? { logo: logoUrl } : {}),
     });
 
@@ -225,35 +165,11 @@ export function AddCompanyForm() {
   };
 
   return (
-    <div className="relative mx-auto flex w-full min-w-0 max-w-5xl justify-center px-0 py-4 sm:py-8">
-      <div
-        className="pointer-events-none absolute inset-0 -z-10 rounded-[28px] opacity-90"
-        style={{
-          background:
-            "radial-gradient(ellipse at 15% 10%, color-mix(in srgb, var(--accent-400) 16%, transparent), transparent 48%), radial-gradient(ellipse at 85% 20%, color-mix(in srgb, #ec4899 12%, transparent), transparent 42%), radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--info) 10%, transparent), transparent 50%)",
-        }}
-      />
-
-      <div className="relative w-full min-w-0 overflow-hidden rounded-[28px] border border-border/60 bg-card shadow-xl">
-        <button
-          type="button"
-          onClick={() => router.push("/admin/companies")}
-          className="absolute right-5 top-5 z-10 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          aria-label="Close"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
-        <div className="px-6 pb-2 pt-10 text-center sm:px-10 sm:pt-12">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-[1.75rem]">
-            Add New Company
-          </h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-            Register a new tenant on the platform. The company name, slug, and logo
-            will appear across the app for this organization.
-          </p>
-        </div>
-
+    <CompanyFormShell
+      title="Add New Company"
+      description="Register a new tenant on the platform. The company name, slug, and logo will appear across the app for this organization."
+      onClose={() => router.push("/admin/companies")}
+    >
         <form onSubmit={handleSubmit} className="min-w-0 px-6 pb-8 pt-6 sm:px-10">
           <div className="mb-6 flex flex-col items-center gap-4 border-b border-border/60 pb-6 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
             <div className="flex min-w-0 items-center gap-4">
@@ -449,7 +365,6 @@ export function AddCompanyForm() {
             )}
           </Button>
         </form>
-      </div>
-    </div>
+    </CompanyFormShell>
   );
 }

@@ -15,11 +15,18 @@ import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
 import { Button } from "@/src/components/ui/button";
 import { Switch } from "@/src/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import { FieldAvatar, FormFieldRow } from "@/src/components/admin/admin-form-fields";
 import { useMutation } from "@/src/hooks/use-mutation";
 import { useToast } from "@/src/components/ui/use-toast";
 import { api } from "@/src/lib/api";
 import { formatCurrency } from "@/src/lib/utils";
+import type { ModuleId } from "@/src/lib/permissions";
+import {
+  ALL_TENANT_MODULE_IDS,
+  STARTER_PLAN_MODULES,
+  TENANT_MODULE_SECTIONS,
+} from "@/src/lib/tenant-module-catalog";
 import type { TenantBillingPlan } from "@/src/types/billing-plan";
 
 type PlanForm = {
@@ -77,23 +84,60 @@ export function BillingPlanModal({
 }: BillingPlanModalProps) {
   const { toast } = useToast();
   const [form, setForm] = useState<PlanForm>(emptyForm);
+  const [selectedModuleIds, setSelectedModuleIds] = useState<ModuleId[]>([
+    ...STARTER_PLAN_MODULES,
+  ]);
+  const [moduleTab, setModuleTab] = useState(TENANT_MODULE_SECTIONS[0].title);
 
   useEffect(() => {
     if (!open) return;
-    setForm(mode === "edit" && plan ? planToForm(plan) : emptyForm);
+    if (mode === "edit" && plan) {
+      setForm(planToForm(plan));
+      setSelectedModuleIds([...plan.moduleIds]);
+    } else {
+      setForm(emptyForm);
+      setSelectedModuleIds([...STARTER_PLAN_MODULES]);
+    }
+    setModuleTab(TENANT_MODULE_SECTIONS[0].title);
   }, [open, mode, plan]);
+
+  const toggleModule = (moduleId: ModuleId, enabled: boolean) => {
+    if (moduleId === "dashboard" && !enabled) return;
+    setSelectedModuleIds((prev) => {
+      if (enabled) return [...new Set([...prev, moduleId])];
+      return prev.filter((id) => id !== moduleId);
+    });
+    if (form.unlimitedModules) {
+      setForm((f) => ({ ...f, unlimitedModules: false }));
+    }
+  };
+
+  const toggleSectionModules = (sectionTitle: string, enabled: boolean) => {
+    const section = TENANT_MODULE_SECTIONS.find((s) => s.title === sectionTitle);
+    if (!section) return;
+    const ids = section.modules.map((m) => m.id);
+    setSelectedModuleIds((prev) => {
+      if (enabled) return [...new Set([...prev, ...ids])];
+      return prev.filter((id) => !ids.includes(id) || id === "dashboard");
+    });
+    if (form.unlimitedModules) {
+      setForm((f) => ({ ...f, unlimitedModules: false }));
+    }
+  };
 
   const preview = useMemo(() => {
     const price = Number(form.price) || 0;
     const users = form.unlimitedUsers ? "Unlimited users" : `Up to ${form.users || 0} users`;
-    const modules = form.unlimitedModules ? "All modules" : `${form.modules || 0} modules`;
+    const modules = form.unlimitedModules
+      ? "All modules"
+      : `${selectedModuleIds.length} sidebar modules`;
     return {
       title: form.name.trim() || "New plan",
       price: formatCurrency(price),
       users,
       modules,
     };
-  }, [form]);
+  }, [form, selectedModuleIds]);
 
   const { mutate, isPending } = useMutation<TenantBillingPlan, Record<string, unknown>>({
     mutationFn: async (input) => {
@@ -115,6 +159,7 @@ export function BillingPlanModal({
 
   const handleClose = () => {
     setForm(emptyForm);
+    setSelectedModuleIds([...STARTER_PLAN_MODULES]);
     onClose();
   };
 
@@ -139,13 +184,17 @@ export function BillingPlanModal({
     }
 
     const users = form.unlimitedUsers ? -1 : Number(form.users);
-    const modules = form.unlimitedModules ? -1 : Number(form.modules);
+    const moduleIds = form.unlimitedModules
+      ? [...ALL_TENANT_MODULE_IDS]
+      : [...new Set(["dashboard" as ModuleId, ...selectedModuleIds])];
+    const modules = form.unlimitedModules ? -1 : moduleIds.length;
+
     if (!form.unlimitedUsers && (!Number.isFinite(users) || users < 1)) {
       toast({ title: "User limit must be at least 1", variant: "destructive" });
       return;
     }
-    if (!form.unlimitedModules && (!Number.isFinite(modules) || modules < 1)) {
-      toast({ title: "Module limit must be at least 1", variant: "destructive" });
+    if (!form.unlimitedModules && moduleIds.length < 1) {
+      toast({ title: "Select at least one module", variant: "destructive" });
       return;
     }
 
@@ -154,6 +203,7 @@ export function BillingPlanModal({
       price,
       users,
       modules,
+      moduleIds,
       popular: form.popular,
       active: form.active,
       description: form.description.trim() || undefined,
@@ -320,36 +370,6 @@ export function BillingPlanModal({
             <FormFieldRow
               avatar={
                 <FieldAvatar>
-                  <Blocks className="h-4 w-4 text-muted-foreground" />
-                </FieldAvatar>
-              }
-              title="Module limit"
-              hint="Finance modules included in the plan"
-            >
-              <div className="flex flex-wrap items-center gap-3">
-                <Input
-                  type="number"
-                  min={1}
-                  disabled={form.unlimitedModules}
-                  value={form.modules}
-                  onChange={(e) => setForm((f) => ({ ...f, modules: e.target.value }))}
-                  className="h-10 w-28 min-w-0 rounded-lg border-border/80 bg-card"
-                />
-                <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Switch
-                    checked={form.unlimitedModules}
-                    onCheckedChange={(unlimitedModules) =>
-                      setForm((f) => ({ ...f, unlimitedModules }))
-                    }
-                  />
-                  All modules
-                </label>
-              </div>
-            </FormFieldRow>
-
-            <FormFieldRow
-              avatar={
-                <FieldAvatar>
                   <FileText className="h-4 w-4 text-muted-foreground" />
                 </FieldAvatar>
               }
@@ -397,6 +417,103 @@ export function BillingPlanModal({
                 </label>
               </div>
             </FormFieldRow>
+          </div>
+
+          <div className="mt-6 overflow-hidden rounded-2xl border border-border/60 bg-background/40">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-4 py-3 sm:px-5">
+              <div className="flex items-center gap-3">
+                <FieldAvatar className="bg-violet-500/15 text-violet-600">
+                  <Blocks className="h-5 w-5" />
+                </FieldAvatar>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Tenant sidebar modules</p>
+                  <p className="text-xs text-muted-foreground">
+                    Companies on this plan only see these tabs; others show access denied
+                  </p>
+                </div>
+              </div>
+              <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Switch
+                  checked={form.unlimitedModules}
+                  onCheckedChange={(unlimitedModules) => {
+                    setForm((f) => ({ ...f, unlimitedModules }));
+                    if (unlimitedModules) {
+                      setSelectedModuleIds([...ALL_TENANT_MODULE_IDS]);
+                    }
+                  }}
+                />
+                All modules
+              </label>
+            </div>
+
+            <div className="p-4 sm:p-5">
+              <Tabs value={moduleTab} onValueChange={setModuleTab}>
+                <TabsList className="mb-4 flex h-auto w-full flex-wrap justify-start gap-1 bg-muted/40 p-1">
+                  {TENANT_MODULE_SECTIONS.map((section) => (
+                    <TabsTrigger
+                      key={section.title}
+                      value={section.title}
+                      className="text-xs sm:text-sm"
+                    >
+                      {section.title}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                {TENANT_MODULE_SECTIONS.map((section) => {
+                  const sectionIds = section.modules.map((m) => m.id);
+                  const enabledInSection = sectionIds.filter((id) =>
+                    form.unlimitedModules
+                      ? true
+                      : selectedModuleIds.includes(id),
+                  ).length;
+                  const allInSection = enabledInSection === sectionIds.length;
+
+                  return (
+                    <TabsContent key={section.title} value={section.title} className="mt-0">
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <p className="text-xs text-muted-foreground">
+                          {enabledInSection} of {sectionIds.length} enabled in {section.title}
+                        </p>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 text-xs"
+                          disabled={form.unlimitedModules}
+                          onClick={() => toggleSectionModules(section.title, !allInSection)}
+                        >
+                          {allInSection ? "Clear section" : "Enable section"}
+                        </Button>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {section.modules.map((mod) => {
+                          const checked =
+                            form.unlimitedModules || selectedModuleIds.includes(mod.id);
+                          const locked = mod.id === "dashboard";
+                          return (
+                            <label
+                              key={mod.id}
+                              className="flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-card px-3 py-2.5"
+                            >
+                              <div>
+                                <p className="text-sm font-medium text-foreground">{mod.label}</p>
+                                <p className="text-[11px] text-muted-foreground">{mod.id}</p>
+                              </div>
+                              <Switch
+                                checked={checked}
+                                disabled={form.unlimitedModules || locked}
+                                onCheckedChange={(on) => toggleModule(mod.id, on)}
+                              />
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </TabsContent>
+                  );
+                })}
+              </Tabs>
+            </div>
           </div>
 
           <Button

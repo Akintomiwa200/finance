@@ -3,6 +3,7 @@ import { requireAuthenticatedUser } from "@/src/lib/support-auth";
 import { getSupportTicket, addTicketComment } from "@/src/services/support.service";
 import { pushRealtimeEvent } from "@/src/lib/realtime-bus";
 import { prepareSupportData } from "@/src/lib/support-api";
+import { onSupportCommentAdded } from "@/src/services/notification-events.service";
 
 export async function POST(
   req: Request,
@@ -28,8 +29,13 @@ export async function POST(
     id,
     body.content.trim(),
     session!.user.name ?? "User",
-    false,
+    { isStaff: false, actorName: session!.user.name ?? "User" },
   );
+
+  void onSupportCommentAdded(ticket, comment, {
+    userId: session!.user.id,
+    email: session!.user.email ?? undefined,
+  }).catch((err) => console.error("[notify] ticket comment", err));
 
   pushRealtimeEvent({
     event: "create",

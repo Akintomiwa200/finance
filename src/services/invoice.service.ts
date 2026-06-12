@@ -1,5 +1,12 @@
 import { db } from "@/src/lib/db";
 import { generateId } from "@/src/lib/utils";
+import { onInvoiceSent, onPaymentSuccess } from "@/src/services/notification-events.service";
+
+function formatMoney(amount: number | { toString(): string }) {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+    Number(amount),
+  );
+}
 
 export async function getCustomerInvoices(organizationId: string) {
   return db.customerInvoice.findMany({
@@ -56,17 +63,65 @@ export async function createCustomerInvoice(data: {
 }
 
 export async function sendInvoice(id: string) {
-  return db.customerInvoice.update({
+  const invoice = await db.customerInvoice.update({
     where: { id },
     data: { status: "SENT" },
+    include: { items: true },
   });
+
+  if (invoice.customerEmail) {
+    const subtotal = Number(invoice.totalAmount) - Number(invoice.taxAmount);
+    void onInvoiceSent({
+      email: invoice.customerEmail,
+      invoiceNumber: invoice.invoiceNumber,
+      customerName: invoice.customerName,
+      dueDate: invoice.dueDate.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }),
+      lineItems: invoice.items.map((item) => ({
+        name: item.description,
+        quantity: String(item.quantity),
+        amount: formatMoney(item.total),
+      })),
+      subtotal: formatMoney(subtotal),
+      tax: formatMoney(invoice.taxAmount),
+      total: formatMoney(invoice.totalAmount),
+      actionPath: `/receivables/sales-invoices`,
+    }).catch((err) => console.error("[notify] invoice sent", err));
+  }
+
+  return invoice;
 }
 
-export async function markInvoicePaid(id: string) {
-  return db.customerInvoice.update({
+export async function markInvoicePaid(id: string, payer?: { userId?: string; email?: string; name?: string }) {
+  const invoice = await db.customerInvoice.update({
     where: { id },
     data: { status: "PAID" },
+    include: { items: true },
   });
+
+  if (payer?.email) {
+    void onPaymentSuccess({
+      userId: payer.userId ?? "",
+      email: payer.email,
+      name: payer.name,
+      amount: formatMoney(invoice.totalAmount),
+      date: new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }),
+      method: "Account payment",
+      confirmationId: invoice.invoiceNumber,
+      actionPath: `/receivables/sales-invoices`,
+    }).catch((err) => console.error("[notify] payment success", err));
+  }
+
+  return invoice;
 }
 
 export async function markInvoiceOverdue(id: string) {

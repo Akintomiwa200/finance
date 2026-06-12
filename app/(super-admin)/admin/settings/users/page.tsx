@@ -79,12 +79,12 @@ export default function UserManagementSettingsPage() {
 
   return (
     <PageLayout
-      title="User Management"
-      description="Directories, SSO, and account lifecycle policies"
+      title="Tenant User Access"
+      description="How people at tenant companies sign in and get provisioned — separate from your platform team under Team and Team Roles"
       showBack
       breadcrumbs={[
         { label: "Settings", href: "/admin/settings/general" },
-        { label: "User Management" },
+        { label: "Tenant User Access" },
       ]}
     >
       <Form {...form}>

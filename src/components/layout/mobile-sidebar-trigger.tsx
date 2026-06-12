@@ -23,7 +23,7 @@ export function MobileSidebarTrigger({
       type="button"
       onClick={toggle}
       className={cn(
-        "md:hidden relative z-[60] inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors",
+        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors md:hidden",
         variant === "admin"
           ? "text-muted-foreground hover:text-foreground hover:bg-muted"
           : "text-muted-foreground hover:text-foreground hover:bg-surface-2",

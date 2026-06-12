@@ -1,46 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { PageLayout } from "@/src/components/layout/page-layout";
-import { DataTable, type Column } from "@/src/components/ui/data-table";
-import { Button } from "@/src/components/ui/button";
-import { useFetch } from "@/src/hooks/use-fetch";
-import type { AdminEmployee, PermissionGroup } from "@/src/types/admin";
+import { Suspense } from "react";
+import { RolesAssignmentsPageContent } from "@/src/components/admin/roles-assignments-page-content";
+import { Loader2 } from "lucide-react";
 
-interface Assignment {
-  id: string;
-  employeeName: string;
-  employeeId: string;
-  groupName: string;
+function AssignmentsFallback() {
+  return (
+    <div className="flex justify-center py-24">
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+    </div>
+  );
 }
 
 export default function AssignmentsPage() {
-  const router = useRouter();
-  const [search, setSearch] = useState("");
-  const { data: employees } = useFetch<AdminEmployee[]>("/api/admin/employees");
-  const { data: groups } = useFetch<PermissionGroup[]>("/api/admin/groups");
-
-  const assignments: Assignment[] = (employees ?? []).slice(0, 20).map((emp, i) => ({
-    id: `asgn_${emp.id}`,
-    employeeName: `${emp.firstName} ${emp.lastName}`,
-    employeeId: emp.id,
-    groupName: groups?.[i % (groups?.length || 1)]?.name ?? "—",
-  }));
-
-  const filtered = assignments.filter((a) =>
-    !search || a.employeeName.toLowerCase().includes(search.toLowerCase()) || a.groupName.toLowerCase().includes(search.toLowerCase()),
-  );
-
-  const columns: Column<Assignment>[] = [
-    { key: "employee", header: "Employee", cell: (row) => <span className="font-medium">{row.employeeName}</span> },
-    { key: "group", header: "Group", cell: (row) => row.groupName },
-    { key: "actions", header: "", cell: (row) => <Button variant="ghost" size="sm" onClick={() => router.push(`/admin/employees/${row.employeeId}`)}>View</Button> },
-  ];
-
   return (
-    <PageLayout title="Group Assignments" description="Platform team members assigned to privilege groups" showBack breadcrumbs={[{ label: "Roles", href: "/admin/roles/groups" }, { label: "Assignments" }]}>
-      <DataTable columns={columns} data={filtered} keyField="id" searchable searchValue={search} onSearchChange={setSearch} emptyTitle="No assignments yet" />
-    </PageLayout>
+    <Suspense fallback={<AssignmentsFallback />}>
+      <RolesAssignmentsPageContent />
+    </Suspense>
   );
 }

@@ -7,6 +7,7 @@ import {
 } from "@/src/services/support.service";
 import { pushRealtimeEvent } from "@/src/lib/realtime-bus";
 import { prepareSupportData } from "@/src/lib/support-api";
+import { onLiveFixChatMessage } from "@/src/services/notification-events.service";
 
 export async function GET(
   _req: Request,
@@ -51,6 +52,10 @@ export async function POST(
     authorName: adminSession!.user.name ?? "Support Agent",
     content,
   });
+
+  void onLiveFixChatMessage(session, message).catch((err) =>
+    console.error("[notify] admin live fix chat", err),
+  );
 
   pushRealtimeEvent({
     event: "create",

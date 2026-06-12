@@ -3,7 +3,8 @@ import { requireAuthenticatedUser } from "@/src/lib/support-auth";
 import {
   getSupportTicket,
   getTicketComments,
-  addTicketComment,
+  getTicketActivities,
+  getLiveFixSessionsForTicket,
   updateTicketStatus,
 } from "@/src/services/support.service";
 import { pushRealtimeEvent } from "@/src/lib/realtime-bus";
@@ -27,6 +28,8 @@ export async function GET(
   return NextResponse.json({
     ticket,
     comments: getTicketComments(id),
+    activities: getTicketActivities(id),
+    liveFixSessions: getLiveFixSessionsForTicket(id),
   });
 }
 

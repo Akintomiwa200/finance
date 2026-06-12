@@ -30,6 +30,7 @@ export async function POST(req: Request) {
     price: Number(body.price),
     users: body.users ?? 10,
     modules: body.modules ?? 5,
+    moduleIds: body.moduleIds ?? [],
     popular: body.popular ?? false,
     active: body.active ?? true,
     description: body.description,

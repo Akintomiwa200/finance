@@ -7,6 +7,7 @@ import {
 } from "@/src/services/support.service";
 import { pushRealtimeEvent } from "@/src/lib/realtime-bus";
 import { prepareSupportData } from "@/src/lib/support-api";
+import { onLiveFixSessionCreated } from "@/src/services/notification-events.service";
 
 export async function GET() {
   const { error, org } = await requireAuthenticatedUser();
@@ -35,7 +36,16 @@ export async function POST(req: Request) {
     organizationId: org!.id,
     organizationName: org!.name,
     requestedBy: session!.user.name ?? "User",
+    requestedByEmail: session!.user.email ?? null,
+    requestedByUserId: session!.user.id,
+    actorName: session!.user.name ?? "User",
   });
+
+  void onLiveFixSessionCreated(liveSession, {
+    userId: session!.user.id,
+    email: session!.user.email ?? undefined,
+    name: session!.user.name ?? undefined,
+  }).catch((err) => console.error("[notify] live fix created", err));
 
   pushRealtimeEvent({
     event: "create",

@@ -252,8 +252,8 @@ export function CompaniesPageContent() {
                   Add Company
                 </Button>
                 <span className="text-xs text-muted-foreground">
-                  {stats?.totalOrganizations ?? orgs?.length ?? 0} organizations
-                  · {stats?.totalEmployees ?? 0} employees
+                  {stats?.totalOrganizations ?? orgs?.length ?? 0} tenant companies
+                  · {stats?.tenantUserCount ?? stats?.totalEmployees ?? 0} tenant users
                 </span>
               </div>
             </div>
@@ -261,7 +261,7 @@ export function CompaniesPageContent() {
         </DashCard>
 
         <DashCard className="lg:col-span-5 xl:col-span-4">
-          <p className="mb-3 text-sm text-muted-foreground">Employees by company</p>
+          <p className="mb-3 text-sm text-muted-foreground">Tenant users by company</p>
           <div className="h-[140px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={employeeBarData} barSize={22}>

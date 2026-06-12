@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { auth } from "@/src/lib/auth";
 import { db } from "@/src/lib/db";
+import { onAccountCreated } from "@/src/services/notification-events.service";
 
 export async function GET() {
   const session = await auth();
@@ -63,6 +64,11 @@ export async function POST(req: Request) {
 
     const passwordHash = await hash(password, 12);
 
+    const organization = await db.organization.findUnique({
+      where: { id: session.user.organizationId },
+      select: { name: true },
+    });
+
     const user = await db.employee.create({
       data: {
         firstName,
@@ -76,6 +82,16 @@ export async function POST(req: Request) {
       },
       include: { department: true },
     });
+
+    void onAccountCreated({
+      userId: user.id,
+      email: user.email,
+      name: `${user.firstName} ${user.lastName}`.trim(),
+      organizationName: organization?.name ?? "your organization",
+      role: user.role,
+      createdByName: session.user.name ?? undefined,
+      initialPassword: password,
+    }).catch((err) => console.error("[notify] account created", err));
 
     return NextResponse.json({
       id: user.id,

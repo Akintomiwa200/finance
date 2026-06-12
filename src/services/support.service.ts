@@ -1,6 +1,9 @@
 import type {
   SupportTicket,
   SupportComment,
+  SupportActivity,
+  SupportActivityType,
+  SupportTicketLabel,
   LiveFixSession,
   LiveFixChatMessage,
   LiveFixSessionState,
@@ -18,6 +21,7 @@ const tickets: SupportTicket[] = [
     organizationName: "Acme Corp",
     createdByName: "John Doe",
     assignedToName: "Support Team",
+    labels: ["integration", "bug"],
     githubIssueUrl: "https://github.com/faas-platform/finance/issues/42",
     jiraIssueKey: "FAAS-128",
     commentCount: 3,
@@ -34,6 +38,7 @@ const tickets: SupportTicket[] = [
     organizationName: "Beta Corp",
     createdByName: "Sarah Jones",
     assignedToName: null,
+    labels: ["bug"],
     githubIssueUrl: null,
     jiraIssueKey: null,
     commentCount: 1,
@@ -50,6 +55,7 @@ const tickets: SupportTicket[] = [
     organizationName: "Gamma Ltd",
     createdByName: "Mike Ross",
     assignedToName: null,
+    labels: ["account", "bug"],
     githubIssueUrl: null,
     jiraIssueKey: "FAAS-131",
     commentCount: 0,
@@ -82,6 +88,51 @@ const comments: SupportComment[] = [
     authorName: "John Doe",
     isStaff: false,
     createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "cmt_004",
+    ticketId: "tkt_001",
+    content: "Escalated to payments squad — likely upstream timeout on vendor API.",
+    authorName: "Support Team",
+    isStaff: true,
+    isInternal: true,
+    createdAt: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(),
+  },
+];
+
+const activities: SupportActivity[] = [
+  {
+    id: "act_001",
+    ticketId: "tkt_001",
+    type: "created",
+    actorName: "John Doe",
+    message: "Ticket opened",
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "act_002",
+    ticketId: "tkt_001",
+    type: "assigned",
+    actorName: "Support Team",
+    message: "Assigned to Support Team",
+    createdAt: new Date(Date.now() - 1.5 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "act_003",
+    ticketId: "tkt_001",
+    type: "status_changed",
+    actorName: "Support Team",
+    message: "Status changed to In Progress",
+    metadata: { from: "OPEN", to: "IN_PROGRESS" },
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "act_004",
+    ticketId: "tkt_001",
+    type: "github_linked",
+    actorName: "Support Team",
+    message: "Linked GitHub issue #42",
+    createdAt: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
   },
 ];
 
@@ -125,6 +176,30 @@ function defaultSessionState(sessionId: string): LiveFixSessionState {
   };
 }
 
+function touchTicket(ticket: SupportTicket) {
+  ticket.updatedAt = new Date().toISOString();
+}
+
+export function logTicketActivity(
+  ticketId: string,
+  type: SupportActivityType,
+  actorName: string | null,
+  message: string,
+  metadata?: Record<string, string>,
+): SupportActivity {
+  const activity: SupportActivity = {
+    id: generateId("act_"),
+    ticketId,
+    type,
+    actorName,
+    message,
+    metadata,
+    createdAt: new Date().toISOString(),
+  };
+  activities.unshift(activity);
+  return activity;
+}
+
 export function remapOrganizationId(mockId: string, realId: string) {
   for (const ticket of tickets) {
     if (ticket.organizationId === mockId) {
@@ -148,15 +223,23 @@ export function getSupportTickets(organizationId?: string): SupportTicket[] {
 
 export function createSupportTicket(
   data: Omit<SupportTicket, "id" | "commentCount" | "createdAt" | "updatedAt">,
+  actorName?: string | null,
 ): SupportTicket {
   const ticket: SupportTicket = {
     ...data,
+    labels: data.labels ?? [],
     id: generateId("tkt_"),
     commentCount: 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
   tickets.unshift(ticket);
+  logTicketActivity(
+    ticket.id,
+    "created",
+    actorName ?? data.createdByName,
+    "Ticket opened",
+  );
   return ticket;
 }
 
@@ -164,31 +247,57 @@ export function getSupportTicket(id: string): SupportTicket | undefined {
   return tickets.find((t) => t.id === id);
 }
 
-export function getTicketComments(ticketId: string): SupportComment[] {
-  return comments.filter((c) => c.ticketId === ticketId);
+export function getTicketComments(
+  ticketId: string,
+  options?: { includeInternal?: boolean },
+): SupportComment[] {
+  const includeInternal = options?.includeInternal ?? false;
+  return comments
+    .filter((c) => c.ticketId === ticketId)
+    .filter((c) => includeInternal || !c.isInternal)
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+}
+
+export function getTicketActivities(ticketId: string): SupportActivity[] {
+  return activities
+    .filter((a) => a.ticketId === ticketId)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export function addTicketComment(
   ticketId: string,
   content: string,
   authorName: string,
-  isStaff = false,
+  options?: { isStaff?: boolean; isInternal?: boolean; actorName?: string | null },
 ): SupportComment {
+  const isStaff = options?.isStaff ?? false;
+  const isInternal = options?.isInternal ?? false;
+
   const comment: SupportComment = {
     id: generateId("cmt_"),
     ticketId,
     content,
     authorName,
     isStaff,
+    isInternal,
     createdAt: new Date().toISOString(),
   };
   comments.push(comment);
 
   const ticket = tickets.find((t) => t.id === ticketId);
   if (ticket) {
-    ticket.commentCount += 1;
-    ticket.updatedAt = new Date().toISOString();
+    if (!isInternal) {
+      ticket.commentCount += 1;
+    }
+    touchTicket(ticket);
   }
+
+  logTicketActivity(
+    ticketId,
+    isInternal ? "internal_note" : "comment",
+    options?.actorName ?? authorName,
+    isInternal ? "Internal note added" : isStaff ? "Support replied" : "Customer replied",
+  );
 
   return comment;
 }
@@ -196,11 +305,20 @@ export function addTicketComment(
 export function updateTicketStatus(
   id: string,
   status: SupportTicket["status"],
+  actorName?: string | null,
 ): SupportTicket | undefined {
   const ticket = tickets.find((t) => t.id === id);
-  if (ticket) {
+  if (ticket && ticket.status !== status) {
+    const from = ticket.status;
     ticket.status = status;
-    ticket.updatedAt = new Date().toISOString();
+    touchTicket(ticket);
+    logTicketActivity(
+      id,
+      "status_changed",
+      actorName ?? null,
+      `Status changed to ${status.replace(/_/g, " ")}`,
+      { from, to: status },
+    );
   }
   return ticket;
 }
@@ -208,11 +326,20 @@ export function updateTicketStatus(
 export function updateTicketPriority(
   id: string,
   priority: SupportTicket["priority"],
+  actorName?: string | null,
 ): SupportTicket | undefined {
   const ticket = tickets.find((t) => t.id === id);
-  if (ticket) {
+  if (ticket && ticket.priority !== priority) {
+    const from = ticket.priority;
     ticket.priority = priority;
-    ticket.updatedAt = new Date().toISOString();
+    touchTicket(ticket);
+    logTicketActivity(
+      id,
+      "priority_changed",
+      actorName ?? null,
+      `Priority changed to ${priority}`,
+      { from, to: priority },
+    );
   }
   return ticket;
 }
@@ -220,11 +347,38 @@ export function updateTicketPriority(
 export function updateTicketAssignment(
   id: string,
   assignedToName: string | null,
+  actorName?: string | null,
 ): SupportTicket | undefined {
   const ticket = tickets.find((t) => t.id === id);
   if (ticket) {
     ticket.assignedToName = assignedToName;
-    ticket.updatedAt = new Date().toISOString();
+    touchTicket(ticket);
+    logTicketActivity(
+      id,
+      "assigned",
+      actorName ?? null,
+      assignedToName ? `Assigned to ${assignedToName}` : "Unassigned",
+      assignedToName ? { assignee: assignedToName } : undefined,
+    );
+  }
+  return ticket;
+}
+
+export function updateTicketLabels(
+  id: string,
+  labels: SupportTicketLabel[],
+  actorName?: string | null,
+): SupportTicket | undefined {
+  const ticket = tickets.find((t) => t.id === id);
+  if (ticket) {
+    ticket.labels = labels;
+    touchTicket(ticket);
+    logTicketActivity(
+      id,
+      "label_changed",
+      actorName ?? null,
+      `Labels updated: ${labels.join(", ") || "none"}`,
+    );
   }
   return ticket;
 }
@@ -232,11 +386,21 @@ export function updateTicketAssignment(
 export function updateTicketGithubIssue(
   id: string,
   githubIssueUrl: string | null,
+  actorName?: string | null,
 ): SupportTicket | undefined {
   const ticket = tickets.find((t) => t.id === id);
   if (ticket) {
     ticket.githubIssueUrl = githubIssueUrl;
-    ticket.updatedAt = new Date().toISOString();
+    touchTicket(ticket);
+    if (githubIssueUrl) {
+      logTicketActivity(
+        id,
+        "github_linked",
+        actorName ?? null,
+        `Linked GitHub issue`,
+        { url: githubIssueUrl },
+      );
+    }
   }
   return ticket;
 }
@@ -244,11 +408,21 @@ export function updateTicketGithubIssue(
 export function updateTicketJiraIssue(
   id: string,
   jiraIssueKey: string | null,
+  actorName?: string | null,
 ): SupportTicket | undefined {
   const ticket = tickets.find((t) => t.id === id);
   if (ticket) {
     ticket.jiraIssueKey = jiraIssueKey;
-    ticket.updatedAt = new Date().toISOString();
+    touchTicket(ticket);
+    if (jiraIssueKey) {
+      logTicketActivity(
+        id,
+        "jira_linked",
+        actorName ?? null,
+        `Linked Jira issue ${jiraIssueKey}`,
+        { key: jiraIssueKey },
+      );
+    }
   }
   return ticket;
 }
@@ -261,6 +435,10 @@ export function getLiveFixSessions(organizationId?: string): LiveFixSession[] {
   return list;
 }
 
+export function getLiveFixSessionsForTicket(ticketId: string): LiveFixSession[] {
+  return liveFixSessions.filter((s) => s.ticketId === ticketId);
+}
+
 export function getLiveFixSession(id: string): LiveFixSession | undefined {
   return liveFixSessions.find((s) => s.id === id);
 }
@@ -270,6 +448,9 @@ export function createLiveFixSession(data: {
   organizationId?: string;
   organizationName: string;
   requestedBy: string;
+  requestedByEmail?: string | null;
+  requestedByUserId?: string | null;
+  actorName?: string | null;
 }): LiveFixSession {
   const session: LiveFixSession = {
     id: generateId("lfx_"),
@@ -279,10 +460,23 @@ export function createLiveFixSession(data: {
     status: "waiting",
     sessionCode: `FX-${Math.floor(1000 + Math.random() * 9000)}`,
     requestedBy: data.requestedBy,
+    requestedByEmail: data.requestedByEmail ?? null,
+    requestedByUserId: data.requestedByUserId ?? null,
     startedAt: null,
     createdAt: new Date().toISOString(),
   };
   liveFixSessions.unshift(session);
+
+  if (data.ticketId) {
+    logTicketActivity(
+      data.ticketId,
+      "live_fix_linked",
+      data.actorName ?? data.requestedBy,
+      `Live fix session ${session.sessionCode} requested`,
+      { sessionId: session.id },
+    );
+  }
+
   return session;
 }
 

@@ -3,15 +3,22 @@ import { requireSuperAdmin } from "@/src/lib/admin-auth";
 import {
   getSupportTicket,
   getTicketComments,
+  getTicketActivities,
+  getLiveFixSessionsForTicket,
   addTicketComment,
   updateTicketStatus,
   updateTicketPriority,
   updateTicketAssignment,
+  updateTicketLabels,
   updateTicketGithubIssue,
   updateTicketJiraIssue,
 } from "@/src/services/support.service";
 import { pushRealtimeEvent } from "@/src/lib/realtime-bus";
 import { prepareSupportData } from "@/src/lib/support-api";
+import {
+  onSupportCommentAdded,
+  onSupportTicketUpdated,
+} from "@/src/services/notification-events.service";
 
 export async function GET(
   _req: Request,
@@ -30,7 +37,9 @@ export async function GET(
 
   return NextResponse.json({
     ticket,
-    comments: getTicketComments(id),
+    comments: getTicketComments(id, { includeInternal: true }),
+    activities: getTicketActivities(id),
+    liveFixSessions: getLiveFixSessionsForTicket(id),
   });
 }
 
@@ -44,6 +53,7 @@ export async function PATCH(
   await prepareSupportData();
   const { id } = await params;
   const body = await req.json();
+  const actorName = session!.user.name ?? "Super Admin";
   let ticket = getSupportTicket(id);
 
   if (!ticket) {
@@ -51,31 +61,37 @@ export async function PATCH(
   }
 
   if (body.status) {
-    ticket = updateTicketStatus(id, body.status) ?? ticket;
+    ticket = updateTicketStatus(id, body.status, actorName) ?? ticket;
   }
 
   if (body.priority) {
-    ticket = updateTicketPriority(id, body.priority) ?? ticket;
+    ticket = updateTicketPriority(id, body.priority, actorName) ?? ticket;
   }
 
   if ("assignedToName" in body) {
-    ticket = updateTicketAssignment(id, body.assignedToName) ?? ticket;
+    ticket = updateTicketAssignment(id, body.assignedToName, actorName) ?? ticket;
+  }
+
+  if (body.labels) {
+    ticket = updateTicketLabels(id, body.labels, actorName) ?? ticket;
   }
 
   if ("githubIssueUrl" in body) {
-    ticket = updateTicketGithubIssue(id, body.githubIssueUrl) ?? ticket;
+    ticket = updateTicketGithubIssue(id, body.githubIssueUrl, actorName) ?? ticket;
   }
 
   if ("jiraIssueKey" in body) {
-    ticket = updateTicketJiraIssue(id, body.jiraIssueKey) ?? ticket;
+    ticket = updateTicketJiraIssue(id, body.jiraIssueKey, actorName) ?? ticket;
   }
 
   if (body.comment) {
-    const comment = addTicketComment(
-      id,
-      body.comment,
-      session!.user.name ?? "Super Admin",
-      true,
+    const comment = addTicketComment(id, body.comment, actorName, {
+      isStaff: true,
+      isInternal: false,
+      actorName,
+    });
+    void onSupportCommentAdded(ticket, comment).catch((err) =>
+      console.error("[notify] staff comment", err),
     );
     pushRealtimeEvent({
       event: "create",
@@ -83,8 +99,27 @@ export async function PATCH(
       data: comment,
       userId: session!.user.id,
     });
-    return NextResponse.json(comment);
+    return NextResponse.json({ ticket, comment });
   }
+
+  if (body.internalNote) {
+    const comment = addTicketComment(id, body.internalNote, actorName, {
+      isStaff: true,
+      isInternal: true,
+      actorName,
+    });
+    pushRealtimeEvent({
+      event: "create",
+      entity: "support_comment",
+      data: comment,
+      userId: session!.user.id,
+    });
+    return NextResponse.json({ ticket, comment });
+  }
+
+  void onSupportTicketUpdated(ticket).catch((err) =>
+    console.error("[notify] ticket updated", err),
+  );
 
   pushRealtimeEvent({
     event: "update",

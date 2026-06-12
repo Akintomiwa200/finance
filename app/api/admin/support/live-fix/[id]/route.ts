@@ -3,6 +3,7 @@ import { requireSuperAdmin } from "@/src/lib/admin-auth";
 import { getLiveFixSession, endLiveFixSession } from "@/src/services/support.service";
 import { pushRealtimeEvent } from "@/src/lib/realtime-bus";
 import { prepareSupportData } from "@/src/lib/support-api";
+import { onLiveFixSessionEnded } from "@/src/services/notification-events.service";
 
 export async function GET(
   _req: Request,
@@ -36,6 +37,10 @@ export async function POST(
   if (!liveSession) {
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   }
+
+  void onLiveFixSessionEnded(liveSession).catch((err) =>
+    console.error("[notify] live fix ended", err),
+  );
 
   pushRealtimeEvent({
     event: "update",

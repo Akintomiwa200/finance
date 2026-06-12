@@ -41,8 +41,14 @@ export interface AdminDepartment {
 }
 
 export interface AdminStats {
+  /** Tenant companies using the software (excludes platform org) */
   totalOrganizations: number;
   activeOrganizations: number;
+  /** People at tenant companies who use the product */
+  tenantUserCount: number;
+  /** Internal staff: support, IT, developers, etc. */
+  platformTeamCount: number;
+  /** @deprecated Use tenantUserCount — kept for older UI references */
   totalEmployees: number;
   totalDepartments: number;
   totalTransactions: number;
@@ -61,6 +67,14 @@ export interface AdminAuditLog {
   createdAt: string;
 }
 
+export type SupportTicketLabel =
+  | "bug"
+  | "billing"
+  | "feature_request"
+  | "account"
+  | "integration"
+  | "other";
+
 export interface SupportTicket {
   id: string;
   title: string;
@@ -70,7 +84,10 @@ export interface SupportTicket {
   organizationId: string;
   organizationName: string;
   createdByName: string | null;
+  createdByEmail?: string | null;
+  createdByUserId?: string | null;
   assignedToName: string | null;
+  labels: SupportTicketLabel[];
   githubIssueUrl?: string | null;
   jiraIssueKey?: string | null;
   commentCount: number;
@@ -84,6 +101,29 @@ export interface SupportComment {
   content: string;
   authorName: string | null;
   isStaff?: boolean;
+  isInternal?: boolean;
+  createdAt: string;
+}
+
+export type SupportActivityType =
+  | "created"
+  | "status_changed"
+  | "priority_changed"
+  | "assigned"
+  | "comment"
+  | "internal_note"
+  | "label_changed"
+  | "live_fix_linked"
+  | "github_linked"
+  | "jira_linked";
+
+export interface SupportActivity {
+  id: string;
+  ticketId: string;
+  type: SupportActivityType;
+  actorName: string | null;
+  message: string;
+  metadata?: Record<string, string>;
   createdAt: string;
 }
 
@@ -97,6 +137,36 @@ export interface PermissionGroup {
   createdAt: string;
 }
 
+export interface PlatformPermission {
+  key: string;
+  label: string;
+  category: string;
+  description: string;
+}
+
+export interface GroupAssignment {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  employeeEmail: string;
+  employeeRole: string;
+  groupId: string;
+  groupName: string;
+  assignedAt: string;
+  assignedBy: string | null;
+}
+
+export interface SystemRole {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  privilegeGroupId: string | null;
+  isBuiltIn: boolean;
+  memberCount: number;
+  capabilities: string[];
+}
+
 export interface LiveFixSession {
   id: string;
   ticketId: string | null;
@@ -105,6 +175,8 @@ export interface LiveFixSession {
   status: "waiting" | "active" | "ended";
   sessionCode: string;
   requestedBy: string;
+  requestedByEmail?: string | null;
+  requestedByUserId?: string | null;
   startedAt: string | null;
   endedAt?: string | null;
   createdAt: string;
