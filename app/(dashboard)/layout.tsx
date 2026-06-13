@@ -32,14 +32,16 @@ export default function DashboardLayout({
 
   return (
     <MobileSidebarProvider>
-      <div className="flex min-h-screen bg-background">
+      <div className="flex h-screen overflow-hidden bg-background">
         <Sidebar />
-        <main className="flex-1 min-h-screen w-full min-w-0 overflow-y-auto">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <Navbar />
-          <div className="p-4 md:p-6">
-            <ModuleAccessGuard>{children}</ModuleAccessGuard>
-          </div>
-        </main>
+          <main className="flex-1 overflow-y-auto overflow-x-hidden">
+            <div className="p-4 md:p-6">
+              <ModuleAccessGuard>{children}</ModuleAccessGuard>
+            </div>
+          </main>
+        </div>
       </div>
     </MobileSidebarProvider>
   );

@@ -85,7 +85,7 @@ export function TableSkeleton({
 
 export function DashboardShellSkeleton() {
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen overflow-hidden bg-background">
       <aside className="hidden w-64 shrink-0 border-r border-border bg-card p-4 lg:block">
         <Skeleton className="mb-6 h-10 w-36 rounded-lg" />
         <div className="space-y-2">
@@ -94,9 +94,9 @@ export function DashboardShellSkeleton() {
           ))}
         </div>
       </aside>
-      <main className="min-w-0 flex-1">
-        <Skeleton className="h-14 w-full rounded-none border-b border-border" />
-        <div className="space-y-6 p-4 md:p-6">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <Skeleton className="h-14 w-full shrink-0 rounded-none border-b border-border" />
+        <div className="flex-1 space-y-6 overflow-y-auto p-4 md:p-6">
           <PageHeaderSkeleton />
           <StatCardsSkeleton />
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -105,7 +105,7 @@ export function DashboardShellSkeleton() {
           </div>
           <TableSkeleton rows={5} columns={5} />
         </div>
-      </main>
+      </div>
     </div>
   );
 }
