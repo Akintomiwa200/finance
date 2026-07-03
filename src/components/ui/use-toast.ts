@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
-import { useToast as useAppToast } from "@/src/components/ui/toast";
+import { toast as sonnerToast } from "sonner";
 
 type ToastOptions = {
   title?: string;
@@ -10,18 +9,13 @@ type ToastOptions = {
 };
 
 export function useToast() {
-  const { addToast } = useAppToast();
+  const toast = ({ title, description, variant }: ToastOptions) => {
+    if (variant === "destructive") {
+      sonnerToast.error(title ?? "", { description });
+    } else {
+      sonnerToast.success(title ?? "", { description });
+    }
+  };
 
-  const toast = useCallback(
-    ({ title, description, variant }: ToastOptions) => {
-      addToast({
-        title: title ?? "",
-        message: description,
-        type: variant === "destructive" ? "error" : "success",
-      });
-    },
-    [addToast],
-  );
-
-  return { toast, addToast };
+  return { toast };
 }

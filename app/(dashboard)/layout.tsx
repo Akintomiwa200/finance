@@ -7,6 +7,7 @@ import { Navbar } from "@/src/components/layout/navbar";
 import { MobileSidebarProvider } from "@/src/context/mobile-sidebar-context";
 import { ModuleAccessGuard } from "@/src/components/layout/module-access-guard";
 import { DashboardShellSkeleton } from "@/src/components/layout/dashboard-skeletons";
+import { SessionTimeoutProvider } from "@/src/components/session-timeout-provider";
 import { useAuthStore } from "@/src/store/auth-store";
 
 export default function DashboardLayout({
@@ -32,17 +33,19 @@ export default function DashboardLayout({
 
   return (
     <MobileSidebarProvider>
-      <div className="flex h-screen overflow-hidden bg-background">
-        <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <Navbar />
-          <main className="flex-1 overflow-y-auto overflow-x-hidden">
-            <div className="p-4 md:p-6">
-              <ModuleAccessGuard>{children}</ModuleAccessGuard>
-            </div>
-          </main>
+      <SessionTimeoutProvider>
+        <div className="flex h-screen overflow-hidden bg-background">
+          <Sidebar />
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+            <Navbar />
+            <main className="flex-1 overflow-y-auto overflow-x-hidden">
+              <div className="p-4 md:p-6">
+                <ModuleAccessGuard>{children}</ModuleAccessGuard>
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
+      </SessionTimeoutProvider>
     </MobileSidebarProvider>
   );
 }

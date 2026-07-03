@@ -11,6 +11,8 @@ export function PlatformSettingsHydrator() {
   const theme = usePlatformSettingsStore((s) => s.theme);
   const accentColor = usePlatformSettingsStore((s) => s.accentColor);
   const compactNav = usePlatformSettingsStore((s) => s.compactNav);
+  const fontSize = usePlatformSettingsStore((s) => s.fontSize);
+  const fontFamily = usePlatformSettingsStore((s) => s.fontFamily);
   const setSettings = usePlatformSettingsStore((s) => s.setSettings);
   const applyPersonalization = usePlatformSettingsStore((s) => s.applyPersonalization);
   const { mode, setMode } = useTheme();
@@ -20,7 +22,7 @@ export function PlatformSettingsHydrator() {
   useEffect(() => {
     if (!hydrated) return;
     applyPersonalization();
-  }, [hydrated, accentColor, compactNav, theme, applyPersonalization]);
+  }, [hydrated, accentColor, compactNav, theme, fontSize, fontFamily, applyPersonalization]);
 
   useEffect(() => {
     if (!hydrated || theme === mode) return;

@@ -1,6 +1,21 @@
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { cn } from "@/src/lib/utils";
 
+export function SettingsPageSkeleton() {
+  return (
+    <div className="space-y-6 max-w-6xl mx-auto">
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-8 w-48 max-w-full rounded-lg" />
+        <Skeleton className="h-4 w-72 max-w-full rounded-md" />
+      </div>
+      <div className="grid gap-6">
+        <Skeleton className="h-44 w-full rounded-xl" />
+        <Skeleton className="h-36 w-full rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
 export function PageHeaderSkeleton({ className }: { className?: string }) {
   return (
     <div className={cn("space-y-2", className)}>

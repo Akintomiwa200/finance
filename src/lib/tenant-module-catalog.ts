@@ -62,6 +62,7 @@ export const STARTER_PLAN_MODULES: ModuleId[] = [
   "payables",
   "receivables",
   "expenses",
+  "settings",
 ];
 
 export const PROFESSIONAL_PLAN_MODULES: ModuleId[] = [
@@ -77,6 +78,7 @@ export const PROFESSIONAL_PLAN_MODULES: ModuleId[] = [
   "reports",
   "departments",
   "expenses",
+  "settings",
 ];
 
 export function moduleLabel(id: ModuleId): string {

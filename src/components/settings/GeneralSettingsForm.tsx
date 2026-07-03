@@ -27,7 +27,7 @@ import {
 } from "@/src/components/ui/select";
 import { Switch } from "@/src/components/ui/switch";
 import { Separator } from "@/src/components/ui/separator";
-import { useToast } from "@/src/components/ui/toast";
+import { useToast } from "@/src/components/ui/use-toast";
 import { useTheme, type ThemeMode } from "@/src/context/theme-context";
 import { usePlatformSettingsStore } from "@/src/store/platform-settings-store";
 import { api } from "@/src/lib/api";
@@ -84,7 +84,7 @@ const THEME_OPTIONS: { value: ThemeMode; label: string; icon: React.ElementType 
 export function GeneralSettingsForm() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const { addToast } = useToast();
+  const { toast } = useToast();
   const { mode } = useTheme();
   const setPlatformSettings = usePlatformSettingsStore((s) => s.setSettings);
   const storeSettings = usePlatformSettingsStore();
@@ -128,7 +128,7 @@ export function GeneralSettingsForm() {
           });
         }
       } catch {
-        addToast({ title: "Failed to load settings", type: "error" });
+        toast({ title: "Failed to load settings", variant: "destructive" });
       } finally {
         setIsLoading(false);
       }
@@ -159,16 +159,15 @@ export function GeneralSettingsForm() {
         throw new Error(result.error ?? "Failed to save settings");
       }
       setPlatformSettings(result.data);
-      addToast({
+      toast({
         title: "Settings saved",
-        message: "Platform configuration has been updated.",
-        type: "success",
+        description: "Platform configuration has been updated.",
       });
     } catch (error) {
-      addToast({
+      toast({
         title: "Failed to save settings",
-        message: error instanceof Error ? error.message : "Please try again later",
-        type: "error",
+        description: error instanceof Error ? error.message : "Please try again later",
+        variant: "destructive",
       });
     } finally {
       setIsSaving(false);

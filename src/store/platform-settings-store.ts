@@ -38,9 +38,9 @@ export const usePlatformSettingsStore = create<PlatformSettingsState>()(
       },
 
       applyPersonalization: () => {
-        const { theme, accentColor, compactNav } = get();
+        const { theme, accentColor, compactNav, fontSize, fontFamily } = get();
         if (typeof window === "undefined") return;
-        applyPlatformPersonalization({ theme, accentColor, compactNav });
+        applyPlatformPersonalization({ theme, accentColor, compactNav, fontSize, fontFamily });
       },
 
       setHydrated: () => set({ hydrated: true }),
@@ -56,6 +56,8 @@ export const usePlatformSettingsStore = create<PlatformSettingsState>()(
         timezone: state.timezone,
         dateFormat: state.dateFormat,
         compactNav: state.compactNav,
+        fontSize: state.fontSize,
+        fontFamily: state.fontFamily,
       }),
       onRehydrateStorage: () => (state) => {
         state?.applyPersonalization();

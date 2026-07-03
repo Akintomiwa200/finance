@@ -6,13 +6,14 @@ import { useAuthStore } from "@/src/store/auth-store";
 import { getEffectiveModules } from "@/src/lib/permissions";
 import { pathnameToModuleId } from "@/src/lib/module-route-access";
 import { useTenantAccess } from "@/src/hooks/use-tenant-access";
+import { isPremiumSettingsPath } from "@/src/lib/settings-access";
 import { DashboardPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 export function ModuleAccessGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const { planModuleIds, isLoading } = useTenantAccess();
+  const { planModuleIds, isLoading, planName } = useTenantAccess();
 
   useEffect(() => {
     if (isLoading || !pathname) return;
@@ -24,6 +25,14 @@ export function ModuleAccessGuard({ children }: { children: React.ReactNode }) {
     const allowed = getEffectiveModules(user?.role ?? "EMPLOYEE", planModuleIds);
     if (!allowed.includes(moduleId)) {
       router.replace(`/access-denied?module=${encodeURIComponent(moduleId)}`);
+      return;
+    }
+
+    if (isPremiumSettingsPath(pathname)) {
+      const isEnterprise = planModuleIds.length === 0 || planModuleIds.length >= 17;
+      if (!isEnterprise) {
+        router.replace(`/access-denied?module=${encodeURIComponent("settings")}`);
+      }
     }
   }, [pathname, planModuleIds, isLoading, user?.role, router]);
 

@@ -10,6 +10,7 @@ import { useOrganization } from "@/src/hooks/use-organization";
 import { CompanyLogo } from "@/src/components/ui/company-logo";
 import { getEffectiveModules, type ModuleId } from "@/src/lib/permissions";
 import { useTenantAccess } from "@/src/hooks/use-tenant-access";
+import { SETTINGS_FEATURES, isSettingsFeatureAccessible } from "@/src/lib/settings-access";
 import { SidebarCollapseToggle } from "@/src/components/layout/sidebar-collapse-toggle";
 import { SidebarProfileFooter } from "@/src/components/layout/sidebar-profile-footer";
 import {
@@ -72,6 +73,8 @@ import {
   BookOpen,
   LifeBuoy,
   Radio,
+  User,
+  Palette,
 } from "lucide-react";
 
 interface NavItem {
@@ -541,119 +544,49 @@ const allNavSections: NavSection[] = [
         icon: Settings,
         children: [
           {
+            label: "General",
+            href: "/settings/general",
+            icon: Sliders,
+          },
+          {
+            label: "Profile",
+            href: "/settings/profile",
+            icon: User,
+          },
+          {
+            label: "Appearance",
+            href: "/settings/appearance",
+            icon: Palette,
+          },
+          {
             label: "Organization",
             href: "/settings/organization",
             icon: Building2,
-            children: [
-              {
-                label: "Company Profile",
-                href: "/settings/organization/profile",
-                icon: Building2,
-              },
-              {
-                label: "Fiscal Year",
-                href: "/settings/organization/fiscal-year",
-                icon: Calendar,
-              },
-              {
-                label: "Currencies",
-                href: "/settings/organization/currencies",
-                icon: DollarSign,
-              },
-            ],
+            children: [],
           },
           {
             label: "Accounting",
             href: "/settings/accounting",
             icon: BookOpen,
-            children: [
-              {
-                label: "Chart of Accounts",
-                href: "/settings/accounting/chart",
-                icon: ListTree,
-              },
-              {
-                label: "Journal Settings",
-                href: "/settings/accounting/journals",
-                icon: NotebookPen,
-              },
-              {
-                label: "Accounting Periods",
-                href: "/settings/accounting/periods",
-                icon: CalendarRange,
-              },
-            ],
+            children: [],
           },
           {
             label: "Tax Configuration",
             href: "/settings/tax",
             icon: Sigma,
-            children: [
-              {
-                label: "Tax Rates",
-                href: "/settings/tax/rates",
-                icon: Percent,
-              },
-              {
-                label: "Tax Authorities",
-                href: "/settings/tax/authorities",
-                icon: Landmark,
-              },
-              {
-                label: "Tax Codes",
-                href: "/settings/tax/codes",
-                icon: Barcode,
-              },
-            ],
+            children: [],
           },
           {
             label: "Payroll Settings",
             href: "/settings/payroll",
             icon: DollarSign,
-            children: [
-              {
-                label: "Salary Structures",
-                href: "/settings/payroll/structures",
-                icon: FileText,
-              },
-              {
-                label: "Payroll Periods",
-                href: "/settings/payroll/periods",
-                icon: Calendar,
-              },
-              {
-                label: "Statutory Deductions",
-                href: "/settings/payroll/deductions",
-                icon: HandCoins,
-              },
-              {
-                label: "Leave Policies",
-                href: "/settings/payroll/leave",
-                icon: CalendarDays,
-              },
-            ],
+            children: [],
           },
           {
             label: "Notifications",
             href: "/settings/notifications",
             icon: Bell,
-            children: [
-              {
-                label: "Email Templates",
-                href: "/settings/notifications/email",
-                icon: Mail,
-              },
-              {
-                label: "Alert Rules",
-                href: "/settings/notifications/alerts",
-                icon: BellRing,
-              },
-              {
-                label: "Webhooks",
-                href: "/settings/notifications/webhooks",
-                icon: Webhook,
-              },
-            ],
+            children: [],
           },
           {
             label: "Roles & Permissions",
@@ -703,28 +636,7 @@ const allNavSections: NavSection[] = [
             label: "System Preferences",
             href: "/settings/preferences",
             icon: Settings,
-            children: [
-              {
-                label: "General Preferences",
-                href: "/settings/preferences/general",
-                icon: Sliders,
-              },
-              {
-                label: "Regional Settings",
-                href: "/settings/preferences/regional",
-                icon: Globe,
-              },
-              {
-                label: "Security",
-                href: "/settings/preferences/security",
-                icon: ShieldCheck,
-              },
-              {
-                label: "Backup & Restore",
-                href: "/settings/preferences/backup",
-                icon: Database,
-              },
-            ],
+            children: [],
           },
         ],
       },
@@ -765,7 +677,23 @@ function NavContent({
       ...section,
       items: filterNavItems(section.items, visibleModules),
     }))
-    .filter((section) => section.items.length > 0);
+    .filter((section) => section.items.length > 0)
+    .map((section) => ({
+      ...section,
+      items: section.items.map((item) => {
+        if (item.label === "Settings" && item.children) {
+          return {
+            ...item,
+            children: item.children.filter((child) => {
+              const feature = SETTINGS_FEATURES.find((f) => f.href === child.href);
+              if (!feature) return true;
+              return isSettingsFeatureAccessible(feature, planModuleIds);
+            }),
+          };
+        }
+        return item;
+      }),
+    }));
 
   const isParentActive = (item: NavItem): boolean => {
     if (pathname === item.href) return true;

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card, CardHeader, CardTitle } from "@/src/components/ui/card";
 
 export default function SettingsPage() {
@@ -8,6 +9,36 @@ export default function SettingsPage() {
           <p className="page-description">System configuration and preferences</p>
         </div>
         <div className="grid gap-6 max-w-2xl">
+          <Link href="/settings/general" className="block no-underline">
+            <Card className="hover:border-brand-300 hover:shadow-sm transition-all">
+              <CardHeader>
+                <CardTitle>General</CardTitle>
+              </CardHeader>
+              <div className="px-6 pb-6 text-sm text-muted-foreground">
+                Manage general application settings.
+              </div>
+            </Card>
+          </Link>
+          <Link href="/settings/profile" className="block no-underline">
+            <Card className="hover:border-brand-300 hover:shadow-sm transition-all">
+              <CardHeader>
+                <CardTitle>Profile</CardTitle>
+              </CardHeader>
+              <div className="px-6 pb-6 text-sm text-muted-foreground">
+                Manage your profile information.
+              </div>
+            </Card>
+          </Link>
+          <Link href="/settings/appearance" className="block no-underline">
+            <Card className="hover:border-brand-300 hover:shadow-sm transition-all">
+              <CardHeader>
+                <CardTitle>Appearance</CardTitle>
+              </CardHeader>
+              <div className="px-6 pb-6 text-sm text-muted-foreground">
+                Customize the look and feel of the application.
+              </div>
+            </Card>
+          </Link>
           <Card>
             <CardHeader>
               <CardTitle>Organization</CardTitle>
