@@ -38,6 +38,7 @@ import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeleton
 import { usePlatformSettingsStore } from "@/src/store/platform-settings-store";
 import { useSessionSettingsStore } from "@/src/store/session-settings-store";
 import type { AccentColor, FontSize } from "@/src/types/platform-settings";
+import type { SessionTimeout } from "@/src/store/session-settings-store";
 
 // --- Constants ---
 const SECTIONS = [
@@ -162,10 +163,11 @@ export default function SettingsPreferencesPage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const { accentColor, setAccentColor, fontSize, setFontSize } =
-    usePlatformSettingsStore();
+  const accentColor = usePlatformSettingsStore((s) => s.accentColor);
+  const fontSize = usePlatformSettingsStore((s) => s.fontSize);
+  const setSettings = usePlatformSettingsStore((s) => s.setSettings);
 
-  const { inactivityTimeoutMinutes, setInactivityTimeoutMinutes } =
+  const { inactivityTimeoutMinutes, setInactivityTimeout } =
     useSessionSettingsStore();
 
   const [localTimeout, setLocalTimeout] = useState(
@@ -187,9 +189,8 @@ export default function SettingsPreferencesPage() {
   }, []);
 
   const handleSaveAll = () => {
-    setAccentColor(localAccentColor);
-    setFontSize(localFontSize);
-    setInactivityTimeoutMinutes(Number(localTimeout));
+    setSettings({ accentColor: localAccentColor, fontSize: localFontSize });
+    setInactivityTimeout(Number(localTimeout) as SessionTimeout);
 
     toast({
       title: "Preferences saved",

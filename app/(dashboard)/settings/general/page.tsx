@@ -50,12 +50,12 @@ import { Badge } from "@/src/components/ui/badge";
 import { useToast } from "@/src/components/ui/use-toast";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { usePlatformSettingsStore } from "@/src/store/platform-settings-store";
-import { useSessionSettingsStore } from "@/src/store/session-settings-store";
+import { useSessionSettingsStore, type SessionTimeout } from "@/src/store/session-settings-store";
 import type {
   AccentColor,
   FontSize,
-  ThemeMode,
 } from "@/src/types/platform-settings";
+import type { ThemeMode } from "@/src/context/theme-context";
 
 // --- Constants ---
 const THEME_OPTIONS: {
@@ -114,18 +114,7 @@ const ACCENT_COLORS: {
     swatch: "bg-rose-600",
     ring: "ring-rose-600",
   },
-  {
-    value: "indigo",
-    label: "Indigo",
-    swatch: "bg-indigo-600",
-    ring: "ring-indigo-600",
-  },
-  {
-    value: "teal",
-    label: "Teal",
-    swatch: "bg-teal-600",
-    ring: "ring-teal-600",
-  },
+
 ];
 
 const FONT_SIZES: {
@@ -137,7 +126,7 @@ const FONT_SIZES: {
   { value: "small", label: "Small", preview: "text-sm", size: 14 },
   { value: "medium", label: "Medium", preview: "text-base", size: 16 },
   { value: "large", label: "Large", preview: "text-lg", size: 18 },
-  { value: "xlarge", label: "X-Large", preview: "text-xl", size: 20 },
+
 ];
 
 const DEFAULT_VIEWS = [
@@ -148,16 +137,7 @@ const DEFAULT_VIEWS = [
   { value: "calendar", label: "Calendar" },
 ];
 
-const LANGUAGE_OPTIONS = [
-  { value: "en-US", label: "English (US)" },
-  { value: "en-GB", label: "English (UK)" },
-  { value: "es", label: "Spanish" },
-  { value: "fr", label: "French" },
-  { value: "de", label: "German" },
-  { value: "ja", label: "Japanese" },
-  { value: "pt-BR", label: "Portuguese (Brazil)" },
-  { value: "zh-CN", label: "Chinese (Simplified)" },
-];
+
 
 // --- Sub-components ---
 
@@ -232,18 +212,12 @@ export default function GeneralSettingsPage() {
   const { toast } = useToast();
 
   // Store values
-  const {
-    theme,
-    setTheme,
-    accentColor,
-    setAccentColor,
-    fontSize,
-    setFontSize,
-    language,
-    setLanguage,
-  } = usePlatformSettingsStore();
+  const theme = usePlatformSettingsStore((s) => s.theme);
+  const accentColor = usePlatformSettingsStore((s) => s.accentColor);
+  const fontSize = usePlatformSettingsStore((s) => s.fontSize);
+  const setSettings = usePlatformSettingsStore((s) => s.setSettings);
 
-  const { inactivityTimeoutMinutes, setInactivityTimeoutMinutes } =
+  const { inactivityTimeoutMinutes, setInactivityTimeout } =
     useSessionSettingsStore();
 
   // Local state
@@ -254,7 +228,7 @@ export default function GeneralSettingsPage() {
   const [localTimeout, setLocalTimeout] = useState(
     String(inactivityTimeoutMinutes),
   );
-  const [localLanguage, setLocalLanguage] = useState(language);
+
   const [defaultView, setDefaultView] = useState("dashboard");
   const [autoSave, setAutoSave] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -272,20 +246,17 @@ export default function GeneralSettingsPage() {
       localTheme !== theme ||
       localAccentColor !== accentColor ||
       localFontSize !== fontSize ||
-      Number(localTimeout) !== inactivityTimeoutMinutes ||
-      localLanguage !== language;
+      Number(localTimeout) !== inactivityTimeoutMinutes;
     setHasChanges(hasUnsavedChanges);
   }, [
     localTheme,
     localAccentColor,
     localFontSize,
     localTimeout,
-    localLanguage,
     theme,
     accentColor,
     fontSize,
     inactivityTimeoutMinutes,
-    language,
   ]);
 
   useEffect(() => {
@@ -299,11 +270,12 @@ export default function GeneralSettingsPage() {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 800));
 
-      setTheme(localTheme);
-      setAccentColor(localAccentColor);
-      setFontSize(localFontSize);
-      setInactivityTimeoutMinutes(Number(localTimeout));
-      setLanguage(localLanguage);
+      setSettings({
+        theme: localTheme,
+        accentColor: localAccentColor,
+        fontSize: localFontSize,
+      });
+      setInactivityTimeout(Number(localTimeout) as SessionTimeout);
 
       toast({
         title: "Settings saved",
@@ -326,7 +298,6 @@ export default function GeneralSettingsPage() {
     setLocalAccentColor(accentColor);
     setLocalFontSize(fontSize);
     setLocalTimeout(String(inactivityTimeoutMinutes));
-    setLocalLanguage(language);
     setDefaultView("dashboard");
     setAutoSave(true);
     setNotificationsEnabled(true);
@@ -476,42 +447,21 @@ export default function GeneralSettingsPage() {
         description="Set your preferred language and regional settings"
         icon={<Globe className="h-5 w-5" />}
       >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Language</Label>
-            <Select value={localLanguage} onValueChange={setLocalLanguage}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select language" />
-                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-              </SelectTrigger>
-              <SelectContent>
-                {LANGUAGE_OPTIONS.map((lang) => (
-                  <SelectItem key={lang.value} value={lang.value}>
-                    {lang.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Changes will take effect after page refresh
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Label>Default Landing Page</Label>
-            <Select value={defaultView} onValueChange={setDefaultView}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select view" />
-                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-              </SelectTrigger>
-              <SelectContent>
-                {DEFAULT_VIEWS.map((view) => (
-                  <SelectItem key={view.value} value={view.value}>
-                    {view.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-2">
+          <Label>Default Landing Page</Label>
+          <Select value={defaultView} onValueChange={setDefaultView}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select view" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+            </SelectTrigger>
+            <SelectContent>
+              {DEFAULT_VIEWS.map((view) => (
+                <SelectItem key={view.value} value={view.value}>
+                  {view.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </SettingSection>
 
@@ -526,9 +476,7 @@ export default function GeneralSettingsPage() {
             <Label>Session Timeout</Label>
             <Select value={localTimeout} onValueChange={handleTimeoutChange}>
               <SelectTrigger>
-                <SelectValue placeholder="Select timeout duration">
-                  {getTimeoutLabel(localTimeout)}
-                </SelectValue>
+                <SelectValue placeholder="Select timeout duration" />
                 <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
               </SelectTrigger>
               <SelectContent>
