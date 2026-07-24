@@ -45,7 +45,7 @@ export default function ReimbursementsPage() {
   const [formData, setFormData] = useState({
     employeeName: "", employeeEmail: "", departmentName: "",
     amount: 0, description: "", category: "",
-    paymentMethod: "bank_transfer" as PettyCashReimbursement["paymentMethod"],
+    paymentMethod: "bank_transfer" as "cash" | "bank_transfer" | "cheque",
     bankName: "", accountNumber: "", accountName: "", notes: "",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
