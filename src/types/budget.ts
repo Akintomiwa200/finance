@@ -1,18 +1,17 @@
+export type BudgetStatusType = "ACTIVE" | "CLOSED" | "CANCELLED";
+
 export interface Budget {
   id: string;
   fiscalYear: number;
   totalAmount: number;
   spentAmount: number;
-  status: "ACTIVE" | "CLOSED" | "CANCELLED";
+  status: BudgetStatusType;
   departmentId: string | null;
-  department?: {
-    id: string;
-    name: string;
-    code: string;
-  };
+  departmentName: string | null;
   organizationId: string;
-  lineItems?: BudgetLineItem[];
+  lineItems: BudgetLineItem[];
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface BudgetLineItem {
@@ -22,11 +21,12 @@ export interface BudgetLineItem {
   allocated: number;
   spent: number;
   budgetId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface BudgetSummary {
-  totalBudget: number;
-  totalSpent: number;
-  remaining: number;
-  utilizationPercentage: number;
-}
+export const BUDGET_STATUS_OPTIONS: { value: BudgetStatusType; label: string }[] = [
+  { value: "ACTIVE", label: "Active" },
+  { value: "CLOSED", label: "Closed" },
+  { value: "CANCELLED", label: "Cancelled" },
+];

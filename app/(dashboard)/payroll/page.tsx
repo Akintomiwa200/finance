@@ -1,19 +1,16 @@
-import { Card, CardHeader, CardTitle } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
+"use client";
+import { SectionPage } from "@/src/components/templates/section-page";
+import { Calendar, Users, FileText } from "lucide-react";
 
 export default function PayrollPage() {
   return (
-<div className="page-container">
-        <div className="page-header">
-          <h1 className="page-title">Payroll</h1>
-          <p className="page-description">Manage payroll runs, compute salaries, and process payments</p>
-        </div>
-        <Card>
-          <div className="p-6 text-center text-muted-foreground">
-            <p>Payroll management module — runs, items, payslips.</p>
-            <Button className="mt-4">Create Payroll Run</Button>
-          </div>
-        </Card>
-      </div>
-);
+    <SectionPage
+      title="Payroll"
+      description="Manage payroll runs, compute salaries, and process payments."
+      links={[
+        { label: "Payroll Runs", href: "/payroll/runs", description: "Create and manage payroll processing runs", icon: Calendar },
+        { label: "Employees", href: "/employees", description: "View employee roster", icon: Users },
+      ]}
+    />
+  );
 }

@@ -1,15 +1,19 @@
+export type PayrollStatus = "DRAFT" | "PROCESSING" | "COMPLETED" | "CANCELLED";
+
 export interface PayrollRun {
   id: string;
   periodStart: string;
   periodEnd: string;
-  totalAmount: number | null;
-  status: "DRAFT" | "COMPUTED" | "APPROVED" | "PAID" | "CANCELLED";
+  totalAmount: number;
+  status: PayrollStatus;
   processedAt: string | null;
   processedBy: string | null;
   notes: string | null;
+  itemCount: number;
   organizationId: string;
+  items: PayrollItem[];
   createdAt: string;
-  items?: PayrollItem[];
+  updatedAt: string;
 }
 
 export interface PayrollItem {
@@ -24,35 +28,17 @@ export interface PayrollItem {
   overtimePay: number;
   payrollRunId: string;
   employeeId: string;
-  employee?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    employeeCode: string;
-    department?: { name: string };
-  };
+  employeeName: string;
+  employeeEmail: string;
+  departmentName: string;
+  position: string;
   createdAt: string;
+  updatedAt: string;
 }
 
-export interface Payslip {
-  employeeName: string;
-  employeeCode: string;
-  department: string;
-  periodStart: string;
-  periodEnd: string;
-  earnings: {
-    basic: number;
-    allowances: number;
-    bonus: number;
-    overtime: number;
-    totalEarnings: number;
-  };
-  deductions: {
-    tax: number;
-    pension: number;
-    loan: number;
-    other: number;
-    totalDeductions: number;
-  };
-  netPay: number;
-}
+export const PAYROLL_STATUS_OPTIONS: { value: PayrollStatus; label: string }[] = [
+  { value: "DRAFT", label: "Draft" },
+  { value: "PROCESSING", label: "Processing" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "CANCELLED", label: "Cancelled" },
+];
