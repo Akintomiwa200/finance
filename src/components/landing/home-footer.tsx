@@ -8,7 +8,12 @@ export function HomeFooter() {
 
   return (
     <footer className="bg-[var(--lp-bg)] relative overflow-hidden">
-      <div className="mx-auto max-w-6xl px-6 pt-16 pb-[30px]">
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center select-none z-0">
+        <span className="text-[12vw] font-extrabold text-white/[0.03] leading-none tracking-tight whitespace-nowrap">
+          Audpay
+        </span>
+      </div>
+      <div className="mx-auto max-w-6xl px-6 pt-16 pb-[30px] relative z-10">
         {/* ── Top grid ── */}
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr_1.5fr] lg:gap-8 mb-14">
           {/* Brand + Contact */}
@@ -104,7 +109,7 @@ export function HomeFooter() {
           {/* Newsletter */}
           <div className="sm:col-span-2 lg:col-span-1">
             <h3 className="text-base font-bold uppercase tracking-wider text-[var(--lp-text)] mb-5">Stay Updated</h3>
-            <p className="text-base text-[var(--lp-text-muted)] mb-3 leading-relaxed">
+            <p className="text-base text-[var(--lp-text-muted)] mb-8 leading-relaxed">
               Get the latest on product updates, finance tips, and industry insights.
             </p>
             <form onSubmit={(e) => e.preventDefault()} className="flex">
@@ -113,9 +118,9 @@ export function HomeFooter() {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-12 flex-1 min-w-0 rounded-l-lg border border-r-0 border-[var(--lp-border)] bg-transparent px-4 text-base text-[var(--lp-text)] placeholder:text-[var(--lp-text-muted)] outline-none focus:border-[#ff5555] transition-colors"
+                className="h-12 w-full min-w-0 rounded-l-lg border border-r-0 border-[var(--lp-border)] bg-transparent px-4 text-base text-[var(--lp-text)] placeholder:text-[var(--lp-text-muted)] outline-none focus:border-[#ff5555] transition-colors"
               />
-              <button type="submit" className="h-12 px-5 rounded-r-lg bg-[#ff5555] text-base font-semibold text-white hover:brightness-110 transition-all shrink-0 border-none cursor-pointer">
+              <button type="submit" className="h-12 px-4 rounded-r-lg bg-[#ff5555] text-sm font-semibold text-white hover:brightness-110 transition-all shrink-0 border-none cursor-pointer whitespace-nowrap">
                 Subscribe
               </button>
             </form>

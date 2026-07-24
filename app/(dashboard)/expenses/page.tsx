@@ -1,19 +1,17 @@
-import { Card, CardHeader, CardTitle } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
+"use client";
+import { SectionPage } from "@/src/components/templates/section-page";
+import { FileText, Banknote, BarChart3 } from "lucide-react";
 
 export default function ExpensesPage() {
   return (
-<div className="page-container">
-        <div className="page-header">
-          <h1 className="page-title">Expenses</h1>
-          <p className="page-description">Track and approve employee expense reports</p>
-        </div>
-        <Card>
-          <div className="p-6 text-center text-muted-foreground">
-            <p>Expense management module — reports, approvals, reimbursements.</p>
-            <Button className="mt-4">New Expense Report</Button>
-          </div>
-        </Card>
-      </div>
-);
+    <SectionPage
+      title="Expenses"
+      description="Manage employee expense reports, approvals, and reimbursements."
+      links={[
+        { label: "Expense Reports", href: "/expenses/reports", description: "Create and manage employee expense reports", icon: FileText },
+        { label: "Reimbursements", href: "/expenses/reimbursements", description: "Track and process employee reimbursements", icon: Banknote },
+        { label: "Expense Analytics", href: "/reports/expenses", description: "View expense analytics and trends", icon: BarChart3 },
+      ]}
+    />
+  );
 }

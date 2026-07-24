@@ -57,6 +57,22 @@ enum ExpenseStatus {
   REIMBURSED
 }
 
+enum ReimbursementStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CREDIT_CARD
+  DEBIT_CARD
+  MOBILE_PAYMENT
+  COMPANY_CARD
+}
+
 enum InvoiceStatus {
   DRAFT
   SENT
@@ -227,6 +243,14 @@ model Organization {
   vendorBills       VendorBill[]
   purchaseOrders    PurchaseOrder[]
   billPayments      BillPayment[]
+
+  customers           Customer[]
+  salesInvoices       SalesInvoice[]
+  customerPayments    CustomerPayment[]
+  creditNotes         CreditNote[]
+
+  expenseReports      ExpenseReport[]
+  reimbursements      Reimbursement[]
 }
 
 model Department {
@@ -274,6 +298,7 @@ model Employee {
 
   payrollItems      PayrollItem[]
   expenseReports    ExpenseReport[]
+  reimbursements    Reimbursement[]
   timesheets        Timesheet[]
   loans             EmployeeLoan[]
   approvals         ApprovalRequest[]
@@ -336,37 +361,80 @@ model PayrollItem {
 }
 
 model ExpenseReport {
-  id          String        @id @default(cuid())
-  title       String
-  description String?
-  totalAmount Decimal       @default(0) @db.Decimal(15, 2)
-  status      ExpenseStatus @default(DRAFT)
-  submittedAt DateTime?
-  approvedAt  DateTime?
-  receiptUrl  String?
+  id              String        @id @default(cuid())
+  title           String
+  description     String?
+  department      String?
+  totalAmount     Decimal       @default(0) @db.Decimal(15, 2)
+  status          ExpenseStatus @default(DRAFT)
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  approvedBy      String?
+  rejectedReason  String?
+  reimbursedAt    DateTime?
+  receiptUrl      String?
+  notes           String?
 
-  employeeId String
-  employee   Employee @relation(fields: [employeeId], references: [id])
+  employeeId      String
+  employee        Employee      @relation(fields: [employeeId], references: [id])
+  employeeName    String?
+  employeeEmail   String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  organizationId  String
+  organization    Organization  @relation(fields: [organizationId], references: [id])
 
-  items ExpenseItem[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  items           ExpenseItem[]
+  reimbursements  Reimbursement[]
 }
 
 model ExpenseItem {
-  id          String   @id @default(cuid())
-  category    String
-  description String
-  amount      Decimal  @db.Decimal(15, 2)
-  receiptUrl  String?
-  expenseDate DateTime
+  id              String        @id @default(cuid())
+  category        String
+  description     String
+  amount          Decimal       @db.Decimal(15, 2)
+  receiptUrl      String?
+  expenseDate     DateTime
+  paymentMethod   PaymentMethod @default(COMPANY_CARD)
+  isReimbursable  Boolean       @default(false)
+  merchant        String?
 
   expenseReportId String
-  expenseReport   ExpenseReport @relation(fields: [expenseReportId], references: [id])
+  expenseReport   ExpenseReport @relation(fields: [expenseReportId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Reimbursement {
+  id                  String              @id @default(cuid())
+  amount              Decimal             @db.Decimal(15, 2)
+  status              ReimbursementStatus @default(PENDING)
+  description         String?
+  submittedAt         DateTime            @default(now())
+  approvedAt          DateTime?
+  approvedBy          String?
+  paidAt              DateTime?
+  rejectionReason     String?
+  category            String?
+  paymentMethod       PaymentMethod?
+  employeeName        String?
+  employeeEmail       String?
+  department          String?
+
+  expenseReportId     String
+  expenseReport       ExpenseReport       @relation(fields: [expenseReportId], references: [id])
+
+  employeeId          String
+  employee            Employee            @relation(fields: [employeeId], references: [id])
+
+  organizationId      String
+  organization        Organization        @relation(fields: [organizationId], references: [id])
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 }
 
 model CustomerInvoice {
@@ -839,4 +907,240 @@ model BillPayment {
   updatedAt       DateTime          @updatedAt
 
   @@unique([organizationId, paymentNumber])
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  BLACKLISTED
+}
+
+enum CustomerType {
+  INDIVIDUAL
+  BUSINESS
+  GOVERNMENT
+  NON_PROFIT
+}
+
+enum CreditRating {
+  AAA
+  AA
+  A
+  BBB
+  BB
+  B
+  CCC
+  D
+}
+
+enum SalesInvoiceStatus {
+  DRAFT
+  SENT
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum InvoiceType {
+  STANDARD
+  PROFORMA
+  CREDIT_NOTE
+  DEBIT_NOTE
+}
+
+enum CustomerPaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum CustomerPaymentMethod {
+  BANK_TRANSFER
+  CASH
+  CHEQUE
+  CREDIT_CARD
+  ONLINE
+}
+
+enum CreditNoteStatus {
+  DRAFT
+  ISSUED
+  APPLIED
+  CANCELLED
+}
+
+enum CreditNoteReason {
+  PRODUCT_RETURN
+  PRICE_ADJUSTMENT
+  DAMAGED_GOODS
+  SERVICE_ISSUE
+  BILLING_ERROR
+  GOODWILL
+  OTHER
+}
+
+model Customer {
+  id              String         @id @default(cuid())
+  name            String
+  code            String
+  type            CustomerType   @default(BUSINESS)
+  status          CustomerStatus @default(ACTIVE)
+  email           String?
+  phone           String?
+  website         String?
+  taxId           String?
+  creditLimit     Decimal        @default(0) @db.Decimal(15, 2)
+  currentBalance  Decimal        @default(0) @db.Decimal(15, 2)
+  creditRating    CreditRating   @default(BBB)
+  paymentTerms    String         @default("Net 30")
+  currency        String         @default("USD")
+  industry        String?
+  notes           String?
+
+  contactName     String?
+  contactEmail    String?
+  contactPhone    String?
+  contactTitle    String?
+
+  addressStreet   String?
+  addressCity     String?
+  addressState    String?
+  addressZip      String?
+  addressCountry  String?
+
+  organizationId  String
+  organization    Organization   @relation(fields: [organizationId], references: [id])
+
+  invoices        SalesInvoice[]
+  payments        CustomerPayment[]
+  creditNotes     CreditNote[]
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@unique([organizationId, code])
+}
+
+model SalesInvoice {
+  id              String          @id @default(cuid())
+  invoiceNumber   String
+  type            InvoiceType     @default(STANDARD)
+  status          SalesInvoiceStatus @default(DRAFT)
+  invoiceDate     DateTime
+  dueDate         DateTime
+  description     String?
+  subtotal        Decimal            @db.Decimal(15, 2)
+  taxRate         Decimal?           @db.Decimal(5, 2)
+  taxAmount       Decimal            @default(0) @db.Decimal(15, 2)
+  discountRate    Decimal?           @db.Decimal(5, 2)
+  discountAmount  Decimal            @default(0) @db.Decimal(15, 2)
+  totalAmount     Decimal            @db.Decimal(15, 2)
+  amountPaid      Decimal            @default(0) @db.Decimal(15, 2)
+  balanceDue      Decimal            @db.Decimal(15, 2)
+  notes           String?
+  terms           String?
+  currency        String          @default("USD")
+  approvedBy      String?
+  approvedAt      DateTime?
+  sentAt          DateTime?
+
+  customerId      String
+  customer        Customer        @relation(fields: [customerId], references: [id])
+
+  organizationId  String
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+
+  lines           SalesInvoiceLineItem[]
+  payments        CustomerPayment[]
+  creditNotes     CreditNote[]
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@unique([organizationId, invoiceNumber])
+}
+
+model SalesInvoiceLineItem {
+  id          String    @id @default(cuid())
+  description String
+  quantity    Decimal   @db.Decimal(10, 2)
+  unitPrice   Decimal   @db.Decimal(15, 2)
+  amount      Decimal   @db.Decimal(15, 2)
+  discount    Decimal   @default(0) @db.Decimal(5, 2)
+  tax         Decimal   @default(0) @db.Decimal(5, 2)
+  accountCode String?
+  accountName String?
+
+  invoiceId   String
+  invoice     SalesInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model CustomerPayment {
+  id              String                @id @default(cuid())
+  paymentNumber   String
+  amount          Decimal               @db.Decimal(15, 2)
+  paymentDate     DateTime
+  paymentMethod   CustomerPaymentMethod @default(BANK_TRANSFER)
+  status          CustomerPaymentStatus @default(PENDING)
+  reference       String?
+  notes           String?
+  bankName        String?
+  bankAccountNumber String?
+  chequeNumber    String?
+  cardLast4       String?
+  onlineReference String?
+  approvedBy      String?
+  approvedAt      DateTime?
+
+  invoiceId       String
+  invoice         SalesInvoice          @relation(fields: [invoiceId], references: [id])
+
+  customerId      String
+  customer        Customer              @relation(fields: [customerId], references: [id])
+
+  organizationId  String
+  organization    Organization          @relation(fields: [organizationId], references: [id])
+
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@unique([organizationId, paymentNumber])
+}
+
+model CreditNote {
+  id              String            @id @default(cuid())
+  creditNoteNumber String
+  status          CreditNoteStatus  @default(DRAFT)
+  reason          CreditNoteReason  @default(OTHER)
+  reasonDescription String?
+  issueDate       DateTime
+  expiryDate      DateTime?
+  subtotal        Decimal           @db.Decimal(15, 2)
+  taxRate         Decimal?          @db.Decimal(5, 2)
+  taxAmount       Decimal           @default(0) @db.Decimal(15, 2)
+  totalAmount     Decimal           @db.Decimal(15, 2)
+  remainingAmount Decimal           @db.Decimal(15, 2)
+  notes           String?
+  approvedBy      String?
+  approvedAt      DateTime?
+
+  customerId      String
+  customer        Customer          @relation(fields: [customerId], references: [id])
+
+  invoiceId       String?
+  invoice         SalesInvoice?     @relation(fields: [invoiceId], references: [id])
+
+  organizationId  String
+  organization    Organization      @relation(fields: [organizationId], references: [id])
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([organizationId, creditNoteNumber])
 }
