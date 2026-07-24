@@ -5,33 +5,33 @@ import { SplashBlob } from "@/src/components/landing/splash-blob";
 const faqItems = [
   {
     num: "01",
-    q: "The Best Financial Accounting App Ever!",
-    a: "Arcu At Dictum Sapien, Mollis. Vulputate Sit Id Accumsan, Ultricies. In Ultrices Malesuada Elit Mauris.",
+    q: "What is Audpay and who is it for?",
+    a: "Audpay is a real-time financial accounting platform built for businesses, freelancers, and accounting firms. It covers the full accounting lifecycle — from journal entries and chart of accounts to vendor bill management and purchase orders — all in one place.",
   },
   {
     num: "02",
-    q: "The Best Financial Accounting App Ever!",
-    a: "Arcu At Dictum Sapien, Mollis. Vulputate Sit Id Accumsan, Ultricies. In Ultrices Malesuada Elit Mauris.",
+    q: "How does the chart of accounts work?",
+    a: "Audpay lets you create a fully customizable chart of accounts with asset, liability, equity, revenue, and expense categories. You can set normal balances, link accounts to specific ledgers, and track balances in real time as journal entries are posted.",
   },
   {
     num: "03",
-    q: "The Best Financial Accounting App Ever!",
-    a: "Arcu At Dictum Sapien, Mollis. Vulputate Sit Id Accumsan, Ultricies. In Ultrices Malesuada Elit Mauris.",
+    q: "Can I manage vendor bills and payments?",
+    a: "Yes. Audpay provides a complete payables module where you can create vendors, track bills with line items, manage purchase orders, and record payments. Every payment automatically updates the bill balance and journal entries.",
   },
   {
     num: "04",
-    q: "The Best Financial Accounting App Ever!",
-    a: "Arcu At Dictum Sapien, Mollis. Vulputate Sit Id Accumsan, Ultricies. In Ultrices Malesuada Elit Mauris.",
+    q: "Does Audpay support multi-currency transactions?",
+    a: "Absolutely. Audpay supports multi-currency accounting with automatic exchange rate tracking. All journal entries, bills, and payments can be recorded in your base currency or any foreign currency with real-time conversion.",
   },
   {
     num: "05",
-    q: "The Best Financial Accounting App Ever!",
-    a: "Arcu At Dictum Sapien, Mollis. Vulputate Sit Id Accumsan, Ultricies. In Ultrices Malesuada Elit Mauris.",
+    q: "What reports can I generate?",
+    a: "Audpay includes trial balance, general ledger reports, account-level drill-downs, and real-time analytics dashboards. You can view summaries, detailed transaction lists, and visual breakdowns across all your accounts and periods.",
   },
   {
     num: "06",
-    q: "The Best Financial Accounting App Ever!",
-    a: "Arcu At Dictum Sapien, Mollis. Vulputate Sit Id Accumsan, Ultricies. In Ultrices Malesuada Elit Mauris.",
+    q: "Is my financial data secure?",
+    a: "Security is a top priority. Audpay uses industry-standard encryption, role-based access control, and automatic backups. Your financial data is stored securely and you retain full ownership and control at all times.",
   },
 ];
 

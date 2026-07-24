@@ -7,17 +7,17 @@ import { SplashBlob } from "@/src/components/landing/splash-blob";
 const testimonials = [
   {
     id: 1,
-    name: "Nick Jonas",
-    text: "Arcu at dictum sapien, mollis. Vulputate sit id accumsan, ultricies. In ultrices malesuada elit mauris etiam odio. Duis tristique lacus, et blandit viverra nisl velit. Sed mattis rhoncus, diam suspendisse sit nunc, gravida eu. Lectus eget eget ac dolor neque lorem sapien, suspendisse aliquam.",
+    name: "Jessica Park",
+    text: "Audpay completely changed how our firm handles journal entries and reconciliation. The real-time ledger and trial balance tools cut our month-end close from three days to one. It's the most reliable accounting platform we've ever used.",
     avatar:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     miniAvatar:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
+      "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80",
   },
   {
     id: 2,
     name: "Sarah Johnson",
-    text: "This app transformed how I manage my finances. The intuitive interface and powerful analytics make budgeting actually enjoyable. I've recommended it to all my colleagues.",
+    text: "Audpay made managing vendor bills and purchase orders effortless. The payables dashboard gives me instant visibility into outstanding balances and upcoming due dates. I've recommended it to every business owner I know.",
     avatar:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     miniAvatar:
@@ -26,7 +26,7 @@ const testimonials = [
   {
     id: 3,
     name: "Michael Chen",
-    text: "Finally, an accounting app that doesn't feel like work. The automatic categorization and real-time insights save me hours every week. Game changer for small business owners.",
+    text: "The chart of accounts and reporting features are incredibly powerful yet easy to navigate. Real-time analytics save me hours every week. Game changer for small business owners who need accurate financials without the complexity.",
     avatar:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     miniAvatar:
@@ -35,7 +35,7 @@ const testimonials = [
   {
     id: 4,
     name: "Emily Rodriguez",
-    text: "The budgeting tools are incredibly detailed yet easy to use. I've finally been able to stick to a savings plan thanks to the visual progress tracking. Highly recommend!",
+    text: "Switching to Audpay was the best decision for our accounting firm. The multi-currency support and automated bill tracking have eliminated manual data entry entirely. Our clients love the transparency and speed.",
     avatar:
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     miniAvatar:
@@ -44,7 +44,7 @@ const testimonials = [
   {
     id: 5,
     name: "David Kim",
-    text: "Switched from a competitor and wish I'd done it sooner. The customer support is phenomenal and the feature set is unmatched. Five stars all around!",
+    text: "Audpay's notification system keeps me on top of every invoice deadline and approval. The purchase order workflow is seamless — from creation to receipt to payment. Five stars, no question.",
     avatar:
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
     miniAvatar:

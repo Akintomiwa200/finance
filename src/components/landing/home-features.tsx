@@ -166,8 +166,8 @@ export function HomeFeatures() {
                     />
                   </svg>
                 ),
-                title: "Budgeting Intervals",
-                desc: "Cum Et Convallis Risus Placerat Aliquam, Nunc. Scelerisque Aliquet Faucibus Tincidunt Eu Adipiscing Sociis Arcu Lorem Porttitor.",
+                title: "Smart Invoicing",
+                desc: "Create, send, and track professional invoices in seconds. Automate recurring billing, set up payment reminders, and get paid faster with integrated payment processing.",
               },
               {
                 icon: (
@@ -199,8 +199,8 @@ export function HomeFeatures() {
                     />
                   </svg>
                 ),
-                title: "Budgeting Intervals",
-                desc: "Cum Et Convallis Risus Placerat Aliquam, Nunc. Scelerisque Aliquet Faucibus Tincidunt Eu Adipiscing Sociis Arcu Lorem Porttitor.",
+                title: "Real-Time Analytics",
+                desc: "Monitor your financial health with live dashboards and customizable reports. Track revenue, expenses, cash flow, and profitability across departments and time periods.",
               },
               {
                 icon: (
@@ -248,8 +248,8 @@ export function HomeFeatures() {
                     />
                   </svg>
                 ),
-                title: "Budgeting Intervals",
-                desc: "Cum Et Convallis Risus Placerat Aliquam, Nunc. Scelerisque Aliquet Faucibus Tincidunt Eu Adipiscing Sociis Arcu Lorem Porttitor.",
+                title: "Multi-Currency Support",
+                desc: "Handle transactions in 150+ currencies with automatic exchange rate updates. Perfect for businesses operating across borders with built-in compliance reporting.",
               },
             ].map((f, i) => (
               <div key={i} className="flex flex-col gap-2">

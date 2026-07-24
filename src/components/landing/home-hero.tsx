@@ -1,4 +1,4 @@
-import { ArrowRight, Play, Trophy } from "lucide-react";
+import { ArrowRight, Trophy } from "lucide-react";
 import { LandingSpark } from "@/src/components/landing/landing-spark";
 import { SplashBlob } from "@/src/components/landing/splash-blob";
 import { DeviceMockup } from "@/src/components/landing/device-mockup";
@@ -106,7 +106,7 @@ export function HeroRibbon() {
                 whiteSpace: "nowrap",
               }}
             >
-              Best Finance App On Playstore
+              Best Finance Platform
             </strong>
           </div>
         </div>
@@ -167,7 +167,7 @@ export function HeroRibbon() {
                 whiteSpace: "nowrap",
               }}
             >
-              Most Popular Accounting App
+              Most Trusted Accounting Platform
             </strong>
           </div>
         </div>
@@ -309,26 +309,26 @@ export function HomeHero() {
             Financial Decisions
           </h1>
           <p className="mb-9 max-w-[400px] text-[0.9rem] font-normal leading-[1.7] text-[var(--lp-text-muted)]">
-            Cum Et Convallis Risus Placerat Aliquam, Nunc. Scelerisque Aliquet
-            Faucibus Tincidunt Eu Adipiscing Sociis Arcu Lorem Porttitor.
+            Audpay streamlines your accounting, invoicing, and financial
+            reporting in one powerful platform. Track every transaction, manage
+            budgets, and gain real-time insights to make smarter business
+            decisions.
           </p>
           <div className="mb-10 flex flex-wrap items-center gap-6">
             <button
               type="button"
+              onClick={() => (window.location.href = "/register")}
               className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#ff5555] px-7 text-[0.9rem] font-semibold text-white transition-all hover:brightness-110"
             >
               Get Started
               <ArrowRight size={18} strokeWidth={2} />
             </button>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 text-[0.9rem] font-medium text-white/80 transition-colors hover:text-white"
+            <a
+              href="/login"
+              className="inline-flex items-center gap-2 text-[0.9rem] font-medium text-white/80 transition-colors hover:text-white no-underline"
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white/60">
-                <Play size={12} fill="currentColor" className="ml-0.5" />
-              </span>
-              Watch Video
-            </button>
+              View Demo
+            </a>
           </div>
 
           {/*

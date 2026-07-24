@@ -8,10 +8,10 @@ import { LandingSpark } from "@/src/components/landing/landing-spark";
 import { SplashBlob } from "@/src/components/landing/splash-blob";
 
 const navItems: { label: string; href: string; active?: boolean }[] = [
-  { label: "Home", href: "#", active: true },
-  { label: "About Us", href: "#" },
-  { label: "Pricing", href: "#" },
-  { label: "Features", href: "#" },
+  { label: "Home", href: "/", active: true },
+  { label: "About Us", href: "/about" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Features", href: "/features" },
 ];
 
 function AudpayLogo() {
@@ -105,7 +105,7 @@ export function HomeNavbar() {
           {/* Get Started button — hidden on mobile, shown md+ */}
           <button
             type="button"
-            onClick={() => router.push("/login")}
+            onClick={() => router.push("/register")}
             className="hidden rounded-full bg-[#ff5555] px-7 py-3 text-[0.9rem] font-semibold text-white transition-all hover:brightness-110 md:block lg:h-[49px] lg:min-w-[145px]"
           >
             Get Started
@@ -156,7 +156,7 @@ export function HomeNavbar() {
           {/* Mobile Get Started button */}
           <button
             type="button"
-            onClick={() => { router.push("/login"); setMobileOpen(false); }}
+            onClick={() => { router.push("/register"); setMobileOpen(false); }}
             className="w-full rounded-full bg-[#ff5555] py-3 text-[1rem] font-semibold text-white transition-all hover:brightness-110"
           >
             Get Started

@@ -1,3 +1,5 @@
+"use client";
+
 import { HomeHero } from "@/src/components/landing/home-hero";
 import { HomeNavbar } from "@/src/components/landing/home-navbar";
 import { HomeFeatures } from "@/src/components/landing/home-features";

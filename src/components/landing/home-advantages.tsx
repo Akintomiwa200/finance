@@ -34,11 +34,10 @@ export function HomeAdvantages() {
             </div>
 
             <p className="max-w-md text-[0.85rem] leading-[1.8] text-[var(--lp-text-muted)]">
-              Arcu At Dictum Sapien, Mollis. Vulputate Sit Id Accumsan,
-              Ultricies. In Ultrices Malesuada Elit Mauris Etiam Odio. Duis
-              Tristique Lacus, Et Blandit Viverra Nisl Velit. Sed Mattis
-              Rhoncus, Diam Suspendisse Sit Nunc, Gravida Eu. Lectus Eget Eget
-              Ac Dolor Neque Lorem Sapien, Suspendisse Aliquam.
+              Never miss a critical financial event. Audpay sends intelligent
+              alerts for overdue invoices, budget thresholds, unusual
+              transactions, and compliance deadlines — so you stay ahead of every
+              deadline.
             </p>
           </div>
         </div>
@@ -61,11 +60,9 @@ export function HomeAdvantages() {
             </div>
 
             <p className="max-w-md text-[0.85rem] leading-[1.8] text-[var(--lp-text-muted)]">
-              Arcu At Dictum Sapien, Mollis. Vulputate Sit Id Accumsan,
-              Ultricies. In Ultrices Malesuada Elit Mauris Etiam Odio. Duis
-              Tristique Lacus, Et Blandit Viverra Nisl Velit. Sed Mattis
-              Rhoncus, Diam Suspendisse Sit Nunc, Gravida Eu. Lectus Eget Eget
-              Ac Dolor Neque Lorem Sapien, Suspendisse Aliquam.
+              Configure Audpay to match your business workflow. Custom chart of
+              accounts, branded invoices, automated approval chains, and
+              role-based access — everything adapts to how your team works.
             </p>
           </div>
 
