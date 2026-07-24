@@ -77,7 +77,7 @@ export function HomeCta() {
                 {/* Card */}
                 <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl p-4 mb-3 text-white">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="font-bold">Uifry</span>
+                    <span className="font-bold">Audpay</span>
                     <span className="text-[8px] italic">VISA</span>
                   </div>
                   <div className="text-[10px] tracking-widest opacity-70">

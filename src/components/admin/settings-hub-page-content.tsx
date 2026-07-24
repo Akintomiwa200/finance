@@ -114,7 +114,7 @@ export function SettingsHubPageContent() {
             Platform settings
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Configure the Uifry platform for your team and tenant companies. Changes here
+            Configure the Audpay platform for your team and tenant companies. Changes here
             affect the super admin console and platform-wide behavior — not individual tenant org settings.
           </p>
           {overview && (

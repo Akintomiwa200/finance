@@ -1,12 +1,12 @@
 import { getAppUrl } from "@/src/lib/mail";
 
 export const EMAIL_BRAND = {
-  name: process.env.MAIL_APP_NAME?.trim() || "Uifry",
+  name: process.env.MAIL_APP_NAME?.trim() || "Audpay",
   tagline: process.env.MAIL_APP_TAGLINE?.trim() || "Best Finance App",
-  supportEmail: process.env.MAIL_SUPPORT_EMAIL?.trim() || "support@uifry.com",
+  supportEmail: process.env.MAIL_SUPPORT_EMAIL?.trim() || "support@audpay.com",
   companyAddress:
     process.env.MAIL_COMPANY_ADDRESS?.trim() ||
-    "Uifry Finance Platform · All rights reserved",
+    "Audpay Finance Platform · All rights reserved",
   colors: {
     primary: "#2563eb",
     primaryDark: "#1d4ed8",

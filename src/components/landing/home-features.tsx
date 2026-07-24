@@ -50,7 +50,7 @@ export function HomeFeatures() {
                 <div className="mb-[6px] flex items-center justify-between">
                   <div className="flex items-center gap-1 text-[8px] font-bold text-white sm:text-[9px]">
                     <div className="h-[12px] w-[12px] rounded-full bg-[#FF3B30] sm:h-[14px] sm:w-[14px]" />
-                    <span>uifry</span>
+                    <span>Audpay</span>
                   </div>
                   <span className="text-[9px] font-extrabold italic tracking-[0.5px] text-white sm:text-[11px]">
                     VISA
@@ -152,7 +152,7 @@ export function HomeFeatures() {
             Features
           </div>
           <h2 className="mb-6 text-[32px] font-black leading-[1.2] tracking-[-0.5px] text-[var(--lp-text)] sm:text-[36px] md:mb-8 md:text-[40px] lg:text-[44px]">
-            Uifry Premium
+            Audpay Premium
           </h2>
 
           <div className="flex flex-col gap-6 md:gap-7">

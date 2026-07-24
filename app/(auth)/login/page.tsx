@@ -465,7 +465,7 @@ export default function LoginPage() {
                 fill="var(--lp-red-dark)"
               />
             </svg>
-            <span className="logo-text">uifry</span>
+            <span className="logo-text">audpay</span>
           </Link>
 
           {/* Heading */}
@@ -614,7 +614,7 @@ export default function LoginPage() {
             </h2>
             <p className="right-body">
               Track expenses, manage budgets, and make smarter financial
-              decisions with Uifry's powerful analytics.
+              decisions with Audpay's powerful analytics.
             </p>
             <p className="right-promo">
               Start free — <strong>cancel anytime</strong>.

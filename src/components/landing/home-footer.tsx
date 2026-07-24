@@ -29,7 +29,7 @@ export function HomeFooter() {
                 />
               </svg>
               <span className="text-[32px] font-extrabold text-[var(--lp-text)] leading-none tracking-tight">
-                uifry
+                Audpay
                 <sup className="text-[9px] font-bold ml-0.5 align-super">™</sup>
               </span>
             </div>
@@ -157,7 +157,7 @@ export function HomeFooter() {
       </div>
 
       <div className="text-center text-base text-[var(--lp-text-muted)] font-medium mt-8">
-        Copyright 2022 Uifry.Com | All Rights Reserved
+        Copyright 2024 Audpay.Com | All Rights Reserved
       </div>
     </footer>
   );

@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { realtime } from "@/src/services/realtime.service";
-import { getMockNotifications } from "@/src/lib/mock-notifications";
 import type { AppNotification } from "@/src/types/notification";
 import type { RealtimeMessage } from "@/src/types/common";
 
@@ -23,6 +22,20 @@ interface NotificationState {
   getById: (id: string) => AppNotification | undefined;
 }
 
+function mapNotification(raw: Record<string, unknown>): AppNotification {
+  return {
+    id: raw.id as string,
+    title: raw.title as string,
+    message: raw.message as string,
+    body: (raw.body as string) || undefined,
+    category: (raw.category as AppNotification["category"]) || "messages",
+    type: (raw.type as AppNotification["type"]) || "INFO",
+    isRead: raw.isRead as boolean,
+    createdAt: raw.createdAt as string,
+    referenceId: (raw.referenceId as string) || undefined,
+  };
+}
+
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: [],
   unreadCount: 0,
@@ -30,16 +43,23 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   initialized: false,
   scope: "dashboard",
 
-  initNotifications: (scope) => {
+  initNotifications: async (scope) => {
     const { initialized, scope: currentScope } = get();
     if (initialized && currentScope === scope) return;
-    const notifications = getMockNotifications(scope);
-    set({
-      scope,
-      initialized: true,
-      notifications,
-      unreadCount: notifications.filter((n) => !n.isRead).length,
-    });
+    set({ scope, initialized: true });
+
+    try {
+      const res = await fetch("/api/notifications");
+      if (!res.ok) throw new Error("Failed to fetch notifications");
+      const data = await res.json();
+      const notifications: AppNotification[] = (data.notifications || []).map(mapNotification);
+      set({
+        notifications,
+        unreadCount: data.unreadCount ?? notifications.filter((n) => !n.isRead).length,
+      });
+    } catch {
+      set({ notifications: [], unreadCount: 0 });
+    }
   },
 
   setNotifications: (notifications) =>
@@ -54,7 +74,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       unreadCount: state.unreadCount + (notification.isRead ? 0 : 1),
     })),
 
-  markAsRead: (id) =>
+  markAsRead: async (id) => {
     set((state) => {
       const notifications = state.notifications.map((n) =>
         n.id === id ? { ...n, isRead: true } : n,
@@ -63,13 +83,25 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         notifications,
         unreadCount: notifications.filter((n) => !n.isRead).length,
       };
-    }),
+    });
+    try {
+      await fetch(`/api/notifications/${id}`, { method: "PATCH" });
+    } catch {
+      // optimistic update already applied
+    }
+  },
 
-  markAllAsRead: () =>
+  markAllAsRead: async () => {
     set((state) => ({
       notifications: state.notifications.map((n) => ({ ...n, isRead: true })),
       unreadCount: 0,
-    })),
+    }));
+    try {
+      await fetch("/api/notifications", { method: "PATCH" });
+    } catch {
+      // optimistic update already applied
+    }
+  },
 
   removeNotification: (id) =>
     set((state) => {

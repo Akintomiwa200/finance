@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   const settings = getNotificationSettings();
   await sendMail({
     to,
-    subject: "Uifry platform — test email",
+    subject: "Audpay platform — test email",
     html: `<p>SMTP settings are working. Sent from <strong>${settings.fromName}</strong>.</p>`,
     text: `SMTP settings are working. Sent from ${settings.fromName}.`,
   });

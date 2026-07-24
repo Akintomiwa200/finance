@@ -262,7 +262,7 @@ export function HeroRibbon() {
                 whiteSpace: "nowrap",
               }}
             >
-              Uifry Premium
+              Audpay Premium
             </strong>
             <small
               style={{

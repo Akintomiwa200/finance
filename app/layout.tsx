@@ -42,8 +42,8 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Uifry — Best Finance App",
-  description: "Uifry — The best finance app on Playstore. Budget, expenses, and financial decisions made easy.",
+  title: "Audpay — Best Finance App",
+  description: "Audpay — The best finance platform. Budget, expenses, and financial decisions made easy.",
 };
 
 export const viewport: Viewport = {

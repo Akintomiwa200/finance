@@ -14,7 +14,7 @@ const navItems: { label: string; href: string; active?: boolean }[] = [
   { label: "Features", href: "#" },
 ];
 
-function UifryLogo() {
+function AudpayLogo() {
   return (
     <span
       className="relative inline-flex h-7 w-[22px] shrink-0"
@@ -65,10 +65,10 @@ export function HomeNavbar() {
           <a
             href="#"
             className="flex items-center gap-2 text-[1.35rem] font-extrabold tracking-[-0.04em] text-[var(--lp-nav-text)] no-underline lg:text-[1.58rem]"
-            aria-label="Uifry home"
+            aria-label="Audpay home"
           >
-            <UifryLogo />
-            <span className="leading-none">uifry</span>
+            <AudpayLogo />
+            <span className="leading-none">Audpay</span>
             <sup className="ml-0.5 mt-1 text-[0.45rem] font-bold leading-none text-[var(--lp-nav-text-muted)]">
               ™
             </sup>

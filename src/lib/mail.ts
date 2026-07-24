@@ -35,7 +35,7 @@ export function getMailFrom(): string {
   return (
     process.env.MAIL_FROM?.trim() ||
     process.env.SMTP_USER?.trim() ||
-    "Uifry <noreply@localhost>"
+    "Audpay <noreply@localhost>"
   );
 }
 

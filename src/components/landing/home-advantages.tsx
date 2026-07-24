@@ -21,7 +21,7 @@ export function HomeAdvantages() {
               Advantages
             </div>
             <h2 className="mb-6 text-[2.2rem] font-extrabold leading-[1.1] tracking-tight text-[var(--lp-text)] sm:text-[2.6rem]">
-              Why Choose Uifry?
+              Why Choose Audpay?
             </h2>
 
             <div className="mb-3 flex items-center gap-3">

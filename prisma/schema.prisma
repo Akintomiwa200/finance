@@ -71,6 +71,134 @@ enum BudgetStatus {
   CANCELLED
 }
 
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum AccountCategory {
+  CURRENT
+  FIXED
+  INTANGIBLE
+  LONG_TERM
+  OPERATING
+  NON_OPERATING
+}
+
+enum NormalBalance {
+  DEBIT
+  CREDIT
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum JournalStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  POSTED
+  REJECTED
+}
+
+enum JournalType {
+  GENERAL
+  ADJUSTING
+  CLOSING
+  REVERSING
+  PAYROLL
+  SALES
+  PURCHASE
+}
+
+enum VendorStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum VendorType {
+  SUPPLIER
+  CONTRACTOR
+  CONSULTANT
+  SERVICE_PROVIDER
+  INDIVIDUAL
+}
+
+enum PaymentTerms {
+  NET_15
+  NET_30
+  NET_45
+  NET_60
+  NET_90
+  DUE_ON_RECEIPT
+  COD
+}
+
+enum BillStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum BillType {
+  PURCHASE
+  SERVICE
+  UTILITY
+  RENT
+  OTHER
+}
+
+enum POStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  ORDERED
+  PARTIALLY_RECEIVED
+  FULLY_RECEIVED
+  CANCELLED
+  REJECTED
+}
+
+enum POPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum DeliveryMethod {
+  PICKUP
+  DELIVERY
+  COURIER
+}
+
+enum BillPaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum BillPaymentMethod {
+  BANK_TRANSFER
+  CASH
+  CHEQUE
+  CREDIT_CARD
+  ONLINE
+}
+
 model Organization {
   id         String   @id @default(cuid())
   name       String
@@ -93,6 +221,12 @@ model Organization {
   taxConfigurations TaxConfiguration[]
   auditLogs         AuditLog[]
   transactions      Transaction[]
+  accounts          Account[]
+  journalEntries    JournalEntry[]
+  vendors           Vendor[]
+  vendorBills       VendorBill[]
+  purchaseOrders    PurchaseOrder[]
+  billPayments      BillPayment[]
 }
 
 model Department {
@@ -407,11 +541,13 @@ model AuditLog {
 }
 
 model Notification {
-  id      String  @id @default(cuid())
-  title   String
-  message String
-  type    String  @default("INFO")
-  isRead  Boolean @default(false)
+  id       String  @id @default(cuid())
+  title    String
+  message  String
+  body     String?
+  type     String  @default("INFO")
+  category String  @default("messages")
+  isRead   Boolean @default(false)
 
   userId      String
   referenceId String?
@@ -440,4 +576,267 @@ model Transaction {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String          @id @default(cuid())
+  accountCode       String
+  name              String
+  type              AccountType
+  category          AccountCategory
+  subcategory       String?
+  parentAccountId   String?
+  parentAccount     Account?        @relation("AccountHierarchy", fields: [parentAccountId], references: [id])
+  childAccounts     Account[]       @relation("AccountHierarchy")
+  normalBalance     NormalBalance
+  currentBalance    Decimal         @default(0) @db.Decimal(15, 2)
+  openingBalance    Decimal         @default(0) @db.Decimal(15, 2)
+  closingBalance    Decimal         @default(0) @db.Decimal(15, 2)
+  status            AccountStatus   @default(ACTIVE)
+  description       String?
+  department        String?
+  taxRelated        Boolean         @default(false)
+  bankName          String?
+  bankAccountNumber String?
+  bankAccountName   String?
+  notes             String?
+  createdBy         String?
+
+  organizationId    String
+  organization      Organization    @relation(fields: [organizationId], references: [id])
+
+  journalLines      JournalLine[]
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([organizationId, accountCode])
+}
+
+model JournalEntry {
+  id              String        @id @default(cuid())
+  entryNumber     String
+  date            DateTime
+  type            JournalType   @default(GENERAL)
+  status          JournalStatus @default(DRAFT)
+  description     String?
+  reference       String?
+  totalDebit      Decimal       @default(0) @db.Decimal(15, 2)
+  totalCredit     Decimal       @default(0) @db.Decimal(15, 2)
+  createdBy       String?
+  approvedBy      String?
+  postedBy        String?
+
+  organizationId  String
+  organization    Organization  @relation(fields: [organizationId], references: [id])
+
+  lines           JournalLine[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([organizationId, entryNumber])
+}
+
+model JournalLine {
+  id              String       @id @default(cuid())
+  description     String?
+  debit           Decimal      @default(0) @db.Decimal(15, 2)
+  credit          Decimal      @default(0) @db.Decimal(15, 2)
+
+  journalEntryId  String
+  journalEntry    JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+
+  accountId       String
+  account         Account      @relation(fields: [accountId], references: [id])
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model Vendor {
+  id              String        @id @default(cuid())
+  name            String
+  code            String
+  type            VendorType    @default(SUPPLIER)
+  status          VendorStatus  @default(ACTIVE)
+  email           String?
+  phone           String?
+  website         String?
+  taxId           String?
+  paymentTerms    PaymentTerms  @default(NET_30)
+  currency        String        @default("USD")
+  rating          Int           @default(0)
+  notes           String?
+
+  contactName     String?
+  contactEmail    String?
+  contactPhone    String?
+  contactTitle    String?
+
+  addressStreet   String?
+  addressCity     String?
+  addressState    String?
+  addressZip      String?
+  addressCountry  String?
+
+  bankName        String?
+  bankAccountName String?
+  bankAccountNumber String?
+  bankRoutingNumber String?
+  bankSwift       String?
+
+  categories      String[]
+
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  bills           VendorBill[]
+  purchaseOrders  PurchaseOrder[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([organizationId, code])
+}
+
+model VendorBill {
+  id              String        @id @default(cuid())
+  billNumber      String
+  type            BillType      @default(PURCHASE)
+  status          BillStatus    @default(DRAFT)
+  issueDate       DateTime
+  dueDate         DateTime
+  description     String?
+  subtotal        Decimal       @db.Decimal(15, 2)
+  taxRate         Decimal?      @db.Decimal(5, 2)
+  taxAmount       Decimal       @default(0) @db.Decimal(15, 2)
+  discountRate    Decimal?      @db.Decimal(5, 2)
+  discountAmount  Decimal       @default(0) @db.Decimal(15, 2)
+  totalAmount     Decimal       @db.Decimal(15, 2)
+  amountPaid      Decimal       @default(0) @db.Decimal(15, 2)
+  balanceDue      Decimal       @db.Decimal(15, 2)
+  notes           String?
+  documentUrl     String?
+  approvedBy      String?
+  approvedAt      DateTime?
+
+  vendorId        String
+  vendor          Vendor        @relation(fields: [vendorId], references: [id])
+
+  organizationId  String
+  organization    Organization  @relation(fields: [organizationId], references: [id])
+
+  lines           BillLineItem[]
+  payments        BillPayment[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([organizationId, billNumber])
+}
+
+model BillLineItem {
+  id          String    @id @default(cuid())
+  description String
+  quantity    Decimal   @db.Decimal(10, 2)
+  unitPrice   Decimal   @db.Decimal(15, 2)
+  amount      Decimal   @db.Decimal(15, 2)
+  accountCode String?
+  accountName String?
+
+  billId      String
+  bill        VendorBill @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model PurchaseOrder {
+  id                  String        @id @default(cuid())
+  poNumber            String
+  status              POStatus      @default(DRAFT)
+  priority            POPriority    @default(MEDIUM)
+  orderDate           DateTime
+  expectedDeliveryDate DateTime
+  actualDeliveryDate  DateTime?
+  deliveryMethod      DeliveryMethod @default(DELIVERY)
+  deliveryAddress     String?
+  deliveryNotes       String?
+  subtotal            Decimal       @db.Decimal(15, 2)
+  taxRate             Decimal?      @db.Decimal(5, 2)
+  taxAmount           Decimal       @default(0) @db.Decimal(15, 2)
+  totalAmount         Decimal       @db.Decimal(15, 2)
+  notes               String?
+  approvedBy          String?
+  approvedAt          DateTime?
+  orderedBy           String?
+  orderedAt           DateTime?
+  receivedBy          String?
+  receivedAt          DateTime?
+
+  vendorId            String
+  vendor              Vendor        @relation(fields: [vendorId], references: [id])
+
+  organizationId      String
+  organization        Organization  @relation(fields: [organizationId], references: [id])
+
+  lines               PurchaseOrderLineItem[]
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@unique([organizationId, poNumber])
+}
+
+model PurchaseOrderLineItem {
+  id                String    @id @default(cuid())
+  description       String
+  quantity          Decimal   @db.Decimal(10, 2)
+  unitPrice         Decimal   @db.Decimal(15, 2)
+  receivedQuantity  Decimal   @default(0) @db.Decimal(10, 2)
+  amount            Decimal   @db.Decimal(15, 2)
+  accountCode       String?
+  accountName       String?
+
+  poId              String
+  po                PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model BillPayment {
+  id              String            @id @default(cuid())
+  paymentNumber   String
+  amount          Decimal           @db.Decimal(15, 2)
+  paymentDate     DateTime
+  paymentMethod   BillPaymentMethod @default(BANK_TRANSFER)
+  status          BillPaymentStatus @default(PENDING)
+  reference       String?
+  notes           String?
+
+  bankName        String?
+  bankAccountNumber String?
+  chequeNumber    String?
+  cardLast4       String?
+  onlineReference String?
+
+  approvedBy      String?
+  approvedAt      DateTime?
+  processedBy     String?
+  processedAt     DateTime?
+  confirmedBy     String?
+  confirmedAt     DateTime?
+
+  billId          String
+  bill            VendorBill        @relation(fields: [billId], references: [id])
+
+  organizationId  String
+  organization    Organization      @relation(fields: [organizationId], references: [id])
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([organizationId, paymentNumber])
 }

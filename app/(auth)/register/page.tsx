@@ -481,7 +481,7 @@ export default function RegisterPage() {
               <path d="M16 0L4 8V24L16 32L28 24V8L16 0Z" fill="var(--lp-red)" />
               <path d="M16 4L8 9V23L16 28L24 23V9L16 4Z" fill="var(--lp-red-dark)" />
             </svg>
-            <span className="logo-text">uifry</span>
+            <span className="logo-text">audpay</span>
           </Link>
 
           {/* Heading */}
@@ -652,7 +652,7 @@ export default function RegisterPage() {
             </h2>
             <p className="right-body">
               Track expenses, manage budgets, and make smarter financial
-              decisions with Uifry's powerful analytics.
+              decisions with Audpay's powerful analytics.
             </p>
             <p className="right-promo">
               Start free — <strong>cancel anytime</strong>.

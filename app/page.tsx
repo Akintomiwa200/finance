@@ -7,7 +7,7 @@ import { HomeFaq } from "@/src/components/landing/home-faq";
 import { HomeCta } from "@/src/components/landing/home-cta";
 import { HomeFooter } from "@/src/components/landing/home-footer";
 
-export default function UifryLandingPage() {
+export default function AudpayLandingPage() {
   return (
     <div className="overflow-x-hidden landing-root">
       <HomeNavbar />

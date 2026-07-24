@@ -22,7 +22,7 @@ const initialMessages: Message[] = [
   {
     id: 1,
     role: "system",
-    text: "Welcome to Uifry Help! How can we assist you today?",
+    text: "Welcome to Audpay Help! How can we assist you today?",
     time: "", // Set on client mount to avoid hydration mismatch
   },
 ];

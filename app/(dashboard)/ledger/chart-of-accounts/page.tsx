@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -57,12 +57,10 @@ import {
   ArrowLeft,
   Plus,
   Edit,
-  Trash2,
   Eye,
   Search,
   Filter,
   Download,
-  RefreshCw,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -72,505 +70,25 @@ import {
   Wallet,
   TrendingUp,
   TrendingDown,
-  Briefcase,
-  Home,
-  Car,
-  Landmark,
   CreditCard,
   PiggyBank,
-  Building2,
-  DollarSign,
-  Percent,
-  BarChart3,
-  PieChart,
   FileText,
-  MoreHorizontal,
-  Copy,
-  Move,
-  Archive,
-  CheckCircle,
   AlertCircle,
-  HelpCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { compareValues } from "@/src/lib/utils";
+import { useLedgerStore } from "@/src/store/ledger-store";
+import type {
+  Account,
+  AccountType,
+  AccountCategory,
+  AccountStatus,
+  NormalBalance,
+} from "@/src/types/ledger";
+import { ACCOUNT_TYPE_OPTIONS, ACCOUNT_CATEGORY_OPTIONS } from "@/src/types/ledger";
 
-// Types
-type AccountType = "asset" | "liability" | "equity" | "revenue" | "expense";
-type AccountCategory =
-  | "current"
-  | "fixed"
-  | "intangible"
-  | "long_term"
-  | "operating"
-  | "non_operating";
-type AccountStatus = "active" | "inactive" | "suspended";
-type NormalBalance = "debit" | "credit";
-
-interface Account {
-  id: number;
-  accountCode: string;
-  name: string;
-  type: AccountType;
-  category: AccountCategory;
-  subcategory?: string;
-  parentAccountId?: number;
-  parentAccountName?: string;
-  normalBalance: NormalBalance;
-  currentBalance: number;
-  openingBalance: number;
-  closingBalance: number;
-  status: AccountStatus;
-  description: string;
-  department?: string;
-  taxRelated: boolean;
-  bankAccount?: {
-    bankName: string;
-    accountNumber: string;
-    accountName: string;
-  };
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  level: number;
-  hasChildren: boolean;
-  children?: Account[];
-  ledgerEntries?: LedgerEntry[];
-}
-
-interface LedgerEntry {
-  id: number;
-  date: string;
-  reference: string;
-  description: string;
-  debit: number;
-  credit: number;
-  balance: number;
-  journalId: number;
-  journalType: string;
-  createdBy: string;
-}
-
-// Mock Data
-const mockAccounts: Account[] = [
-  {
-    id: 1,
-    accountCode: "1000",
-    name: "Assets",
-    type: "asset",
-    category: "current",
-    normalBalance: "debit",
-    currentBalance: 0,
-    openingBalance: 0,
-    closingBalance: 0,
-    status: "active",
-    description: "All asset accounts",
-    taxRelated: false,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "System",
-    level: 0,
-    hasChildren: true,
-  },
-  {
-    id: 2,
-    accountCode: "1100",
-    name: "Current Assets",
-    type: "asset",
-    category: "current",
-    parentAccountId: 1,
-    parentAccountName: "Assets",
-    normalBalance: "debit",
-    currentBalance: 125000000,
-    openingBalance: 100000000,
-    closingBalance: 125000000,
-    status: "active",
-    description: "Assets expected to be converted to cash within one year",
-    taxRelated: false,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "System",
-    level: 1,
-    hasChildren: true,
-  },
-  {
-    id: 3,
-    accountCode: "1110",
-    name: "Cash - Operating",
-    type: "asset",
-    category: "current",
-    parentAccountId: 2,
-    parentAccountName: "Current Assets",
-    normalBalance: "debit",
-    currentBalance: 45000000,
-    openingBalance: 35000000,
-    closingBalance: 45000000,
-    status: "active",
-    description: "Operating cash account",
-    taxRelated: false,
-    bankAccount: {
-      bankName: "First Bank",
-      accountNumber: "1234567890",
-      accountName: "Company Operating Account",
-    },
-    createdAt: "2024-01-01",
-    updatedAt: "2026-03-01",
-    createdBy: "Finance",
-    level: 2,
-    hasChildren: false,
-  },
-  {
-    id: 4,
-    accountCode: "1120",
-    name: "Cash - Savings",
-    type: "asset",
-    category: "current",
-    parentAccountId: 2,
-    parentAccountName: "Current Assets",
-    normalBalance: "debit",
-    currentBalance: 50000000,
-    openingBalance: 50000000,
-    closingBalance: 50000000,
-    status: "active",
-    description: "Savings account for reserves",
-    taxRelated: false,
-    bankAccount: {
-      bankName: "GT Bank",
-      accountNumber: "0987654321",
-      accountName: "Company Savings Account",
-    },
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "Finance",
-    level: 2,
-    hasChildren: false,
-  },
-  {
-    id: 5,
-    accountCode: "1130",
-    name: "Accounts Receivable",
-    type: "asset",
-    category: "current",
-    parentAccountId: 2,
-    parentAccountName: "Current Assets",
-    normalBalance: "debit",
-    currentBalance: 25000000,
-    openingBalance: 15000000,
-    closingBalance: 25000000,
-    status: "active",
-    description: "Amounts owed by customers",
-    taxRelated: false,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "Finance",
-    level: 2,
-    hasChildren: false,
-  },
-  {
-    id: 6,
-    accountCode: "1200",
-    name: "Fixed Assets",
-    type: "asset",
-    category: "fixed",
-    parentAccountId: 1,
-    parentAccountName: "Assets",
-    normalBalance: "debit",
-    currentBalance: 25000000,
-    openingBalance: 30000000,
-    closingBalance: 25000000,
-    status: "active",
-    description: "Long-term tangible assets",
-    taxRelated: false,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "System",
-    level: 1,
-    hasChildren: true,
-  },
-  {
-    id: 7,
-    accountCode: "1210",
-    name: "Equipment",
-    type: "asset",
-    category: "fixed",
-    parentAccountId: 6,
-    parentAccountName: "Fixed Assets",
-    normalBalance: "debit",
-    currentBalance: 15000000,
-    openingBalance: 20000000,
-    closingBalance: 15000000,
-    status: "active",
-    description: "Office and computer equipment",
-    taxRelated: true,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "Finance",
-    level: 2,
-    hasChildren: false,
-  },
-  {
-    id: 8,
-    accountCode: "1220",
-    name: "Accumulated Depreciation",
-    type: "asset",
-    category: "fixed",
-    parentAccountId: 6,
-    parentAccountName: "Fixed Assets",
-    normalBalance: "credit",
-    currentBalance: 5000000,
-    openingBalance: 3000000,
-    closingBalance: 5000000,
-    status: "active",
-    description: "Contra-asset account for depreciation",
-    taxRelated: true,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "Finance",
-    level: 2,
-    hasChildren: false,
-  },
-  {
-    id: 9,
-    accountCode: "2000",
-    name: "Liabilities",
-    type: "liability",
-    category: "long_term",
-    normalBalance: "credit",
-    currentBalance: 0,
-    openingBalance: 0,
-    closingBalance: 0,
-    status: "active",
-    description: "All liability accounts",
-    taxRelated: false,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "System",
-    level: 0,
-    hasChildren: true,
-  },
-  {
-    id: 10,
-    accountCode: "2100",
-    name: "Accounts Payable",
-    type: "liability",
-    category: "current",
-    parentAccountId: 9,
-    parentAccountName: "Liabilities",
-    normalBalance: "credit",
-    currentBalance: 15000000,
-    openingBalance: 10000000,
-    closingBalance: 15000000,
-    status: "active",
-    description: "Amounts owed to suppliers",
-    taxRelated: false,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "Finance",
-    level: 1,
-    hasChildren: false,
-  },
-  {
-    id: 11,
-    accountCode: "2200",
-    name: "Bank Loans",
-    type: "liability",
-    category: "long_term",
-    parentAccountId: 9,
-    parentAccountName: "Liabilities",
-    normalBalance: "credit",
-    currentBalance: 50000000,
-    openingBalance: 55000000,
-    closingBalance: 50000000,
-    status: "active",
-    description: "Long-term bank loans",
-    taxRelated: true,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "Finance",
-    level: 1,
-    hasChildren: false,
-  },
-  {
-    id: 12,
-    accountCode: "3000",
-    name: "Equity",
-    type: "equity",
-    category: "long_term",
-    normalBalance: "credit",
-    currentBalance: 0,
-    openingBalance: 0,
-    closingBalance: 0,
-    status: "active",
-    description: "Owner's equity accounts",
-    taxRelated: false,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "System",
-    level: 0,
-    hasChildren: true,
-  },
-  {
-    id: 13,
-    accountCode: "3100",
-    name: "Share Capital",
-    type: "equity",
-    category: "long_term",
-    parentAccountId: 12,
-    parentAccountName: "Equity",
-    normalBalance: "credit",
-    currentBalance: 100000000,
-    openingBalance: 100000000,
-    closingBalance: 100000000,
-    status: "active",
-    description: "Issued share capital",
-    taxRelated: false,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "Finance",
-    level: 1,
-    hasChildren: false,
-  },
-  {
-    id: 14,
-    accountCode: "3200",
-    name: "Retained Earnings",
-    type: "equity",
-    category: "long_term",
-    parentAccountId: 12,
-    parentAccountName: "Equity",
-    normalBalance: "credit",
-    currentBalance: 50000000,
-    openingBalance: 35000000,
-    closingBalance: 50000000,
-    status: "active",
-    description: "Accumulated retained earnings",
-    taxRelated: false,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "Finance",
-    level: 1,
-    hasChildren: false,
-  },
-  {
-    id: 15,
-    accountCode: "4000",
-    name: "Revenue",
-    type: "revenue",
-    category: "operating",
-    normalBalance: "credit",
-    currentBalance: 0,
-    openingBalance: 0,
-    closingBalance: 0,
-    status: "active",
-    description: "Revenue accounts",
-    taxRelated: false,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "System",
-    level: 0,
-    hasChildren: true,
-  },
-  {
-    id: 16,
-    accountCode: "4100",
-    name: "Sales Revenue",
-    type: "revenue",
-    category: "operating",
-    parentAccountId: 15,
-    parentAccountName: "Revenue",
-    normalBalance: "credit",
-    currentBalance: 75000000,
-    openingBalance: 50000000,
-    closingBalance: 75000000,
-    status: "active",
-    description: "Revenue from sales of goods/services",
-    taxRelated: true,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "Finance",
-    level: 1,
-    hasChildren: false,
-  },
-  {
-    id: 17,
-    accountCode: "5000",
-    name: "Expenses",
-    type: "expense",
-    category: "operating",
-    normalBalance: "debit",
-    currentBalance: 0,
-    openingBalance: 0,
-    closingBalance: 0,
-    status: "active",
-    description: "Expense accounts",
-    taxRelated: false,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "System",
-    level: 0,
-    hasChildren: true,
-  },
-  {
-    id: 18,
-    accountCode: "5100",
-    name: "Salaries Expense",
-    type: "expense",
-    category: "operating",
-    parentAccountId: 17,
-    parentAccountName: "Expenses",
-    normalBalance: "debit",
-    currentBalance: 30000000,
-    openingBalance: 20000000,
-    closingBalance: 30000000,
-    status: "active",
-    description: "Employee salaries and wages",
-    taxRelated: true,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "Finance",
-    level: 1,
-    hasChildren: false,
-  },
-  {
-    id: 19,
-    accountCode: "5200",
-    name: "Rent Expense",
-    type: "expense",
-    category: "operating",
-    parentAccountId: 17,
-    parentAccountName: "Expenses",
-    normalBalance: "debit",
-    currentBalance: 12000000,
-    openingBalance: 8000000,
-    closingBalance: 12000000,
-    status: "active",
-    description: "Office rent expense",
-    taxRelated: true,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-    createdBy: "Finance",
-    level: 1,
-    hasChildren: false,
-  },
-];
-
-const accountTypes = [
-  { value: "asset", label: "Asset", icon: Wallet },
-  { value: "liability", label: "Liability", icon: CreditCard },
-  { value: "equity", label: "Equity", icon: PiggyBank },
-  { value: "revenue", label: "Revenue", icon: TrendingUp },
-  { value: "expense", label: "Expense", icon: TrendingDown },
-];
-
-const accountCategories = [
-  "current",
-  "fixed",
-  "intangible",
-  "long_term",
-  "operating",
-  "non_operating",
-];
+const accountTypes = ACCOUNT_TYPE_OPTIONS;
+const accountCategories = ACCOUNT_CATEGORY_OPTIONS.map((c) => c.value);
 
 const departments = [
   "Finance",
@@ -585,8 +103,16 @@ const departments = [
 export default function ChartOfAccounts() {
   const router = useRouter();
 
-  // State
-  const [accounts, setAccounts] = useState<Account[]>(mockAccounts);
+  const accounts = useLedgerStore((s) => s.accounts);
+  const loading = useLedgerStore((s) => s.loading);
+  const fetchAccounts = useLedgerStore((s) => s.fetchAccounts);
+  const updateAccount = useLedgerStore((s) => s.updateAccount);
+  const deleteAccount = useLedgerStore((s) => s.deleteAccount);
+
+  useEffect(() => {
+    fetchAccounts();
+  }, [fetchAccounts]);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -600,19 +126,18 @@ export default function ChartOfAccounts() {
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [activeView, setActiveView] = useState<"list" | "hierarchy" | "ledger">(
     "list",
   );
+  const [submitting, setSubmitting] = useState(false);
 
-  // Form state
   const [formData, setFormData] = useState({
     accountCode: "",
     name: "",
     type: "asset" as AccountType,
     category: "current" as AccountCategory,
-    parentAccountId: undefined as number | undefined,
+    parentAccountId: null as string | null,
     normalBalance: "debit" as NormalBalance,
     openingBalance: 0,
     description: "",
@@ -622,7 +147,6 @@ export default function ChartOfAccounts() {
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Statistics
   const stats = useMemo(() => {
     const totalAccounts = accounts.length;
     const totalAssets = accounts
@@ -652,10 +176,9 @@ export default function ChartOfAccounts() {
     };
   }, [accounts]);
 
-  // Build account hierarchy
   const buildHierarchy = useMemo(() => {
-    const accountMap = new Map<number, Account>();
-    const roots: Account[] = [];
+    const accountMap = new Map<string, Account & { children: Account[] }>();
+    const roots: (Account & { children: Account[] })[] = [];
 
     accounts.forEach((account) => {
       accountMap.set(account.id, { ...account, children: [] });
@@ -664,9 +187,8 @@ export default function ChartOfAccounts() {
     accounts.forEach((account) => {
       if (account.parentAccountId && accountMap.has(account.parentAccountId)) {
         const parent = accountMap.get(account.parentAccountId)!;
-        parent.children = parent.children || [];
         parent.children.push(accountMap.get(account.id)!);
-      } else if (account.level === 0) {
+      } else if (!account.parentAccountId) {
         roots.push(accountMap.get(account.id)!);
       }
     });
@@ -674,7 +196,6 @@ export default function ChartOfAccounts() {
     return roots;
   }, [accounts]);
 
-  // Filter and sort
   const filteredAccounts = useMemo(() => {
     let result = [...accounts];
 
@@ -684,7 +205,7 @@ export default function ChartOfAccounts() {
         (a) =>
           a.accountCode.toLowerCase().includes(query) ||
           a.name.toLowerCase().includes(query) ||
-          a.description.toLowerCase().includes(query),
+          (a.description && a.description.toLowerCase().includes(query)),
       );
     }
 
@@ -716,14 +237,12 @@ export default function ChartOfAccounts() {
     sortConfig,
   ]);
 
-  // Pagination
   const totalPages = Math.ceil(filteredAccounts.length / itemsPerPage);
   const paginatedAccounts = filteredAccounts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
 
-  // Handlers
   const handleSort = (key: keyof Account) => {
     setSortConfig((prev) => ({
       key,
@@ -733,8 +252,7 @@ export default function ChartOfAccounts() {
   };
 
   const handleViewAccount = (account: Account) => {
-    setSelectedAccount(account);
-    setIsViewModalOpen(true);
+    router.push(`/ledger/chart-of-accounts/${account.id}`);
   };
 
   const handleEditAccount = (account: Account) => {
@@ -744,10 +262,10 @@ export default function ChartOfAccounts() {
       name: account.name,
       type: account.type,
       category: account.category,
-      parentAccountId: account.parentAccountId,
+      parentAccountId: account.parentAccountId || null,
       normalBalance: account.normalBalance,
       openingBalance: account.openingBalance,
-      description: account.description,
+      description: account.description || "",
       department: account.department || "",
       taxRelated: account.taxRelated,
       notes: account.notes || "",
@@ -764,65 +282,36 @@ export default function ChartOfAccounts() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleAddAccount = () => {
-    if (!validateForm()) return;
-
-    const newAccount: Account = {
-      id: Math.max(...accounts.map((a) => a.id), 0) + 1,
-      accountCode: formData.accountCode,
-      name: formData.name,
-      type: formData.type,
-      category: formData.category,
-      parentAccountId: formData.parentAccountId,
-      parentAccountName: formData.parentAccountId
-        ? accounts.find((a) => a.id === formData.parentAccountId)?.name
-        : undefined,
-      normalBalance: formData.normalBalance,
-      currentBalance: formData.openingBalance,
-      openingBalance: formData.openingBalance,
-      closingBalance: formData.openingBalance,
-      status: "active",
-      description: formData.description,
-      department: formData.department || undefined,
-      taxRelated: formData.taxRelated,
-      notes: formData.notes || undefined,
-      createdAt: new Date().toISOString().split("T")[0],
-      updatedAt: new Date().toISOString().split("T")[0],
-      createdBy: "Current User",
-      level: formData.parentAccountId ? 1 : 0,
-      hasChildren: false,
-    };
-
-    setAccounts((prev) => [...prev, newAccount]);
-    resetForm();
-    setIsAddModalOpen(false);
-  };
-
-  const handleUpdateAccount = () => {
+  const handleUpdateAccount = async () => {
     if (!validateForm() || !selectedAccount) return;
-
-    const updatedAccount: Account = {
-      ...selectedAccount,
-      ...formData,
-      updatedAt: new Date().toISOString().split("T")[0],
-      currentBalance: formData.openingBalance,
-      openingBalance: formData.openingBalance,
-      closingBalance: formData.openingBalance,
-    };
-
-    setAccounts((prev) =>
-      prev.map((a) => (a.id === selectedAccount.id ? updatedAccount : a)),
-    );
-    resetForm();
-    setIsEditModalOpen(false);
-    setSelectedAccount(null);
+    setSubmitting(true);
+    try {
+      const result = await updateAccount(selectedAccount.id, {
+        ...formData,
+        normalBalance: formData.normalBalance.toUpperCase(),
+        type: formData.type.toUpperCase(),
+        category: formData.category.toUpperCase(),
+      });
+      if (result) {
+        resetForm();
+        setIsEditModalOpen(false);
+        setSelectedAccount(null);
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     if (!selectedAccount) return;
-    setAccounts((prev) => prev.filter((a) => a.id !== selectedAccount.id));
-    setIsDeleteDialogOpen(false);
-    setSelectedAccount(null);
+    setSubmitting(true);
+    try {
+      await deleteAccount(selectedAccount.id);
+      setIsDeleteDialogOpen(false);
+      setSelectedAccount(null);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const resetForm = () => {
@@ -831,7 +320,7 @@ export default function ChartOfAccounts() {
       name: "",
       type: "asset",
       category: "current",
-      parentAccountId: undefined,
+      parentAccountId: null,
       normalBalance: "debit",
       openingBalance: 0,
       description: "",
@@ -861,16 +350,19 @@ export default function ChartOfAccounts() {
   };
 
   const getTypeIcon = (type: AccountType) => {
-    const config = accountTypes.find((t) => t.value === type);
-    if (config && config.icon) {
-      const Icon = config.icon;
-      return <Icon className="h-4 w-4" />;
-    }
-    return <FolderTree className="h-4 w-4" />;
+    const iconMap: Record<string, typeof Wallet> = {
+      asset: Wallet,
+      liability: CreditCard,
+      equity: PiggyBank,
+      revenue: TrendingUp,
+      expense: TrendingDown,
+    };
+    const Icon = iconMap[type] || FolderTree;
+    return <Icon className="h-4 w-4" />;
   };
 
   const getTypeBadge = (type: AccountType) => {
-    const styles = {
+    const styles: Record<string, string> = {
       asset: "bg-blue-100 text-blue-700",
       liability: "bg-red-100 text-red-700",
       equity: "bg-green-100 text-green-700",
@@ -878,7 +370,7 @@ export default function ChartOfAccounts() {
       expense: "bg-orange-100 text-orange-700",
     };
 
-    const labels = {
+    const labels: Record<string, string> = {
       asset: "Asset",
       liability: "Liability",
       equity: "Equity",
@@ -895,13 +387,13 @@ export default function ChartOfAccounts() {
   };
 
   const getStatusBadge = (status: AccountStatus) => {
-    const styles = {
+    const styles: Record<string, string> = {
       active: "bg-green-100 text-green-700",
       inactive: "bg-gray-100 text-gray-700",
       suspended: "bg-red-100 text-red-700",
     };
 
-    const labels = {
+    const labels: Record<string, string> = {
       active: "Active",
       inactive: "Inactive",
       suspended: "Suspended",
@@ -948,11 +440,11 @@ export default function ChartOfAccounts() {
       a.openingBalance.toString(),
       a.status,
       a.department || "",
-      a.description,
+      a.description || "",
     ]);
 
     const csvContent = [headers, ...csvData]
-      .map((row) => row.join(","))
+      .map((row) => row.map((c) => `"${c}"`).join(","))
       .join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -963,12 +455,11 @@ export default function ChartOfAccounts() {
     URL.revokeObjectURL(url);
   };
 
-  // Render hierarchy tree
-  const renderHierarchy = (accounts: Account[], depth = 0) => {
-    return accounts.map((account) => (
+  const renderHierarchy = (items: (Account & { children?: Account[] })[], depth = 0) => {
+    return items.map((account) => (
       <div key={account.id} className="select-none">
         <div
-          className={`flex items-center justify-between p-2 hover:bg-muted rounded-lg cursor-pointer ${depth > 0 ? "ml-6" : ""}`}
+          className={`flex items-center justify-between p-2 hover:bg-muted rounded-lg cursor-pointer`}
           onClick={() => handleViewAccount(account)}
           style={{ marginLeft: depth * 24 }}
         >
@@ -1034,7 +525,7 @@ export default function ChartOfAccounts() {
             <Download className="h-4 w-4" />
             Export
           </Button>
-          <Button onClick={() => setIsAddModalOpen(true)} className="gap-2">
+          <Button onClick={() => router.push("/ledger/chart-of-accounts/new")} className="gap-2">
             <Plus className="h-4 w-4" />
             Add Account
           </Button>
@@ -1113,7 +604,7 @@ export default function ChartOfAccounts() {
       {/* View Tabs */}
       <Tabs
         value={activeView}
-        onValueChange={(v) => setActiveView(v as any)}
+        onValueChange={(v) => setActiveView(v as "list" | "hierarchy" | "ledger")}
         className="w-full"
       >
         <TabsList className="grid w-full grid-cols-3">
@@ -1253,7 +744,16 @@ export default function ChartOfAccounts() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginatedAccounts.length === 0 ? (
+                    {loading && accounts.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-12">
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-foreground" />
+                            <p className="text-muted-foreground">Loading accounts...</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : paginatedAccounts.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={8} className="text-center py-12">
                           <div className="flex flex-col items-center gap-2">
@@ -1275,7 +775,7 @@ export default function ChartOfAccounts() {
                           </TableCell>
                           <TableCell>{getTypeBadge(account.type)}</TableCell>
                           <TableCell className="capitalize">
-                            {account.category}
+                            {account.category.replace("_", " ")}
                           </TableCell>
                           <TableCell>
                             {getNormalBalanceBadge(account.normalBalance)}
@@ -1314,7 +814,6 @@ export default function ChartOfAccounts() {
                 </Table>
               </div>
 
-              {/* Pagination */}
               {filteredAccounts.length > 0 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -1363,7 +862,7 @@ export default function ChartOfAccounts() {
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <span className="text-sm mx-2">
-                      Page {currentPage} of {totalPages}
+                      Page {currentPage} of {totalPages || 1}
                     </span>
                     <Button
                       variant="outline"
@@ -1371,15 +870,15 @@ export default function ChartOfAccounts() {
                       onClick={() =>
                         setCurrentPage((p) => Math.min(totalPages, p + 1))
                       }
-                      disabled={currentPage === totalPages}
+                      disabled={currentPage === totalPages || totalPages === 0}
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => setCurrentPage(totalPages)}
-                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(totalPages || 1)}
+                      disabled={currentPage === totalPages || totalPages === 0}
                     >
                       <ChevronsRight className="h-4 w-4" />
                     </Button>
@@ -1418,17 +917,14 @@ export default function ChartOfAccounts() {
                 <p>Select an account to view its ledger entries</p>
                 <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                   {accounts
-                    .filter((a) => !a.hasChildren && a.level > 0)
+                    .filter((a) => !a.childAccounts?.length && a.parentAccountId)
                     .slice(0, 8)
                     .map((account) => (
                       <Button
                         key={account.id}
                         variant="outline"
                         className="justify-start"
-                        onClick={() => {
-                          setSelectedAccount(account);
-                          setIsViewModalOpen(true);
-                        }}
+                        onClick={() => handleViewAccount(account)}
                       >
                         <span className="font-mono text-xs mr-2">
                           {account.accountCode}
@@ -1463,7 +959,7 @@ export default function ChartOfAccounts() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Category</p>
-                  <p className="capitalize">{selectedAccount.category}</p>
+                  <p className="capitalize">{selectedAccount.category.replace("_", " ")}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">
@@ -1499,7 +995,7 @@ export default function ChartOfAccounts() {
                   <p className="text-sm text-muted-foreground">Created</p>
                   <p>
                     {formatDate(selectedAccount.createdAt)} by{" "}
-                    {selectedAccount.createdBy}
+                    {selectedAccount.createdBy || "System"}
                   </p>
                 </div>
               </div>
@@ -1539,27 +1035,27 @@ export default function ChartOfAccounts() {
                 </div>
               </div>
 
-              {selectedAccount.bankAccount && (
+              {selectedAccount.bankName && (
                 <div className="border-t pt-4">
                   <h3 className="font-semibold mb-3">Bank Account Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Bank Name</p>
-                      <p>{selectedAccount.bankAccount.bankName}</p>
+                      <p>{selectedAccount.bankName}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">
                         Account Number
                       </p>
                       <p className="font-mono">
-                        {selectedAccount.bankAccount.accountNumber}
+                        {selectedAccount.bankAccountNumber}
                       </p>
                     </div>
                     <div className="md:col-span-2">
                       <p className="text-sm text-muted-foreground">
                         Account Name
                       </p>
-                      <p>{selectedAccount.bankAccount.accountName}</p>
+                      <p>{selectedAccount.bankAccountName}</p>
                     </div>
                   </div>
                 </div>
@@ -1580,7 +1076,7 @@ export default function ChartOfAccounts() {
             <Button
               onClick={() => {
                 setIsViewModalOpen(false);
-                handleEditAccount(selectedAccount!);
+                if (selectedAccount) handleEditAccount(selectedAccount);
               }}
             >
               Edit Account
@@ -1591,10 +1087,9 @@ export default function ChartOfAccounts() {
 
       {/* Add/Edit Account Modal */}
       <Dialog
-        open={isAddModalOpen || isEditModalOpen}
+        open={isEditModalOpen}
         onOpenChange={(open) => {
           if (!open) {
-            setIsAddModalOpen(false);
             setIsEditModalOpen(false);
             resetForm();
           }
@@ -1603,7 +1098,7 @@ export default function ChartOfAccounts() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {isAddModalOpen ? "Add New Account" : "Edit Account"}
+              Edit Account
             </DialogTitle>
             <DialogDescription>
               Define account details for the chart of accounts
@@ -1649,8 +1144,8 @@ export default function ChartOfAccounts() {
                 <Label>Account Type *</Label>
                 <Select
                   value={formData.type}
-                  onValueChange={(v: any) =>
-                    setFormData((prev) => ({ ...prev, type: v }))
+                  onValueChange={(v) =>
+                    setFormData((prev) => ({ ...prev, type: v as AccountType }))
                   }
                 >
                   <SelectTrigger className="mt-1">
@@ -1669,17 +1164,17 @@ export default function ChartOfAccounts() {
                 <Label>Category</Label>
                 <Select
                   value={formData.category}
-                  onValueChange={(v: any) =>
-                    setFormData((prev) => ({ ...prev, category: v }))
+                  onValueChange={(v) =>
+                    setFormData((prev) => ({ ...prev, category: v as AccountCategory }))
                   }
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {accountCategories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat.replace("_", " ").toUpperCase()}
+                    {ACCOUNT_CATEGORY_OPTIONS.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1688,11 +1183,11 @@ export default function ChartOfAccounts() {
               <div>
                 <Label>Parent Account</Label>
                 <Select
-                  value={formData.parentAccountId?.toString() || ""}
+                  value={formData.parentAccountId || ""}
                   onValueChange={(v) =>
                     setFormData((prev) => ({
                       ...prev,
-                      parentAccountId: v ? parseInt(v) : undefined,
+                      parentAccountId: v || null,
                     }))
                   }
                 >
@@ -1702,11 +1197,11 @@ export default function ChartOfAccounts() {
                   <SelectContent>
                     <SelectItem value="">None (Top Level)</SelectItem>
                     {accounts
-                      .filter((a) => a.level === 0)
+                      .filter((a) => !a.parentAccountId)
                       .map((account) => (
                         <SelectItem
                           key={account.id}
-                          value={account.id.toString()}
+                          value={account.id}
                         >
                           {account.accountCode} - {account.name}
                         </SelectItem>
@@ -1718,8 +1213,8 @@ export default function ChartOfAccounts() {
                 <Label>Normal Balance</Label>
                 <Select
                   value={formData.normalBalance}
-                  onValueChange={(v: any) =>
-                    setFormData((prev) => ({ ...prev, normalBalance: v }))
+                  onValueChange={(v) =>
+                    setFormData((prev) => ({ ...prev, normalBalance: v as NormalBalance }))
                   }
                 >
                   <SelectTrigger className="mt-1">
@@ -1810,7 +1305,6 @@ export default function ChartOfAccounts() {
             <Button
               variant="outline"
               onClick={() => {
-                setIsAddModalOpen(false);
                 setIsEditModalOpen(false);
                 resetForm();
               }}
@@ -1818,9 +1312,10 @@ export default function ChartOfAccounts() {
               Cancel
             </Button>
             <Button
-              onClick={isAddModalOpen ? handleAddAccount : handleUpdateAccount}
+              onClick={handleUpdateAccount}
+              disabled={submitting}
             >
-              {isAddModalOpen ? "Add Account" : "Save Changes"}
+              {submitting ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1835,9 +1330,9 @@ export default function ChartOfAccounts() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Account</AlertDialogTitle>
             <AlertDialogDescription>
-              Permanently delete "{selectedAccount?.name}"? This action cannot
+              Permanently delete &quot;{selectedAccount?.name}&quot;? This action cannot
               be undone.
-              {selectedAccount?.hasChildren && (
+              {selectedAccount?.childAccounts && selectedAccount.childAccounts.length > 0 && (
                 <div className="mt-2 p-3 bg-red-50 rounded-lg text-red-800">
                   <AlertCircle className="h-4 w-4 inline mr-2" />
                   This account has child accounts. Delete all child accounts
@@ -1851,7 +1346,7 @@ export default function ChartOfAccounts() {
             <AlertDialogAction
               onClick={handleDeleteAccount}
               className="bg-red-600 hover:bg-red-700"
-              disabled={selectedAccount?.hasChildren}
+              disabled={!!selectedAccount?.childAccounts && selectedAccount.childAccounts.length > 0}
             >
               Delete
             </AlertDialogAction>

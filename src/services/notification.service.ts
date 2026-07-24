@@ -18,7 +18,9 @@ export async function createNotification(data: {
   userId: string;
   title: string;
   message: string;
+  body?: string;
   type?: string;
+  category?: string;
   referenceId?: string;
 }) {
   return db.notification.create({
@@ -26,7 +28,9 @@ export async function createNotification(data: {
       userId: data.userId,
       title: data.title,
       message: data.message,
+      body: data.body ?? null,
       type: data.type ?? "INFO",
+      category: data.category ?? "messages",
       referenceId: data.referenceId,
     },
   });
