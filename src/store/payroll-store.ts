@@ -6,6 +6,7 @@ import type { PayrollRun, PayrollItem } from "@/src/types/payroll";
 interface PayrollState {
   payrollRuns: PayrollRun[];
   loading: boolean;
+  _pollInterval: ReturnType<typeof setInterval> | null;
 
   fetchPayrollRuns: (params?: Record<string, string>) => Promise<void>;
   getPayrollRunById: (id: string) => PayrollRun | undefined;
@@ -14,6 +15,8 @@ interface PayrollState {
   deletePayrollRun: (id: string) => Promise<boolean>;
   processPayrollRun: (id: string) => Promise<PayrollRun | null>;
   completePayrollRun: (id: string) => Promise<PayrollRun | null>;
+  startPolling: () => void;
+  stopPolling: () => void;
 }
 
 function mapPayrollItem(raw: Record<string, unknown>): PayrollItem {
@@ -59,6 +62,24 @@ function mapPayrollRun(raw: Record<string, unknown>): PayrollRun {
 export const usePayrollStore = create<PayrollState>()((set, get) => ({
   payrollRuns: [],
   loading: false,
+  _pollInterval: null,
+
+  startPolling: () => {
+    const state = get();
+    if (state._pollInterval) return;
+    state.fetchPayrollRuns();
+    const id = setInterval(() => {
+      get().fetchPayrollRuns();
+    }, 30000);
+    set({ _pollInterval: id });
+  },
+  stopPolling: () => {
+    const state = get();
+    if (state._pollInterval) {
+      clearInterval(state._pollInterval);
+      set({ _pollInterval: null });
+    }
+  },
 
   fetchPayrollRuns: async (params) => {
     set({ loading: true });

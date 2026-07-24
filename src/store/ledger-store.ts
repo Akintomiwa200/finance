@@ -13,6 +13,7 @@ interface LedgerState {
   accounts: Account[];
   journalEntries: JournalEntry[];
   loading: boolean;
+  _pollInterval: ReturnType<typeof setInterval> | null;
 
   fetchAccounts: (params?: Record<string, string>) => Promise<void>;
   fetchJournalEntries: (params?: Record<string, string>) => Promise<void>;
@@ -28,6 +29,8 @@ interface LedgerState {
   deleteJournalEntry: (id: string) => Promise<boolean>;
   getAccountCounts: () => Record<string, number>;
   getTotalByType: () => Record<string, number>;
+  startPolling: () => void;
+  stopPolling: () => void;
 }
 
 function toCamelCase(obj: unknown): unknown {
@@ -47,6 +50,26 @@ export const useLedgerStore = create<LedgerState>()((set, get) => ({
   accounts: [],
   journalEntries: [],
   loading: false,
+  _pollInterval: null,
+
+  startPolling: () => {
+    const state = get();
+    if (state._pollInterval) return;
+    state.fetchAccounts();
+    state.fetchJournalEntries();
+    const id = setInterval(() => {
+      get().fetchAccounts();
+      get().fetchJournalEntries();
+    }, 30000);
+    set({ _pollInterval: id });
+  },
+  stopPolling: () => {
+    const state = get();
+    if (state._pollInterval) {
+      clearInterval(state._pollInterval);
+      set({ _pollInterval: null });
+    }
+  },
 
   fetchAccounts: async (params) => {
     set({ loading: true });

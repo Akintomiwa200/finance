@@ -26,6 +26,7 @@ export async function createExpenseReport(data: {
   title: string;
   description?: string;
   employeeId: string;
+  organizationId: string;
   items: { category: string; description: string; amount: number; expenseDate: Date }[];
 }) {
   const totalAmount = data.items.reduce((sum, item) => sum + item.amount, 0);
@@ -36,6 +37,7 @@ export async function createExpenseReport(data: {
       description: data.description,
       totalAmount,
       employeeId: data.employeeId,
+      organizationId: data.organizationId,
       status: "DRAFT",
       items: {
         create: data.items,

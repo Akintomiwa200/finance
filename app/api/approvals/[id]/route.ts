@@ -54,7 +54,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (newStatus === "APPROVED") {
       data.status = "APPROVED";
       data.approvedAt = new Date();
-      data.approverId = body.approverId || session.user.employeeId || null;
+      data.approverId = body.approverId || null;
     } else if (newStatus === "REJECTED") {
       data.status = "REJECTED";
       data.comments = body.rejectionReason || body.comments || null;

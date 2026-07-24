@@ -14,6 +14,7 @@ interface PayableState {
   purchaseOrders: PurchaseOrder[];
   payments: BillPayment[];
   loading: boolean;
+  _pollInterval: ReturnType<typeof setInterval> | null;
 
   fetchVendors: (params?: Record<string, string>) => Promise<void>;
   fetchBills: (params?: Record<string, string>) => Promise<void>;
@@ -40,6 +41,8 @@ interface PayableState {
   addPayment: (data: Record<string, unknown>) => Promise<BillPayment | null>;
   updatePayment: (id: string, data: Record<string, unknown>) => Promise<BillPayment | null>;
   deletePayment: (id: string) => Promise<boolean>;
+  startPolling: () => void;
+  stopPolling: () => void;
 }
 
 function mapVendor(raw: Record<string, unknown>): Vendor {
@@ -193,6 +196,30 @@ export const usePayableStore = create<PayableState>()((set, get) => ({
   purchaseOrders: [],
   payments: [],
   loading: false,
+  _pollInterval: null,
+
+  startPolling: () => {
+    const state = get();
+    if (state._pollInterval) return;
+    state.fetchVendors();
+    state.fetchBills();
+    state.fetchPurchaseOrders();
+    state.fetchPayments();
+    const id = setInterval(() => {
+      get().fetchVendors();
+      get().fetchBills();
+      get().fetchPurchaseOrders();
+      get().fetchPayments();
+    }, 30000);
+    set({ _pollInterval: id });
+  },
+  stopPolling: () => {
+    const state = get();
+    if (state._pollInterval) {
+      clearInterval(state._pollInterval);
+      set({ _pollInterval: null });
+    }
+  },
 
   fetchVendors: async (params) => {
     set({ loading: true });

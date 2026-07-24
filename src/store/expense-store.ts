@@ -11,6 +11,7 @@ interface ExpenseState {
   reports: ExpenseReport[];
   reimbursements: Reimbursement[];
   loading: boolean;
+  _pollInterval: ReturnType<typeof setInterval> | null;
 
   fetchReports: (params?: Record<string, string>) => Promise<void>;
   fetchReimbursements: (params?: Record<string, string>) => Promise<void>;
@@ -25,6 +26,8 @@ interface ExpenseState {
   addReimbursement: (data: Record<string, unknown>) => Promise<Reimbursement | null>;
   updateReimbursement: (id: string, data: Record<string, unknown>) => Promise<Reimbursement | null>;
   deleteReimbursement: (id: string) => Promise<boolean>;
+  startPolling: () => void;
+  stopPolling: () => void;
 }
 
 function mapReport(raw: Record<string, unknown>): ExpenseReport {
@@ -94,6 +97,26 @@ export const useExpenseStore = create<ExpenseState>()((set, get) => ({
   reports: [],
   reimbursements: [],
   loading: false,
+  _pollInterval: null,
+
+  startPolling: () => {
+    const state = get();
+    if (state._pollInterval) return;
+    state.fetchReports();
+    state.fetchReimbursements();
+    const id = setInterval(() => {
+      get().fetchReports();
+      get().fetchReimbursements();
+    }, 30000);
+    set({ _pollInterval: id });
+  },
+  stopPolling: () => {
+    const state = get();
+    if (state._pollInterval) {
+      clearInterval(state._pollInterval);
+      set({ _pollInterval: null });
+    }
+  },
 
   fetchReports: async (params) => {
     set({ loading: true });

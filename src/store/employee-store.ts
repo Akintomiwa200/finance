@@ -7,6 +7,7 @@ interface EmployeeState {
   employees: Employee[];
   departments: Department[];
   loading: boolean;
+  _pollInterval: ReturnType<typeof setInterval> | null;
 
   fetchEmployees: () => Promise<void>;
   fetchDepartments: () => Promise<void>;
@@ -21,6 +22,8 @@ interface EmployeeState {
   addDepartment: (data: Record<string, unknown>) => Promise<Department | null>;
   updateDepartment: (id: string, data: Record<string, unknown>) => Promise<Department | null>;
   deleteDepartment: (id: string) => Promise<boolean>;
+  startPolling: () => void;
+  stopPolling: () => void;
 }
 
 function mapEmployee(raw: Record<string, unknown>): Employee {
@@ -68,6 +71,26 @@ export const useEmployeeStore = create<EmployeeState>()((set, get) => ({
   employees: [],
   departments: [],
   loading: false,
+  _pollInterval: null,
+
+  startPolling: () => {
+    const state = get();
+    if (state._pollInterval) return;
+    state.fetchEmployees();
+    state.fetchDepartments();
+    const id = setInterval(() => {
+      get().fetchEmployees();
+      get().fetchDepartments();
+    }, 30000);
+    set({ _pollInterval: id });
+  },
+  stopPolling: () => {
+    const state = get();
+    if (state._pollInterval) {
+      clearInterval(state._pollInterval);
+      set({ _pollInterval: null });
+    }
+  },
 
   fetchEmployees: async () => {
     set({ loading: true });

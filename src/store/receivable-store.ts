@@ -14,6 +14,7 @@ interface ReceivableState {
   payments: CustomerPayment[];
   creditNotes: CreditNote[];
   loading: boolean;
+  _pollInterval: ReturnType<typeof setInterval> | null;
 
   fetchCustomers: (params?: Record<string, string>) => Promise<void>;
   fetchInvoices: (params?: Record<string, string>) => Promise<void>;
@@ -40,6 +41,8 @@ interface ReceivableState {
   addCreditNote: (data: Record<string, unknown>) => Promise<CreditNote | null>;
   updateCreditNote: (id: string, data: Record<string, unknown>) => Promise<CreditNote | null>;
   deleteCreditNote: (id: string) => Promise<boolean>;
+  startPolling: () => void;
+  stopPolling: () => void;
 }
 
 function mapCustomer(raw: Record<string, unknown>): Customer {
@@ -177,6 +180,30 @@ export const useReceivableStore = create<ReceivableState>()((set, get) => ({
   payments: [],
   creditNotes: [],
   loading: false,
+  _pollInterval: null,
+
+  startPolling: () => {
+    const state = get();
+    if (state._pollInterval) return;
+    state.fetchCustomers();
+    state.fetchInvoices();
+    state.fetchPayments();
+    state.fetchCreditNotes();
+    const id = setInterval(() => {
+      get().fetchCustomers();
+      get().fetchInvoices();
+      get().fetchPayments();
+      get().fetchCreditNotes();
+    }, 30000);
+    set({ _pollInterval: id });
+  },
+  stopPolling: () => {
+    const state = get();
+    if (state._pollInterval) {
+      clearInterval(state._pollInterval);
+      set({ _pollInterval: null });
+    }
+  },
 
   fetchCustomers: async (params) => {
     set({ loading: true });

@@ -1,29 +1,19 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { SectionPage } from "@/src/components/templates/section-page";
+import { ClipboardList, Banknote, FileCheck, Calculator, RefreshCw } from "lucide-react";
 
-export default function() {
-  const router = useRouter();
+export default function PettyCashPage() {
   return (
-    <div className="space-y-6">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle>Petty Cash</CardTitle>
-          <CardDescription>Manage petty cash operations</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-12 text-muted-foreground">
-            This page is under development.
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <SectionPage
+      title="Petty Cash"
+      description="Manage petty cash operations — requests, reimbursements, register, and reconciliation."
+      links={[
+        { label: "Petty Cash Requests", href: "/petty-cash/requests", description: "Submit and manage petty cash requests", icon: ClipboardList },
+        { label: "Petty Cash Register", href: "/petty-cash/register", description: "Track all petty cash transactions", icon: Banknote },
+        { label: "Reimbursements", href: "/petty-cash/reimbursements", description: "Process and track employee reimbursements", icon: FileCheck },
+        { label: "Reconciliation", href: "/petty-cash/reconcile", description: "Reconcile petty cash records with bank statements", icon: Calculator },
+      ]}
+    />
   );
 }

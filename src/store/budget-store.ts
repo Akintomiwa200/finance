@@ -6,12 +6,15 @@ import type { Budget, BudgetLineItem } from "@/src/types/budget";
 interface BudgetState {
   budgets: Budget[];
   loading: boolean;
+  _pollInterval: ReturnType<typeof setInterval> | null;
 
   fetchBudgets: (params?: Record<string, string>) => Promise<void>;
   getBudgetById: (id: string) => Budget | undefined;
   addBudget: (data: Record<string, unknown>) => Promise<Budget | null>;
   updateBudget: (id: string, data: Record<string, unknown>) => Promise<Budget | null>;
   deleteBudget: (id: string) => Promise<boolean>;
+  startPolling: () => void;
+  stopPolling: () => void;
 }
 
 function mapLineItem(raw: Record<string, unknown>): BudgetLineItem {
@@ -46,6 +49,24 @@ function mapBudget(raw: Record<string, unknown>): Budget {
 export const useBudgetStore = create<BudgetState>()((set, get) => ({
   budgets: [],
   loading: false,
+  _pollInterval: null,
+
+  startPolling: () => {
+    const state = get();
+    if (state._pollInterval) return;
+    state.fetchBudgets();
+    const id = setInterval(() => {
+      get().fetchBudgets();
+    }, 30000);
+    set({ _pollInterval: id });
+  },
+  stopPolling: () => {
+    const state = get();
+    if (state._pollInterval) {
+      clearInterval(state._pollInterval);
+      set({ _pollInterval: null });
+    }
+  },
 
   fetchBudgets: async (params) => {
     set({ loading: true });

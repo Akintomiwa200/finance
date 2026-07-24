@@ -9,6 +9,46 @@ import { ModuleAccessGuard } from "@/src/components/layout/module-access-guard";
 import { DashboardShellSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { SessionTimeoutProvider } from "@/src/components/session-timeout-provider";
 import { useAuthStore } from "@/src/store/auth-store";
+import { useLedgerStore } from "@/src/store/ledger-store";
+import { usePayableStore } from "@/src/store/payable-store";
+import { useReceivableStore } from "@/src/store/receivable-store";
+import { useExpenseStore } from "@/src/store/expense-store";
+import { useEmployeeStore } from "@/src/store/employee-store";
+import { usePayrollStore } from "@/src/store/payroll-store";
+import { useApprovalStore } from "@/src/store/approval-store";
+import { useBudgetStore } from "@/src/store/budget-store";
+import { useTransactionStore } from "@/src/store/transaction-store";
+import { useTaxStore } from "@/src/store/tax-store";
+
+function DashboardPollingProvider({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    useLedgerStore.getState().startPolling();
+    usePayableStore.getState().startPolling();
+    useReceivableStore.getState().startPolling();
+    useExpenseStore.getState().startPolling();
+    useEmployeeStore.getState().startPolling();
+    usePayrollStore.getState().startPolling();
+    useApprovalStore.getState().startPolling();
+    useBudgetStore.getState().startPolling();
+    useTransactionStore.getState().startPolling();
+    useTaxStore.getState().startPolling();
+
+    return () => {
+      useLedgerStore.getState().stopPolling();
+      usePayableStore.getState().stopPolling();
+      useReceivableStore.getState().stopPolling();
+      useExpenseStore.getState().stopPolling();
+      useEmployeeStore.getState().stopPolling();
+      usePayrollStore.getState().stopPolling();
+      useApprovalStore.getState().stopPolling();
+      useBudgetStore.getState().stopPolling();
+      useTransactionStore.getState().stopPolling();
+      useTaxStore.getState().stopPolling();
+    };
+  }, []);
+
+  return <>{children}</>;
+}
 
 export default function DashboardLayout({
   children,
@@ -34,17 +74,19 @@ export default function DashboardLayout({
   return (
     <MobileSidebarProvider>
       <SessionTimeoutProvider>
-        <div className="flex h-screen overflow-hidden bg-background">
-          <Sidebar />
-          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-            <Navbar />
-            <main className="flex-1 overflow-y-auto overflow-x-hidden">
-              <div className="p-4 md:p-6">
-                <ModuleAccessGuard>{children}</ModuleAccessGuard>
-              </div>
-            </main>
+        <DashboardPollingProvider>
+          <div className="flex h-screen overflow-hidden bg-background">
+            <Sidebar />
+            <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+              <Navbar />
+              <main className="flex-1 overflow-y-auto overflow-x-hidden">
+                <div className="p-4 md:p-6">
+                  <ModuleAccessGuard>{children}</ModuleAccessGuard>
+                </div>
+              </main>
+            </div>
           </div>
-        </div>
+        </DashboardPollingProvider>
       </SessionTimeoutProvider>
     </MobileSidebarProvider>
   );

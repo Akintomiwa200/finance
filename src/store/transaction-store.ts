@@ -6,11 +6,14 @@ import type { Transaction } from "@/src/types/transaction";
 interface TransactionState {
   transactions: Transaction[];
   loading: boolean;
+  _pollInterval: ReturnType<typeof setInterval> | null;
   fetchTransactions: (params?: Record<string, string>) => Promise<void>;
   getTransactionById: (id: string) => Transaction | undefined;
   addTransaction: (data: Record<string, unknown>) => Promise<Transaction | null>;
   updateTransaction: (id: string, data: Record<string, unknown>) => Promise<Transaction | null>;
   deleteTransaction: (id: string) => Promise<boolean>;
+  startPolling: () => void;
+  stopPolling: () => void;
 }
 
 function mapTransaction(raw: Record<string, unknown>): Transaction {
@@ -193,6 +196,24 @@ const MOCK_TRANSACTIONS: Transaction[] = [
 export const useTransactionStore = create<TransactionState>((set, get) => ({
   transactions: [],
   loading: false,
+  _pollInterval: null,
+
+  startPolling: () => {
+    const state = get();
+    if (state._pollInterval) return;
+    state.fetchTransactions();
+    const id = setInterval(() => {
+      get().fetchTransactions();
+    }, 30000);
+    set({ _pollInterval: id });
+  },
+  stopPolling: () => {
+    const state = get();
+    if (state._pollInterval) {
+      clearInterval(state._pollInterval);
+      set({ _pollInterval: null });
+    }
+  },
 
   fetchTransactions: async () => {
     set({ loading: true });

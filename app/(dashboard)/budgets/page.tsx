@@ -109,12 +109,9 @@ export default function BudgetsPage() {
     if (yearFilter !== "all") result = result.filter((b) => b.fiscalYear === parseInt(yearFilter));
 
     result.sort((a, b) => {
-      const aVal = a[sortKey] ?? "";
-      const bVal = b[sortKey] ?? "";
-      if (typeof aVal === "string" && typeof bVal === "string") {
-        return sortDir === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-      }
-      return sortDir === "asc" ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
+      const aVal = a[sortKey];
+      const bVal = b[sortKey];
+      return sortDir === "asc" ? aVal - bVal : bVal - aVal;
     });
     return result;
   }, [budgets, search, statusFilter, yearFilter, sortKey, sortDir]);

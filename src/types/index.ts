@@ -7,10 +7,9 @@ export type {
   SummaryMetric,
 } from "./common";
 
-export type { Employee, EmployeeSummary } from "./employee";
-export type { PayrollRun, PayrollItem, Payslip } from "./payroll";
+export type { Employee, Department } from "./employee";
+export type { PayrollRun, PayrollItem } from "./payroll";
 export type { ExpenseReport, ExpenseItem } from "./expense";
 export type { CustomerInvoice, CustomerInvoiceItem, VendorInvoice } from "./invoice";
-export type { Budget, BudgetLineItem, BudgetSummary } from "./budget";
-export type { Department } from "./department";
+export type { Budget, BudgetLineItem } from "./budget";
 export type { LoginInput, RegisterInput } from "./auth";

@@ -6,11 +6,14 @@ import type { TaxConfiguration } from "@/src/types/tax";
 interface TaxState {
   configurations: TaxConfiguration[];
   loading: boolean;
+  _pollInterval: ReturnType<typeof setInterval> | null;
   fetchConfigurations: (params?: Record<string, string>) => Promise<void>;
   getConfigurationById: (id: string) => TaxConfiguration | undefined;
   addConfiguration: (data: Record<string, unknown>) => Promise<TaxConfiguration | null>;
   updateConfiguration: (id: string, data: Record<string, unknown>) => Promise<TaxConfiguration | null>;
   deleteConfiguration: (id: string) => Promise<boolean>;
+  startPolling: () => void;
+  stopPolling: () => void;
 }
 
 const MOCK_CONFIGS: TaxConfiguration[] = [
@@ -79,6 +82,24 @@ const MOCK_CONFIGS: TaxConfiguration[] = [
 export const useTaxStore = create<TaxState>((set, get) => ({
   configurations: [],
   loading: false,
+  _pollInterval: null,
+
+  startPolling: () => {
+    const state = get();
+    if (state._pollInterval) return;
+    state.fetchConfigurations();
+    const id = setInterval(() => {
+      get().fetchConfigurations();
+    }, 30000);
+    set({ _pollInterval: id });
+  },
+  stopPolling: () => {
+    const state = get();
+    if (state._pollInterval) {
+      clearInterval(state._pollInterval);
+      set({ _pollInterval: null });
+    }
+  },
 
   fetchConfigurations: async () => {
     set({ loading: true });

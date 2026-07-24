@@ -251,6 +251,10 @@ model Organization {
 
   expenseReports      ExpenseReport[]
   reimbursements      Reimbursement[]
+  assets              Asset[]
+  assetDisposals      AssetDisposal[]
+  pettyCashRequests   PettyCashRequest[]
+  pettyCashReimbursements PettyCashReimbursement[]
 }
 
 model Department {
@@ -1143,4 +1147,129 @@ model CreditNote {
   updatedAt       DateTime          @updatedAt
 
   @@unique([organizationId, creditNoteNumber])
+}
+
+model Asset {
+  id                   String   @id @default(cuid())
+  name                 String
+  code                 String
+  category             String
+  description          String?
+  serialNumber         String?
+  purchasePrice        Decimal  @db.Decimal(15, 2)
+  currentValue         Decimal  @db.Decimal(15, 2)
+  purchaseDate         DateTime
+  depreciationMethod   String?
+  usefulLife           Int?
+  salvageValue         Decimal? @db.Decimal(15, 2)
+  accumulatedDepreciation Decimal @default(0) @db.Decimal(15, 2)
+  monthlyDepreciation  Decimal? @default(0) @db.Decimal(15, 2)
+  status               String   @default("ACTIVE")
+  location             String?
+  departmentName       String?
+  assignedTo           String?
+  supplier             String?
+  warrantyExpiry       DateTime?
+  notes                String?
+  organizationId       String
+  organization         Organization @relation(fields: [organizationId], references: [id])
+
+  disposals            AssetDisposal[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([organizationId, code])
+}
+
+model AssetDisposal {
+  id                   String   @id @default(cuid())
+  disposalNumber       String
+  disposalDate         DateTime
+  disposalMethod       String
+  saleAmount           Decimal  @default(0) @db.Decimal(15, 2)
+  disposalCost         Decimal  @default(0) @db.Decimal(15, 2)
+  netProceeds          Decimal  @default(0) @db.Decimal(15, 2)
+  bookValueAtDisposal  Decimal  @default(0) @db.Decimal(15, 2)
+  gainLoss             Decimal  @default(0) @db.Decimal(15, 2)
+  gainLossType         String   @default("gain")
+  status               String   @default("PENDING")
+  buyerName            String?
+  buyerContact         String?
+  reason               String?
+  approvedBy           String?
+  approvedAt           DateTime?
+  processedBy          String?
+  processedAt          DateTime?
+  reference            String?
+  notes                String?
+
+  assetId              String
+  asset                Asset    @relation(fields: [assetId], references: [id])
+
+  organizationId       String
+  organization         Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([organizationId, disposalNumber])
+}
+
+model PettyCashRequest {
+  id                   String   @id @default(cuid())
+  requestNumber        String
+  title                String
+  description          String?
+  amount               Decimal  @db.Decimal(15, 2)
+  category             String
+  priority             String   @default("MEDIUM")
+  status               String   @default("PENDING")
+  paymentMethod        String   @default("CASH")
+  requestDate          DateTime @default(now())
+  expectedDate         DateTime?
+  employeeName         String
+  employeeEmail        String?
+  departmentName       String?
+  position             String?
+  approvedBy           String?
+  approvedAt           DateTime?
+  disbursedBy          String?
+  disbursedAt          DateTime?
+  rejectionReason      String?
+  notes                String?
+  organizationId       String
+  organization         Organization @relation(fields: [organizationId], references: [id])
+
+  reimbursements       PettyCashReimbursement[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([organizationId, requestNumber])
+}
+
+model PettyCashReimbursement {
+  id                   String   @id @default(cuid())
+  amount               Decimal  @db.Decimal(15, 2)
+  status               String   @default("PENDING")
+  description          String?
+  category             String?
+  submittedAt          DateTime @default(now())
+  approvedAt           DateTime?
+  approvedBy           String?
+  paidAt               DateTime?
+  rejectionReason      String?
+  employeeName         String?
+  employeeEmail        String?
+  departmentName       String?
+
+  requestId            String?
+  request              PettyCashRequest? @relation(fields: [requestId], references: [id])
+
+  organizationId       String
+  organization         Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }

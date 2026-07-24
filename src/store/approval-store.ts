@@ -6,6 +6,7 @@ import type { ApprovalRequest, ApprovalStep } from "@/src/types/approval";
 interface ApprovalState {
   approvals: ApprovalRequest[];
   loading: boolean;
+  _pollInterval: ReturnType<typeof setInterval> | null;
 
   fetchApprovals: (params?: Record<string, string>) => Promise<void>;
   getApprovalById: (id: string) => ApprovalRequest | undefined;
@@ -14,6 +15,8 @@ interface ApprovalState {
   deleteApproval: (id: string) => Promise<boolean>;
   approveRequest: (id: string, comment?: string) => Promise<ApprovalRequest | null>;
   rejectRequest: (id: string, reason: string) => Promise<ApprovalRequest | null>;
+  startPolling: () => void;
+  stopPolling: () => void;
 }
 
 function mapStep(raw: Record<string, unknown>): ApprovalStep {
@@ -56,6 +59,24 @@ function mapApproval(raw: Record<string, unknown>): ApprovalRequest {
 export const useApprovalStore = create<ApprovalState>()((set, get) => ({
   approvals: [],
   loading: false,
+  _pollInterval: null,
+
+  startPolling: () => {
+    const state = get();
+    if (state._pollInterval) return;
+    state.fetchApprovals();
+    const id = setInterval(() => {
+      get().fetchApprovals();
+    }, 30000);
+    set({ _pollInterval: id });
+  },
+  stopPolling: () => {
+    const state = get();
+    if (state._pollInterval) {
+      clearInterval(state._pollInterval);
+      set({ _pollInterval: null });
+    }
+  },
 
   fetchApprovals: async (params) => {
     set({ loading: true });
