@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   Card,
   CardHeader,
@@ -18,11 +18,11 @@ import {
   RotateCcw,
   AlertCircle,
 } from "lucide-react";
-import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { useSettingsSection, useSyncSectionData } from "@/src/hooks/use-settings-section";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 export default function TaxRatesPage() {
-  const { data, isLoading, saveSection } = useSettingsSection("tax");
+  const { data, isLoading, saveSection, settingsVersion } = useSettingsSection("tax");
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -31,18 +31,17 @@ export default function TaxRatesPage() {
   const [originalVATRate, setOriginalVATRate] = useState("");
   const [originalWHTRate, setOriginalWHTRate] = useState("");
 
-  useEffect(() => {
-    if (!data) return;
-    const vat = String(data.defaultVATRate ?? "");
-    const wht = String(data.defaultWHTRate ?? "");
+  const hasChanges =
+    defaultVATRate !== originalVATRate || defaultWHTRate !== originalWHTRate;
+
+  useSyncSectionData(data, settingsVersion, hasChanges, (section) => {
+    const vat = String(section.defaultVATRate ?? "");
+    const wht = String(section.defaultWHTRate ?? "");
     setDefaultVATRate(vat);
     setDefaultWHTRate(wht);
     setOriginalVATRate(vat);
     setOriginalWHTRate(wht);
-  }, [data]);
-
-  const hasChanges =
-    defaultVATRate !== originalVATRate || defaultWHTRate !== originalWHTRate;
+  });
 
   const vatRate = defaultVATRate === "" ? null : Number(defaultVATRate);
   const whtRate = defaultWHTRate === "" ? null : Number(defaultWHTRate);

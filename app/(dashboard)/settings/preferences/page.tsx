@@ -32,6 +32,8 @@ import { Switch } from "@/src/components/ui/switch";
 import { useToast } from "@/src/components/ui/use-toast";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { applySessionTimeoutFromSettings, normalizeSessionTimeout } from "@/src/lib/sync-session-timeout";
+import { useSessionSettingsStore } from "@/src/store/session-settings-store";
 import type { AccentColor, FontSize } from "@/src/types/platform-settings";
 
 // --- Constants ---
@@ -158,6 +160,9 @@ export default function SettingsPreferencesPage() {
 
   const general = useSettingsSection("general");
   const regional = useSettingsSection("regional");
+  const session = useSettingsSection("session");
+  const backup = useSettingsSection("backup");
+  const setSessionTimeout = useSessionSettingsStore((s) => s.setInactivityTimeout);
 
   const [localTimeout, setLocalTimeout] = useState("60");
   const [localAccentColor, setLocalAccentColor] = useState<AccentColor>("blue");
@@ -165,33 +170,40 @@ export default function SettingsPreferencesPage() {
   const [timezone, setTimezone] = useState("America/New_York");
   const [dateFormat, setDateFormat] = useState("MM/DD/YYYY");
   const [locale, setLocale] = useState("en-US");
+  const [autoBackupEnabled, setAutoBackupEnabled] = useState(true);
+  const [backupFrequency, setBackupFrequency] = useState("daily");
 
   useEffect(() => {
+    if (session.data) {
+      setLocalTimeout(String(session.data.inactivityTimeoutMinutes ?? 30));
+    } else if (general.data) {
+      setLocalTimeout(String(general.data.inactivityTimeoutMinutes ?? 30));
+    }
     if (general.data) {
-      setLocalTimeout(
-        String(general.data.sessionTimeout ?? general.data.inactivityTimeoutMinutes ?? 60),
-      );
-      setLocalAccentColor(
-        (general.data.accentColor as AccentColor) ?? "blue",
-      );
+      setLocalAccentColor((general.data.accentColor as AccentColor) ?? "blue");
       setLocalFontSize((general.data.fontSize as FontSize) ?? "medium");
     }
-  }, [general.data]);
+  }, [general.data, session.data, general.settingsVersion, session.settingsVersion]);
 
   useEffect(() => {
     if (regional.data) {
       setTimezone((regional.data.timezone as string) ?? "America/New_York");
-      setDateFormat(
-        (regional.data.dateFormat as string) ?? "MM/DD/YYYY",
-      );
+      setDateFormat((regional.data.dateFormat as string) ?? "MM/DD/YYYY");
       setLocale((regional.data.locale as string) ?? "en-US");
     }
-  }, [regional.data]);
+  }, [regional.data, regional.settingsVersion]);
+
+  useEffect(() => {
+    if (backup.data) {
+      setAutoBackupEnabled(Boolean(backup.data.autoBackupEnabled ?? true));
+      setBackupFrequency(String(backup.data.backupFrequency ?? "daily"));
+    }
+  }, [backup.data, backup.settingsVersion]);
 
   const handleSaveAll = async () => {
-    const [gOk, rOk] = await Promise.all([
+    const timeoutMinutes = normalizeSessionTimeout(Number(localTimeout));
+    const [gOk, rOk, sOk, bOk] = await Promise.all([
       general.saveSection({
-        sessionTimeout: Number(localTimeout),
         accentColor: localAccentColor,
         fontSize: localFontSize,
       }),
@@ -200,43 +212,57 @@ export default function SettingsPreferencesPage() {
         dateFormat,
         locale,
       }),
+      session.saveSection({
+        inactivityTimeoutMinutes: timeoutMinutes,
+      }),
+      backup.saveSection({
+        autoBackupEnabled,
+        backupFrequency,
+      }),
     ]);
 
-    if (gOk && rOk) {
+    if (sOk) {
+      setSessionTimeout(timeoutMinutes);
+      applySessionTimeoutFromSettings({ inactivityTimeoutMinutes: timeoutMinutes });
+    }
+
+    if (gOk && rOk && sOk && bOk) {
       toast({
         title: "Preferences saved",
-        description: "All preferences have been updated successfully.",
+        description: "All preferences have been updated and synced.",
       });
     }
   };
 
   const handleReset = () => {
+    if (session.data) {
+      setLocalTimeout(String(session.data.inactivityTimeoutMinutes ?? 30));
+    }
     if (general.data) {
-      setLocalTimeout(
-        String(general.data.sessionTimeout ?? general.data.inactivityTimeoutMinutes ?? 60),
-      );
-      setLocalAccentColor(
-        (general.data.accentColor as AccentColor) ?? "blue",
-      );
+      setLocalAccentColor((general.data.accentColor as AccentColor) ?? "blue");
       setLocalFontSize((general.data.fontSize as FontSize) ?? "medium");
     }
     if (regional.data) {
       setTimezone((regional.data.timezone as string) ?? "America/New_York");
-      setDateFormat(
-        (regional.data.dateFormat as string) ?? "MM/DD/YYYY",
-      );
+      setDateFormat((regional.data.dateFormat as string) ?? "MM/DD/YYYY");
       setLocale((regional.data.locale as string) ?? "en-US");
+    }
+    if (backup.data) {
+      setAutoBackupEnabled(Boolean(backup.data.autoBackupEnabled ?? true));
+      setBackupFrequency(String(backup.data.backupFrequency ?? "daily"));
     }
   };
 
-  if (general.isLoading || regional.isLoading) return <SettingsPageSkeleton />;
+  if (general.isLoading || regional.isLoading || session.isLoading || backup.isLoading) {
+    return <SettingsPageSkeleton />;
+  }
 
-  if (general.error || regional.error) {
+  if (general.error || regional.error || session.error || backup.error) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20">
         <AlertCircle className="h-10 w-10 text-destructive" />
         <p className="text-destructive">
-          {general.error || regional.error}
+          {general.error || regional.error || session.error || backup.error}
         </p>
       </div>
     );
@@ -323,7 +349,7 @@ export default function SettingsPreferencesPage() {
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Time after which inactive sessions will be terminated
+              Inactive users are automatically signed out after this period
             </p>
           </div>
           <div className="space-y-2">
@@ -429,14 +455,32 @@ export default function SettingsPreferencesPage() {
               <div className="flex-1">
                 <p className="text-sm font-medium">Automatic Backups</p>
                 <p className="text-sm text-muted-foreground">
-                  Last backup: Today at 2:30 PM &bull; Next backup: Tomorrow at
-                  2:30 AM
+                  {backup.data?.lastBackupAt
+                    ? `Last backup: ${new Date(String(backup.data.lastBackupAt)).toLocaleString()}`
+                    : "Automatic backups will run based on your schedule"}
                 </p>
                 <div className="mt-3 flex items-center justify-between gap-4">
                   <Label htmlFor="autoBackup">
-                    Enable automatic daily backups
+                    Enable automatic backups
                   </Label>
-                  <Switch id="autoBackup" />
+                  <Switch
+                    id="autoBackup"
+                    checked={autoBackupEnabled}
+                    onCheckedChange={setAutoBackupEnabled}
+                  />
+                </div>
+                <div className="mt-3 space-y-2">
+                  <Label>Backup frequency</Label>
+                  <Select value={backupFrequency} onValueChange={setBackupFrequency}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>

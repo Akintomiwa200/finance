@@ -12,6 +12,7 @@ import { ThemeProvider } from "@/src/context/theme-context";
 import { ToastProvider } from "@/src/components/ui/toast";
 import { PlatformSettingsHydrator } from "@/src/components/settings/platform-settings-hydrator";
 import { HelpChat } from "@/src/components/help-chat";
+import { HelpCenterSync } from "@/src/components/settings/help-center-sync";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -77,6 +78,7 @@ export default function RootLayout({
         <ThemeProvider>
           <ToastProvider>
             <PlatformSettingsHydrator />
+            <HelpCenterSync />
             <AuthProvider>
               {children}
               <HelpChat />

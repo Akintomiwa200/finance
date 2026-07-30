@@ -117,7 +117,7 @@ const filingOptions = ["Monthly", "Quarterly", "Semi-Annually", "Annually"];
 
 export default function OrganizationProfile() {
   const router = useRouter();
-  const { data: orgSection, isLoading: orgLoading, error: orgError, saveSection: saveOrg } = useSettingsSection("organization");
+  const { data: orgSection, isLoading: orgLoading, error: orgError, saveSection: saveOrg, settingsVersion } = useSettingsSection("organization");
   const { data: regionalSection, isLoading: regionalLoading, error: regionalError, saveSection: saveRegional } = useSettingsSection("regional");
   const org = useTenantSettingsStore((s) => s.settings?.org);
 
@@ -162,18 +162,26 @@ export default function OrganizationProfile() {
   }, [orgSection, regionalSection]);
 
   useEffect(() => {
-    if (!regionalSection || !initialized.current) return;
-    const r = regionalSection as Record<string, unknown>;
-    const reg = {
-      timezone: (r.timezone as string) || "",
-      dateFormat: (r.dateFormat as string) || "",
-      locale: (r.locale as string) || "",
-      currency: (r.currency as string) || "",
-      fiscalYearStart: (r.fiscalYearStart as string) || "",
-    };
-    setRegional(reg);
-    regionalSnapshotRef.current = { ...reg };
-  }, [regionalSection]);
+    if (!orgSection || !initialized.current) return;
+    if (hasChanges.general || hasChanges.contact || hasChanges.financial || hasChanges.social) return;
+
+    const mapped = mapOrgSection(orgSection);
+    setForm(mapped);
+    snapshotRef.current = { ...mapped };
+
+    if (regionalSection) {
+      const r = regionalSection as Record<string, unknown>;
+      const reg = {
+        timezone: (r.timezone as string) || "",
+        dateFormat: (r.dateFormat as string) || "",
+        locale: (r.locale as string) || "",
+        currency: (r.currency as string) || "",
+        fiscalYearStart: (r.fiscalYearStart as string) || "",
+      };
+      setRegional(reg);
+      regionalSnapshotRef.current = { ...reg };
+    }
+  }, [orgSection, regionalSection, settingsVersion, hasChanges]);
 
   const computeChanges = useCallback(
     (snapshot: FormState, current: FormState) => {

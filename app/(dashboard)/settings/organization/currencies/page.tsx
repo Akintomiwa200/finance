@@ -87,7 +87,7 @@ function mapAccounting(data: Record<string, unknown> | null): AccountingForm {
 
 export default function CurrenciesSettings() {
   const router = useRouter();
-  const { data, isLoading, error, saveSection } = useSettingsSection("accounting");
+  const { data, isLoading, error, saveSection, settingsVersion } = useSettingsSection("accounting");
 
   const [form, setForm] = useState<AccountingForm>({ ...emptyForm });
   const [saving, setSaving] = useState(false);
@@ -103,6 +103,14 @@ export default function CurrenciesSettings() {
     snapshotRef.current = { ...mapped };
     initialized.current = true;
   }, [data]);
+
+  useEffect(() => {
+    if (!data || !initialized.current) return;
+    if (hasChanges) return;
+    const mapped = mapAccounting(data);
+    setForm(mapped);
+    snapshotRef.current = { ...mapped };
+  }, [data, settingsVersion, hasChanges]);
 
   useEffect(() => {
     if (!initialized.current) return;

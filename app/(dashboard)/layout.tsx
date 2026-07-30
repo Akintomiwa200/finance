@@ -19,7 +19,9 @@ import { useApprovalStore } from "@/src/store/approval-store";
 import { useBudgetStore } from "@/src/store/budget-store";
 import { useTransactionStore } from "@/src/store/transaction-store";
 import { useTaxStore } from "@/src/store/tax-store";
-import { useTenantSettingsStore } from "@/src/store/tenant-settings-store";
+import { TenantSettingsSync } from "@/src/components/settings/tenant-settings-sync";
+import { SessionSettingsSync } from "@/src/components/settings/session-settings-sync";
+import { UserAppearanceSync } from "@/src/components/settings/user-appearance-sync";
 
 function DashboardPollingProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -33,7 +35,6 @@ function DashboardPollingProvider({ children }: { children: React.ReactNode }) {
     useBudgetStore.getState().startPolling();
     useTransactionStore.getState().startPolling();
     useTaxStore.getState().startPolling();
-    useTenantSettingsStore.getState().startPolling();
 
     return () => {
       useLedgerStore.getState().stopPolling();
@@ -46,7 +47,6 @@ function DashboardPollingProvider({ children }: { children: React.ReactNode }) {
       useBudgetStore.getState().stopPolling();
       useTransactionStore.getState().stopPolling();
       useTaxStore.getState().stopPolling();
-      useTenantSettingsStore.getState().stopPolling();
     };
   }, []);
 
@@ -87,6 +87,9 @@ export default function DashboardLayout({
   return (
     <MobileSidebarProvider>
       <SessionTimeoutProvider>
+        <UserAppearanceSync />
+        <TenantSettingsSync />
+        <SessionSettingsSync />
         <DashboardPollingProvider>
           <div className="flex h-screen overflow-hidden bg-background">
             <Sidebar />

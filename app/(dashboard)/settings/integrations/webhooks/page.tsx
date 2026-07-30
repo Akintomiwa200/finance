@@ -25,7 +25,7 @@ import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 import { Switch } from "@/src/components/ui/switch";
 import { Badge } from "@/src/components/ui/badge";
-import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { useSettingsSection, useSyncSectionData } from "@/src/hooks/use-settings-section";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 const WEBHOOK_EVENTS = [
@@ -53,9 +53,8 @@ function isValidUrl(url: string): boolean {
 }
 
 export default function WebhooksSettingsPage() {
-  const { data, isLoading, saveSection } = useSettingsSection("integrations");
+  const { data, isLoading, saveSection, settingsVersion } = useSettingsSection("integrations");
 
-  const [initialized, setInitialized] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
@@ -63,30 +62,24 @@ export default function WebhooksSettingsPage() {
 
   const [form, setForm] = useState(DEFAULTS);
 
-  useEffect(() => {
-    if (isLoading || initialized || !data) return;
+  useSyncSectionData(data, settingsVersion, hasChanges, (section) => {
     setForm({
-      enableWebhooks: (data.enableWebhooks as boolean) ?? DEFAULTS.enableWebhooks,
-      webhookUrl: (data.webhookUrl as string) || DEFAULTS.webhookUrl,
-      webhookSecret: (data.webhookSecret as string) || DEFAULTS.webhookSecret,
-      webhookEvents: (data.webhookEvents as string[]) || DEFAULTS.webhookEvents,
+      enableWebhooks: (section.enableWebhooks as boolean) ?? DEFAULTS.enableWebhooks,
+      webhookUrl: (section.webhookUrl as string) || DEFAULTS.webhookUrl,
+      webhookSecret: (section.webhookSecret as string) || DEFAULTS.webhookSecret,
+      webhookEvents: (section.webhookEvents as string[]) || DEFAULTS.webhookEvents,
     });
-    setInitialized(true);
-  }, [data, isLoading, initialized]);
+  });
 
   useEffect(() => {
-    if (!isLoading && !initialized) setInitialized(true);
-  }, [isLoading, initialized]);
-
-  useEffect(() => {
-    if (!initialized || !data) return;
+    if (!data) return;
     const changed =
       form.enableWebhooks !== ((data.enableWebhooks as boolean) ?? DEFAULTS.enableWebhooks) ||
       form.webhookUrl !== ((data.webhookUrl as string) || DEFAULTS.webhookUrl) ||
       form.webhookSecret !== ((data.webhookSecret as string) || DEFAULTS.webhookSecret) ||
       JSON.stringify(form.webhookEvents) !== JSON.stringify((data.webhookEvents as string[]) || DEFAULTS.webhookEvents);
     setHasChanges(changed);
-  }, [form, data, initialized]);
+  }, [form, data]);
 
   const update = <K extends keyof typeof form>(field: K, value: (typeof form)[K]) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -137,7 +130,7 @@ export default function WebhooksSettingsPage() {
 
   const urlValid = isValidUrl(form.webhookUrl);
 
-  if (isLoading && !initialized) return <SettingsPageSkeleton />;
+  if (isLoading && !data) return <SettingsPageSkeleton />;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">

@@ -3,8 +3,8 @@
 import { useEffect, useRef } from "react";
 import { usePlatformSettingsStore } from "@/src/store/platform-settings-store";
 import { useTheme } from "@/src/context/theme-context";
-import { api } from "@/src/lib/api";
-import type { PlatformPersonalization } from "@/src/types/platform-settings";
+import { useAuthStore } from "@/src/store/auth-store";
+import { useUserAppearanceStore } from "@/src/store/user-appearance-store";
 
 export function PlatformSettingsHydrator() {
   const hydrated = usePlatformSettingsStore((s) => s.hydrated);
@@ -13,40 +13,44 @@ export function PlatformSettingsHydrator() {
   const compactNav = usePlatformSettingsStore((s) => s.compactNav);
   const fontSize = usePlatformSettingsStore((s) => s.fontSize);
   const fontFamily = usePlatformSettingsStore((s) => s.fontFamily);
-  const setSettings = usePlatformSettingsStore((s) => s.setSettings);
   const applyPersonalization = usePlatformSettingsStore((s) => s.applyPersonalization);
   const { mode, setMode } = useTheme();
-  const fetchedServerSettings = useRef(false);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const userAppearanceHydrated = useUserAppearanceStore((s) => s.hydrated);
+  const userAppearance = useUserAppearanceStore((s) => s.appearance);
   const lastAppliedTheme = useRef<string | null>(null);
 
   useEffect(() => {
     if (!hydrated) return;
+    if (isAuthenticated && userAppearanceHydrated) return;
     applyPersonalization();
-  }, [hydrated, accentColor, compactNav, theme, fontSize, fontFamily, applyPersonalization]);
+  }, [
+    hydrated,
+    isAuthenticated,
+    userAppearanceHydrated,
+    accentColor,
+    compactNav,
+    theme,
+    fontSize,
+    fontFamily,
+    applyPersonalization,
+  ]);
 
   useEffect(() => {
-    if (!hydrated || theme === mode) return;
+    if (!isAuthenticated || !userAppearanceHydrated) return;
+    if (userAppearance.theme === mode) return;
+    if (lastAppliedTheme.current === userAppearance.theme) return;
+    lastAppliedTheme.current = userAppearance.theme;
+    setMode(userAppearance.theme);
+  }, [isAuthenticated, userAppearanceHydrated, userAppearance.theme, mode, setMode]);
+
+  useEffect(() => {
+    if (!hydrated || isAuthenticated) return;
+    if (theme === mode) return;
     if (lastAppliedTheme.current === theme) return;
     lastAppliedTheme.current = theme;
     setMode(theme);
-  }, [hydrated, theme, mode, setMode]);
-
-  useEffect(() => {
-    if (!hydrated || fetchedServerSettings.current) return;
-    fetchedServerSettings.current = true;
-
-    let cancelled = false;
-
-    (async () => {
-      const result = await api.get<PlatformPersonalization>("/api/platform/personalization");
-      if (cancelled || !result.success || !result.data) return;
-      setSettings(result.data);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [hydrated, setSettings]);
+  }, [hydrated, isAuthenticated, theme, mode, setMode]);
 
   return null;
 }

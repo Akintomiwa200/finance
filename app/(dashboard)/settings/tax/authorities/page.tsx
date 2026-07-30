@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   Card,
   CardHeader,
@@ -27,7 +27,7 @@ import {
   Check,
   AlertCircle,
 } from "lucide-react";
-import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { useSettingsSection, useSyncSectionData } from "@/src/hooks/use-settings-section";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 const FILING_FREQUENCY_OPTIONS = [
@@ -81,7 +81,7 @@ function getCurrentTaxPeriod(frequency: string): { period: string; dueDate: stri
 }
 
 export default function TaxAuthoritiesPage() {
-  const { data, isLoading, saveSection } = useSettingsSection("tax");
+  const { data, isLoading, saveSection, settingsVersion } = useSettingsSection("tax");
 
   const [isSaving, setIsSaving] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -91,19 +91,18 @@ export default function TaxAuthoritiesPage() {
   const [originalFrequency, setOriginalFrequency] = useState("");
   const [originalTIN, setOriginalTIN] = useState("");
 
-  useEffect(() => {
-    if (!data) return;
-    const freq = String(data.filingFrequency ?? "");
-    const tin = String(data.taxIdentificationNumber ?? "");
+  const hasChanges =
+    filingFrequency !== originalFrequency ||
+    taxIdentificationNumber !== originalTIN;
+
+  useSyncSectionData(data, settingsVersion, hasChanges, (section) => {
+    const freq = String(section.filingFrequency ?? "");
+    const tin = String(section.taxIdentificationNumber ?? "");
     setFilingFrequency(freq);
     setTaxIdentificationNumber(tin);
     setOriginalFrequency(freq);
     setOriginalTIN(tin);
-  }, [data]);
-
-  const hasChanges =
-    filingFrequency !== originalFrequency ||
-    taxIdentificationNumber !== originalTIN;
+  });
 
   const handleSave = async () => {
     setIsSaving(true);

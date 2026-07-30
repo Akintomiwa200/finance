@@ -9,7 +9,8 @@ function TimeoutWatcher() {
 }
 
 export function SessionTimeoutProvider({ children }: { children: React.ReactNode }) {
-  const hydrated = useSessionSettingsStore.persist?.hasHydrated?.() ?? true;
+  const hydrated = useSessionSettingsStore((s) => s.hydrated);
+
   return (
     <>
       {hydrated && <TimeoutWatcher />}

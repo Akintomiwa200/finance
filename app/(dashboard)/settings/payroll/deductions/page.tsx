@@ -23,7 +23,7 @@ import { Label } from "@/src/components/ui/label";
 import { Switch } from "@/src/components/ui/switch";
 import { Badge } from "@/src/components/ui/badge";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
-import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { useSettingsSection, useSyncSectionData } from "@/src/hooks/use-settings-section";
 
 const PAYMENT_METHODS = [
   { value: "BANK_TRANSFER", label: "Bank Transfer", icon: Landmark, description: "Direct deposit to employee bank account" },
@@ -32,7 +32,7 @@ const PAYMENT_METHODS = [
 ];
 
 export default function PayrollDeductionsPage() {
-  const { data, isLoading, saveSection } = useSettingsSection("payroll");
+  const { data, isLoading, saveSection, settingsVersion } = useSettingsSection("payroll");
 
   const [enableLeaveDeductions, setEnableLeaveDeductions] = useState(false);
   const [enableLoanTracking, setEnableLoanTracking] = useState(false);
@@ -40,13 +40,11 @@ export default function PayrollDeductionsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  useEffect(() => {
-    if (data) {
-      setEnableLeaveDeductions((data.enableLeaveDeductions as boolean) ?? false);
-      setEnableLoanTracking((data.enableLoanTracking as boolean) ?? false);
-      setDefaultPaymentMethod((data.defaultPaymentMethod as string) || "BANK_TRANSFER");
-    }
-  }, [data]);
+  useSyncSectionData(data, settingsVersion, hasChanges, (section) => {
+    setEnableLeaveDeductions((section.enableLeaveDeductions as boolean) ?? false);
+    setEnableLoanTracking((section.enableLoanTracking as boolean) ?? false);
+    setDefaultPaymentMethod((section.defaultPaymentMethod as string) || "BANK_TRANSFER");
+  });
 
   useEffect(() => {
     if (!data) return;

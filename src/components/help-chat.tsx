@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import {
   MessageCircle,
   X,
@@ -8,52 +9,11 @@ import {
   ChevronDown,
   Sparkles,
   Bot,
+  Loader2,
 } from "lucide-react";
 import { useAuthStore } from "@/src/store/auth-store";
-
-interface Message {
-  id: number;
-  role: "user" | "admin" | "system";
-  text: string;
-  time: string;
-}
-
-const initialMessages: Message[] = [
-  {
-    id: 1,
-    role: "system",
-    text: "Welcome to Audpay Help! How can we assist you today?",
-    time: "", // Set on client mount to avoid hydration mismatch
-  },
-];
-
-const quickReplies = [
-  "How do I reset my password?",
-  "How to generate a report?",
-  "I need help with transactions",
-  "Contact super admin",
-];
-
-const adminResponses: Record<string, string> = {
-  "How do I reset my password?":
-    "Go to Settings → Security → Reset Password. You'll receive a confirmation email within 5 minutes.",
-  "How to generate a report?":
-    "Navigate to Reports from the sidebar, choose your report type, set the date range, then click Generate. You can download as PDF or CSV.",
-  "I need help with transactions":
-    "View all transactions in the Transactions page. Use filters and search to find specific entries. For disputes, open a transaction and click 'Report Issue'.",
-  "Contact super admin":
-    "A request has been sent to your super admin. They'll be notified and can respond here or reach out directly.",
-};
-
-const autoReply =
-  "Thanks for reaching out! Our support team will respond within 24 hours. For urgent issues, please contact your account manager.";
-
-function getTime() {
-  return new Date().toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { useHelpCenterStore } from "@/src/store/help-center-store";
+import { useHelpCenter } from "@/src/hooks/use-help-center";
 
 function useAutoScroll(dep: unknown) {
   const ref = useRef<HTMLDivElement>(null);
@@ -65,72 +25,60 @@ function useAutoScroll(dep: unknown) {
 
 export function HelpChat() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [showQuickReplies, setShowQuickReplies] = useState(true);
-  const [isTyping, setIsTyping] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const scrollRef = useAutoScroll([messages, isTyping]);
   const { user, isAuthenticated } = useAuthStore();
-
+  const unreadCount = useHelpCenterStore((s) => s.unreadCount);
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
+
+  const {
+    messages,
+    articles,
+    inbox,
+    activeConversationId,
+    isLoading,
+    isSending,
+    error,
+    sendMessage,
+    selectConversation,
+  } = useHelpCenter({
+    enabled: open,
+    isAuthenticated,
+    isSuperAdmin,
+  });
+
+  const scrollRef = useAutoScroll([messages, isSending, open]);
+  const hasOnlyWelcome =
+    messages.length <= 1 && messages.every((m) => m.role === "system");
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 300);
-  }, [open]);
+  }, [open, activeConversationId]);
 
-  useEffect(() => {
-    setMessages((prev) =>
-      prev.map((m) => (m.id === 1 && !m.time ? { ...m, time: getTime() } : m))
-    );
-  }, []);
-
-  function addMessage(text: string, role: Message["role"]) {
-    setMessages((prev) => [
-      ...prev,
-      { id: Date.now(), role, text, time: getTime() },
-    ]);
-  }
-
-  function simulateReply(text: string) {
-    setIsTyping(true);
-    setTimeout(
-      () => {
-        setIsTyping(false);
-        addMessage(
-          isSuperAdmin
-            ? `As super admin, you can reply to: "${text}" — the user will be notified.`
-            : adminResponses[text] || autoReply,
-          "admin",
-        );
-      },
-      1000 + Math.random() * 800,
-    );
-  }
-
-  function handleSend() {
+  async function handleSend() {
     const text = input.trim();
-    if (!text) return;
+    if (!text || isSending) return;
     setShowQuickReplies(false);
-    addMessage(text, "user");
     setInput("");
-    simulateReply(text);
+    await sendMessage(text);
   }
 
-  function handleQuickReply(text: string) {
+  async function handleQuickReply(text: string) {
+    if (isSending) return;
     setShowQuickReplies(false);
-    addMessage(text, "user");
-    simulateReply(text);
+    await sendMessage(text);
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      void handleSend();
     }
   }
 
-  const RED = "var(--lp-red, #ff5555)";
+  const quickReplies = articles.map((a) => a.question);
+  const showAdminInbox = isSuperAdmin && !activeConversationId;
 
   return (
     <>
@@ -140,10 +88,8 @@ export function HelpChat() {
           z-index: 50;
           bottom: 88px;
           right: 24px;
-          /* Fixed width on desktop, fluid on mobile */
           width: 400px;
           max-width: calc(100vw - 32px);
-          /* Fixed height on desktop */
           height: 580px;
           max-height: calc(100vh - 120px);
           border-radius: 20px;
@@ -168,8 +114,6 @@ export function HelpChat() {
           transform: scale(1) translateY(0);
           pointer-events: all;
         }
-
-        /* Header */
         .hc-header {
           display: flex;
           align-items: center;
@@ -233,11 +177,7 @@ export function HelpChat() {
           transition: background 0.15s;
           flex-shrink: 0;
         }
-        .hc-close-btn:hover {
-          background: var(--bg-surface);
-        }
-
-        /* Messages area */
+        .hc-close-btn:hover { background: var(--bg-surface); }
         .hc-messages {
           flex: 1;
           overflow-y: auto;
@@ -245,22 +185,9 @@ export function HelpChat() {
           display: flex;
           flex-direction: column;
           gap: 10px;
-          /* Prevent scrollbar from causing layout shift */
           scrollbar-width: thin;
           scrollbar-color: var(--border) transparent;
         }
-        .hc-messages::-webkit-scrollbar {
-          width: 4px;
-        }
-        .hc-messages::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .hc-messages::-webkit-scrollbar-thumb {
-          background: var(--border);
-          border-radius: 2px;
-        }
-
-        /* Empty state */
         .hc-empty {
           flex: 1;
           display: flex;
@@ -294,24 +221,14 @@ export function HelpChat() {
           margin: 0;
           max-width: 220px;
         }
-
-        /* Message row */
         .hc-msg-row {
           display: flex;
           align-items: flex-end;
           gap: 8px;
-          /* ensure rows don't get squeezed */
           min-width: 0;
         }
-        .hc-msg-row--user {
-          justify-content: flex-end;
-        }
-        .hc-msg-row--admin,
-        .hc-msg-row--system {
-          justify-content: flex-start;
-        }
-
-        /* Bot avatar beside admin messages */
+        .hc-msg-row--user { justify-content: flex-end; }
+        .hc-msg-row--admin, .hc-msg-row--system { justify-content: flex-start; }
         .hc-bot-avatar {
           width: 26px;
           height: 26px;
@@ -323,8 +240,6 @@ export function HelpChat() {
           flex-shrink: 0;
           margin-bottom: 2px;
         }
-
-        /* Bubble */
         .hc-bubble {
           max-width: 72%;
           padding: 10px 13px;
@@ -349,52 +264,17 @@ export function HelpChat() {
           font-size: 12px;
           border-radius: 10px;
           padding: 8px 12px;
-          /* system messages centered, no avatar */
           align-self: center;
           text-align: center;
         }
-        .hc-bubble-text {
-          margin: 0;
-        }
+        .hc-bubble-text { margin: 0; }
         .hc-bubble-time {
           font-size: 10px;
           margin-top: 4px;
           line-height: 1;
         }
-        .hc-bubble--user .hc-bubble-time {
-          color: #fbb;
-          text-align: right;
-        }
-        .hc-bubble--admin .hc-bubble-time,
-        .hc-bubble--system .hc-bubble-time {
-          color: var(--text-muted);
-        }
-
-        /* Typing indicator */
-        .hc-typing {
-          background: var(--bg-surface);
-          border-radius: 16px;
-          border-bottom-left-radius: 4px;
-          padding: 12px 14px;
-          display: flex;
-          gap: 4px;
-          align-items: center;
-        }
-        .hc-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: var(--text-muted);
-          animation: hcBounce 1.2s infinite ease-in-out;
-        }
-        .hc-dot:nth-child(2) { animation-delay: 0.2s; }
-        .hc-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes hcBounce {
-          0%, 80%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-5px); }
-        }
-
-        /* Quick replies */
+        .hc-bubble--user .hc-bubble-time { color: #fbb; text-align: right; }
+        .hc-bubble--admin .hc-bubble-time, .hc-bubble--system .hc-bubble-time { color: var(--text-muted); }
         .hc-quick {
           flex-shrink: 0;
           padding: 8px 16px 12px;
@@ -413,11 +293,7 @@ export function HelpChat() {
           text-transform: uppercase;
           letter-spacing: 0.06em;
         }
-        .hc-quick-pills {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-        }
+        .hc-quick-pills { display: flex; flex-wrap: wrap; gap: 6px; }
         .hc-pill {
           padding: 5px 11px;
           font-size: 11.5px;
@@ -435,8 +311,6 @@ export function HelpChat() {
           color: var(--lp-red, #ff5555);
           background: var(--bg-surface);
         }
-
-        /* Input bar */
         .hc-input-bar {
           flex-shrink: 0;
           display: flex;
@@ -446,11 +320,7 @@ export function HelpChat() {
           border-top: 1px solid var(--border);
           background: var(--bg-card);
         }
-        .hc-input-wrap {
-          flex: 1;
-          position: relative;
-          min-width: 0;
-        }
+        .hc-input-wrap { flex: 1; position: relative; min-width: 0; }
         .hc-input {
           width: 100%;
           height: 40px;
@@ -462,13 +332,9 @@ export function HelpChat() {
           color: var(--text-primary);
           outline: none;
           font-family: inherit;
-          transition: border-color 0.15s, box-shadow 0.15s;
           box-sizing: border-box;
         }
-        .hc-input::placeholder {
-          color: var(--text-muted);
-          opacity: 0.7;
-        }
+        .hc-input::placeholder { color: var(--text-muted); opacity: 0.7; }
         .hc-input:focus {
           border-color: var(--lp-red, #ff5555);
           box-shadow: 0 0 0 3px rgba(255, 85, 85, 0.12);
@@ -494,20 +360,8 @@ export function HelpChat() {
           justify-content: center;
           cursor: pointer;
           flex-shrink: 0;
-          transition: opacity 0.15s, transform 0.1s;
         }
-        .hc-send-btn:hover:not(:disabled) {
-          opacity: 0.88;
-        }
-        .hc-send-btn:active:not(:disabled) {
-          transform: scale(0.94);
-        }
-        .hc-send-btn:disabled {
-          opacity: 0.35;
-          cursor: not-allowed;
-        }
-
-        /* FAB */
+        .hc-send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
         .hc-fab {
           position: fixed;
           bottom: 24px;
@@ -524,21 +378,43 @@ export function HelpChat() {
           justify-content: center;
           cursor: pointer;
           box-shadow: 0 4px 16px rgba(255, 85, 85, 0.4);
-          transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
-        }
-        .hc-fab:hover {
-          transform: scale(1.06);
-          box-shadow: 0 6px 24px rgba(255, 85, 85, 0.55);
         }
         .hc-fab--open {
           background: var(--text-primary);
           box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
         }
-        .hc-fab--open:hover {
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        .hc-fab-badge {
+          position: absolute;
+          top: -4px;
+          right: -4px;
+          min-width: 18px;
+          height: 18px;
+          padding: 0 5px;
+          border-radius: 999px;
+          background: #fff;
+          color: var(--lp-red, #ff5555);
+          font-size: 10px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid var(--lp-red, #ff5555);
         }
-
-        /* Mobile tweaks */
+        .hc-inbox-item {
+          width: 100%;
+          text-align: left;
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 10px 12px;
+          background: var(--bg-page);
+          cursor: pointer;
+        }
+        .hc-inbox-item:hover { background: var(--bg-surface); }
+        .hc-error {
+          margin: 0 16px 8px;
+          font-size: 12px;
+          color: #ef4444;
+        }
         @media (max-width: 480px) {
           .hc-panel {
             bottom: 0;
@@ -549,30 +425,22 @@ export function HelpChat() {
             max-height: 70vh;
             border-radius: 20px 20px 0 0;
           }
-          .hc-fab {
-            bottom: 16px;
-            right: 16px;
-          }
+          .hc-fab { bottom: 16px; right: 16px; }
         }
       `}</style>
 
-      {/* FAB */}
       <button
         onClick={() => setOpen((v) => !v)}
         className={`hc-fab${open ? " hc-fab--open" : ""}`}
         aria-label={open ? "Close chat" : "Open help chat"}
       >
         {open ? <X size={20} /> : <MessageCircle size={20} />}
+        {!open && unreadCount > 0 && (
+          <span className="hc-fab-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>
+        )}
       </button>
 
-      {/* Panel */}
-      <div
-        className="hc-panel"
-        data-open={open ? "true" : "false"}
-        role="dialog"
-        aria-label="Help chat"
-      >
-        {/* Header */}
+      <div className="hc-panel" data-open={open ? "true" : "false"} role="dialog" aria-label="Help chat">
         <div className="hc-header">
           <div className="hc-header-left">
             <div className="hc-avatar">
@@ -584,93 +452,125 @@ export function HelpChat() {
                 <span className="hc-status-dot" />
                 <span className="hc-status-text">
                   {isSuperAdmin
-                    ? "Super Admin mode"
-                    : "Online — replies in minutes"}
+                    ? "Support inbox — live"
+                    : isAuthenticated
+                      ? "Online — synced in real time"
+                      : "Browse help articles"}
                 </span>
               </div>
             </div>
           </div>
-          <button
-            className="hc-close-btn"
-            onClick={() => setOpen(false)}
-            aria-label="Close"
-          >
+          <button className="hc-close-btn" onClick={() => setOpen(false)} aria-label="Close">
             <ChevronDown size={16} />
           </button>
         </div>
 
-        {/* Messages */}
+        {error && <p className="hc-error">{error}</p>}
+
         <div className="hc-messages">
-          {messages.length === 1 && (
+          {isLoading && (
+            <div className="hc-empty">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              <p className="hc-empty-sub">Loading conversation...</p>
+            </div>
+          )}
+
+          {!isLoading && showAdminInbox && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Open conversations
+              </p>
+              {inbox.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No open help conversations yet.</p>
+              ) : (
+                inbox.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="hc-inbox-item"
+                    onClick={() => void selectConversation(item.id)}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium">{item.userName ?? "User"}</span>
+                      {item.unreadCount > 0 && (
+                        <span className="text-[10px] font-bold text-[var(--lp-red,#ff5555)]">
+                          {item.unreadCount} new
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">{item.orgName}</p>
+                    {item.lastMessage && (
+                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                        {item.lastMessage.content}
+                      </p>
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+
+          {!isLoading && !showAdminInbox && hasOnlyWelcome && (
             <div className="hc-empty">
               <div className="hc-empty-icon">
                 <MessageCircle size={22} color="var(--lp-red, #ff5555)" />
               </div>
               <p className="hc-empty-title">Need help?</p>
               <p className="hc-empty-sub">
-                Ask a question or pick a quick answer below to get started.
+                {isAuthenticated
+                  ? "Ask a question or pick a quick answer below. Replies sync live across devices."
+                  : "Sign in to chat with support, or browse quick answers below."}
               </p>
             </div>
           )}
 
-          {messages.map((msg) => {
-            if (msg.role === "system") {
+          {!isLoading &&
+            !showAdminInbox &&
+            messages.map((msg) => {
+              if (msg.role === "system") {
+                return (
+                  <div key={msg.id} style={{ display: "flex", justifyContent: "center" }}>
+                    <div className="hc-bubble hc-bubble--system">
+                      <p className="hc-bubble-text">{msg.text}</p>
+                      {msg.time && <p className="hc-bubble-time">{msg.time}</p>}
+                    </div>
+                  </div>
+                );
+              }
+
+              if (msg.role === "user") {
+                return (
+                  <div key={msg.id} className="hc-msg-row hc-msg-row--user">
+                    <div className="hc-bubble hc-bubble--user">
+                      <p className="hc-bubble-text">{msg.text}</p>
+                      <p className="hc-bubble-time">{msg.time}</p>
+                    </div>
+                  </div>
+                );
+              }
+
               return (
-                <div
-                  key={msg.id}
-                  style={{ display: "flex", justifyContent: "center" }}
-                >
-                  <div className="hc-bubble hc-bubble--system">
+                <div key={msg.id} className="hc-msg-row hc-msg-row--admin">
+                  <div className="hc-bot-avatar">
+                    <Bot size={13} color="var(--text-muted)" />
+                  </div>
+                  <div className="hc-bubble hc-bubble--admin">
+                    {msg.authorName && msg.role === "admin" && (
+                      <p className="mb-1 text-[10px] font-semibold text-muted-foreground">
+                        {msg.authorName}
+                      </p>
+                    )}
                     <p className="hc-bubble-text">{msg.text}</p>
                     <p className="hc-bubble-time">{msg.time}</p>
                   </div>
                 </div>
               );
-            }
-
-            if (msg.role === "user") {
-              return (
-                <div key={msg.id} className="hc-msg-row hc-msg-row--user">
-                  <div className="hc-bubble hc-bubble--user">
-                    <p className="hc-bubble-text">{msg.text}</p>
-                    <p className="hc-bubble-time">{msg.time}</p>
-                  </div>
-                </div>
-              );
-            }
-
-            // admin
-            return (
-              <div key={msg.id} className="hc-msg-row hc-msg-row--admin">
-                <div className="hc-bot-avatar">
-                  <Bot size={13} color="var(--text-muted)" />
-                </div>
-                <div className="hc-bubble hc-bubble--admin">
-                  <p className="hc-bubble-text">{msg.text}</p>
-                  <p className="hc-bubble-time">{msg.time}</p>
-                </div>
-              </div>
-            );
-          })}
-
-          {isTyping && (
-            <div className="hc-msg-row hc-msg-row--admin">
-              <div className="hc-bot-avatar">
-                <Bot size={13} color="var(--text-muted)" />
-              </div>
-              <div className="hc-typing">
-                <span className="hc-dot" />
-                <span className="hc-dot" />
-                <span className="hc-dot" />
-              </div>
-            </div>
-          )}
+            })}
 
           <div ref={scrollRef} />
         </div>
 
-        {/* Quick replies */}
-        {showQuickReplies && isAuthenticated && !isSuperAdmin && (
+        {showQuickReplies && quickReplies.length > 0 && !showAdminInbox && (
           <div className="hc-quick">
             <div className="hc-quick-label">
               <Sparkles size={11} color="var(--text-muted)" />
@@ -681,7 +581,8 @@ export function HelpChat() {
                 <button
                   key={qr}
                   className="hc-pill"
-                  onClick={() => handleQuickReply(qr)}
+                  onClick={() => void handleQuickReply(qr)}
+                  disabled={!isAuthenticated || isSending}
                 >
                   {qr}
                 </button>
@@ -690,28 +591,41 @@ export function HelpChat() {
           </div>
         )}
 
-        {/* Input bar */}
         <div className="hc-input-bar">
           <div className="hc-input-wrap">
-            <input
-              ref={inputRef}
-              className="hc-input"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type your message..."
-            />
-            {input.length > 0 && (
-              <span className="hc-char-count">{input.length}</span>
+            {!isAuthenticated ? (
+              <div className="flex h-10 items-center px-3 text-xs text-muted-foreground">
+                <Link href="/login" className="font-medium text-[var(--lp-red,#ff5555)] hover:underline">
+                  Sign in
+                </Link>
+                <span className="ml-1">to chat with support</span>
+              </div>
+            ) : (
+              <>
+                <input
+                  ref={inputRef}
+                  className="hc-input"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={
+                    isSuperAdmin && !activeConversationId
+                      ? "Select a conversation above..."
+                      : "Type your message..."
+                  }
+                  disabled={(isSuperAdmin && !activeConversationId) || isSending}
+                />
+                {input.length > 0 && <span className="hc-char-count">{input.length}</span>}
+              </>
             )}
           </div>
           <button
             className="hc-send-btn"
-            onClick={handleSend}
-            disabled={!input.trim()}
+            onClick={() => void handleSend()}
+            disabled={!isAuthenticated || !input.trim() || isSending || (isSuperAdmin && !activeConversationId)}
             aria-label="Send"
           >
-            <Send size={16} />
+            {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
           </button>
         </div>
       </div>

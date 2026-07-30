@@ -116,7 +116,7 @@ function mapRegional(data: Record<string, unknown> | null): RegionalForm {
 
 export default function FiscalYearSettings() {
   const router = useRouter();
-  const { data, isLoading, error, saveSection } = useSettingsSection("regional");
+  const { data, isLoading, error, saveSection, settingsVersion } = useSettingsSection("regional");
 
   const [form, setForm] = useState<RegionalForm>({ ...emptyForm });
   const [saving, setSaving] = useState(false);
@@ -137,6 +137,14 @@ export default function FiscalYearSettings() {
     if (!initialized.current) return;
     setHasChanges(JSON.stringify(form) !== JSON.stringify(snapshotRef.current));
   }, [form]);
+
+  useEffect(() => {
+    if (!data || !initialized.current) return;
+    if (hasChanges) return;
+    const mapped = mapRegional(data);
+    setForm(mapped);
+    snapshotRef.current = { ...mapped };
+  }, [data, settingsVersion, hasChanges]);
 
   const updateField = useCallback(
     (field: keyof RegionalForm, value: string) => {

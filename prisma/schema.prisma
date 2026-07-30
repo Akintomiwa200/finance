@@ -298,6 +298,7 @@ model Employee {
   bio           String?   @db.VarChar(500)
   avatarUrl     String?
   lastLoginAt   DateTime?
+  preferences   Json?
 
   departmentId   String
   department     Department   @relation(fields: [departmentId], references: [id])
@@ -1369,4 +1370,64 @@ model MarketingNewsletterSubscriber {
   email     String   @unique
   status    String   @default("ACTIVE")
   createdAt DateTime @default(now())
+}
+
+enum HelpCenterConversationStatus {
+  OPEN
+  RESOLVED
+  CLOSED
+}
+
+enum HelpCenterMessageRole {
+  USER
+  STAFF
+  SYSTEM
+  BOT
+}
+
+model HelpCenterArticle {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  question  String
+  answer    String   @db.Text
+  category  String   @default("general")
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HelpCenterConversation {
+  id             String                       @id @default(cuid())
+  userId         String
+  organizationId String
+  status         HelpCenterConversationStatus @default(OPEN)
+  subject        String                       @default("Help Center")
+  userName       String?
+  userEmail      String?
+  orgName        String?
+  lastReadAt     DateTime?
+  staffLastReadAt DateTime?
+  lastMessageAt  DateTime                     @default(now())
+  createdAt      DateTime                     @default(now())
+  updatedAt      DateTime                     @updatedAt
+
+  messages HelpCenterMessage[]
+
+  @@index([userId, status])
+  @@index([organizationId])
+  @@index([status, lastMessageAt])
+}
+
+model HelpCenterMessage {
+  id             String                @id @default(cuid())
+  conversationId String
+  conversation   HelpCenterConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           HelpCenterMessageRole
+  content        String                @db.Text
+  authorId       String?
+  authorName     String?
+  createdAt      DateTime              @default(now())
+
+  @@index([conversationId, createdAt])
 }

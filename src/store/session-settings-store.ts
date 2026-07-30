@@ -1,24 +1,31 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type SessionTimeout = 15 | 30 | 60 | 120 | 180 | 0;
+export type SessionTimeoutMinutes = number;
 
 interface SessionSettingsState {
-  inactivityTimeoutMinutes: SessionTimeout;
-  setInactivityTimeout: (minutes: SessionTimeout) => void;
+  inactivityTimeoutMinutes: SessionTimeoutMinutes;
+  hydrated: boolean;
+  setInactivityTimeout: (minutes: SessionTimeoutMinutes) => void;
+  setHydrated: () => void;
 }
 
 export const useSessionSettingsStore = create<SessionSettingsState>()(
   persist(
     (set) => ({
-      inactivityTimeoutMinutes: 60,
+      inactivityTimeoutMinutes: 30,
+      hydrated: false,
       setInactivityTimeout: (minutes) => set({ inactivityTimeoutMinutes: minutes }),
+      setHydrated: () => set({ hydrated: true }),
     }),
     {
       name: "faas-session-settings",
       partialize: (state) => ({
         inactivityTimeoutMinutes: state.inactivityTimeoutMinutes,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHydrated();
+      },
     },
   ),
 );

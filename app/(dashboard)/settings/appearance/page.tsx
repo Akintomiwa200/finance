@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Moon, Sun, Monitor, Palette, Type, TextQuote, Check, AlignLeft } from "lucide-react";
+import { Moon, Sun, Monitor, Palette, Type, TextQuote, Check, AlignLeft, Save, RotateCcw } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import {
   Card,
@@ -10,13 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { Separator } from "@/src/components/ui/separator";
 import { Switch } from "@/src/components/ui/switch";
 import { Label } from "@/src/components/ui/label";
-import { useToast } from "@/src/components/ui/use-toast";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
-import { useTheme, type ThemeMode } from "@/src/context/theme-context";
-import { usePlatformSettingsStore } from "@/src/store/platform-settings-store";
+import { useAppearanceSettings } from "@/src/hooks/use-appearance-settings";
+import type { ThemeMode } from "@/src/context/theme-context";
 import type { AccentColor, FontSize, FontFamily } from "@/src/types/platform-settings";
 
 const ACCENT_OPTIONS: { value: AccentColor; label: string; swatch: string }[] = [
@@ -47,54 +44,34 @@ const FONT_FAMILY_OPTIONS: { value: FontFamily; label: string; style: string }[]
 ];
 
 export default function SettingsAppearancePage() {
-  const [loading, setLoading] = useState(true);
-  const { mode, setMode } = useTheme();
-  const accentColor = usePlatformSettingsStore((s) => s.accentColor);
-  const compactNav = usePlatformSettingsStore((s) => s.compactNav);
-  const fontSize = usePlatformSettingsStore((s) => s.fontSize);
-  const fontFamily = usePlatformSettingsStore((s) => s.fontFamily);
-  const setSettings = usePlatformSettingsStore((s) => s.setSettings);
-  const { toast } = useToast();
+  const {
+    appearance,
+    isLoading,
+    isSaving,
+    hasChanges,
+    setTheme,
+    setAccentColor,
+    setFontSize,
+    setFontFamily,
+    setCompactNav,
+    save,
+    reset,
+  } = useAppearanceSettings();
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 400);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading) return <SettingsPageSkeleton />;
-
-  function handleThemeChange(value: ThemeMode) {
-    setMode(value);
-  }
-
-  function handleAccentChange(value: AccentColor) {
-    setSettings({ accentColor: value });
-  }
-
-  function handleCompactNavChange(checked: boolean) {
-    setSettings({ compactNav: checked });
-  }
-
-  function handleFontSizeChange(value: FontSize) {
-    setSettings({ fontSize: value });
-  }
-
-  function handleFontFamilyChange(value: FontFamily) {
-    setSettings({ fontFamily: value });
-  }
-
-  function handleSave() {
-    toast({
-      title: "Preferences saved",
-      description: "Your appearance settings have been updated.",
-    });
-  }
+  if (isLoading) return <SettingsPageSkeleton />;
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Appearance</h1>
-        <p className="text-muted-foreground">Customize the look and feel of the application</p>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Appearance</h1>
+          <p className="text-muted-foreground">
+            Customize the look and feel. Changes are saved to your account and sync across devices.
+          </p>
+        </div>
+        {hasChanges && (
+          <p className="text-sm text-amber-600 dark:text-amber-400">Unsaved changes</p>
+        )}
       </div>
 
       <Card>
@@ -111,9 +88,9 @@ export default function SettingsAppearancePage() {
               <button
                 key={value}
                 type="button"
-                onClick={() => handleThemeChange(value)}
+                onClick={() => setTheme(value)}
                 className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all ${
-                  mode === value
+                  appearance.theme === value
                     ? "border-brand-600 bg-brand-50 text-brand-700 shadow-sm dark:bg-accent-100 dark:text-accent-700"
                     : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
@@ -140,16 +117,16 @@ export default function SettingsAppearancePage() {
               <button
                 key={accent.value}
                 type="button"
-                onClick={() => handleAccentChange(accent.value)}
+                onClick={() => setAccentColor(accent.value)}
                 className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-all ${
-                  accentColor === accent.value
+                  appearance.accentColor === accent.value
                     ? "border-foreground ring-2 ring-brand-500/30"
                     : "border-border hover:border-muted-foreground"
                 }`}
               >
                 <span className={`h-4 w-4 rounded-full ${accent.swatch}`} />
                 {accent.label}
-                {accentColor === accent.value && (
+                {appearance.accentColor === accent.value && (
                   <Check className="h-3.5 w-3.5" />
                 )}
               </button>
@@ -172,9 +149,9 @@ export default function SettingsAppearancePage() {
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => handleFontSizeChange(opt.value)}
+                onClick={() => setFontSize(opt.value)}
                 className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 font-medium transition-all ${
-                  fontSize === opt.value
+                  appearance.fontSize === opt.value
                     ? "border-brand-600 bg-brand-50 text-brand-700 shadow-sm dark:bg-accent-100 dark:text-accent-700"
                     : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                 } ${opt.preview}`}
@@ -201,9 +178,9 @@ export default function SettingsAppearancePage() {
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => handleFontFamilyChange(opt.value)}
+                onClick={() => setFontFamily(opt.value)}
                 className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm transition-all ${
-                  fontFamily === opt.value
+                  appearance.fontFamily === opt.value
                     ? "border-brand-600 bg-brand-50 text-brand-700 shadow-sm dark:bg-accent-100 dark:text-accent-700"
                     : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                 } ${opt.style}`}
@@ -228,15 +205,22 @@ export default function SettingsAppearancePage() {
             </div>
             <Switch
               id="compact-nav"
-              checked={compactNav}
-              onCheckedChange={handleCompactNavChange}
+              checked={appearance.compactNav}
+              onCheckedChange={setCompactNav}
             />
           </div>
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button onClick={handleSave}>Save Preferences</Button>
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={reset} disabled={!hasChanges || isSaving}>
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Reset
+        </Button>
+        <Button onClick={save} disabled={!hasChanges || isSaving}>
+          <Save className="mr-2 h-4 w-4" />
+          {isSaving ? "Saving..." : "Save Preferences"}
+        </Button>
       </div>
     </div>
   );

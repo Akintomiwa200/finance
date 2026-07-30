@@ -25,7 +25,7 @@ import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 import { Switch } from "@/src/components/ui/switch";
 import { Badge } from "@/src/components/ui/badge";
-import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { useSettingsSection, useSyncSectionData } from "@/src/hooks/use-settings-section";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 const DEFAULTS = {
@@ -35,9 +35,8 @@ const DEFAULTS = {
 };
 
 export default function ApiSettingsPage() {
-  const { data, isLoading, saveSection } = useSettingsSection("integrations");
+  const { data, isLoading, saveSection, settingsVersion } = useSettingsSection("integrations");
 
-  const [initialized, setInitialized] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [showKey, setShowKey] = useState(false);
@@ -45,28 +44,22 @@ export default function ApiSettingsPage() {
 
   const [form, setForm] = useState(DEFAULTS);
 
-  useEffect(() => {
-    if (isLoading || initialized || !data) return;
+  useSyncSectionData(data, settingsVersion, hasChanges, (section) => {
     setForm({
-      enableAPIAccess: (data.enableAPIAccess as boolean) ?? DEFAULTS.enableAPIAccess,
-      apiKey: (data.apiKey as string) || DEFAULTS.apiKey,
-      rateLimit: String((data.rateLimit as number) ?? DEFAULTS.rateLimit),
+      enableAPIAccess: (section.enableAPIAccess as boolean) ?? DEFAULTS.enableAPIAccess,
+      apiKey: (section.apiKey as string) || DEFAULTS.apiKey,
+      rateLimit: String((section.rateLimit as number) ?? DEFAULTS.rateLimit),
     });
-    setInitialized(true);
-  }, [data, isLoading, initialized]);
+  });
 
   useEffect(() => {
-    if (!isLoading && !initialized) setInitialized(true);
-  }, [isLoading, initialized]);
-
-  useEffect(() => {
-    if (!initialized || !data) return;
+    if (!data) return;
     const changed =
       form.enableAPIAccess !== ((data.enableAPIAccess as boolean) ?? DEFAULTS.enableAPIAccess) ||
       form.apiKey !== ((data.apiKey as string) || DEFAULTS.apiKey) ||
       form.rateLimit !== String((data.rateLimit as number) ?? DEFAULTS.rateLimit);
     setHasChanges(changed);
-  }, [form, data, initialized]);
+  }, [form, data]);
 
   const update = <K extends keyof typeof form>(field: K, value: (typeof form)[K]) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -109,7 +102,7 @@ export default function ApiSettingsPage() {
     update("apiKey", result);
   };
 
-  if (isLoading && !initialized) return <SettingsPageSkeleton />;
+  if (isLoading && !data) return <SettingsPageSkeleton />;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">

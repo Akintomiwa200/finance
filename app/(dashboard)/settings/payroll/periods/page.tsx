@@ -29,7 +29,7 @@ import {
 } from "@/src/components/ui/select";
 import { Badge } from "@/src/components/ui/badge";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
-import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { useSettingsSection, useSyncSectionData } from "@/src/hooks/use-settings-section";
 
 const PAY_FREQUENCY_OPTIONS = [
   { value: "weekly", label: "Weekly", description: "52 pay periods per year" },
@@ -45,7 +45,7 @@ const PAYMENT_METHOD_OPTIONS = [
 ];
 
 export default function PayrollPeriodsPage() {
-  const { data, isLoading, saveSection } = useSettingsSection("payroll");
+  const { data, isLoading, saveSection, settingsVersion } = useSettingsSection("payroll");
 
   const [payFrequency, setPayFrequency] = useState("monthly");
   const [enableAutoPayslip, setEnableAutoPayslip] = useState(false);
@@ -53,13 +53,11 @@ export default function PayrollPeriodsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  useEffect(() => {
-    if (data) {
-      setPayFrequency((data.payFrequency as string) || "monthly");
-      setEnableAutoPayslip((data.enableAutoPayslip as boolean) ?? false);
-      setDefaultPaymentMethod((data.defaultPaymentMethod as string) || "BANK_TRANSFER");
-    }
-  }, [data]);
+  useSyncSectionData(data, settingsVersion, hasChanges, (section) => {
+    setPayFrequency((section.payFrequency as string) || "monthly");
+    setEnableAutoPayslip((section.enableAutoPayslip as boolean) ?? false);
+    setDefaultPaymentMethod((section.defaultPaymentMethod as string) || "BANK_TRANSFER");
+  });
 
   useEffect(() => {
     if (!data) return;

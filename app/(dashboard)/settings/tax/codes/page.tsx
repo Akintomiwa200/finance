@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Card,
   CardHeader,
@@ -17,22 +17,21 @@ import {
   Shield,
   AlertCircle,
 } from "lucide-react";
-import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { useSettingsSection, useSyncSectionData } from "@/src/hooks/use-settings-section";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 export default function TaxCodesPage() {
-  const { data, isLoading, saveSection } = useSettingsSection("tax");
+  const { data, isLoading, saveSection, settingsVersion } = useSettingsSection("tax");
 
   const [enableVAT, setEnableVAT] = useState(false);
   const [enableWithholdingTax, setEnableWithholdingTax] = useState(false);
   const [enableTaxReporting, setEnableTaxReporting] = useState(false);
 
-  useEffect(() => {
-    if (!data) return;
-    setEnableVAT(Boolean(data.enableVAT));
-    setEnableWithholdingTax(Boolean(data.enableWithholdingTax));
-    setEnableTaxReporting(Boolean(data.enableTaxReporting));
-  }, [data]);
+  useSyncSectionData(data, settingsVersion, false, (section) => {
+    setEnableVAT(Boolean(section.enableVAT));
+    setEnableWithholdingTax(Boolean(section.enableWithholdingTax));
+    setEnableTaxReporting(Boolean(section.enableTaxReporting));
+  });
 
   const handleToggle = async (key: string, checked: boolean) => {
     await saveSection({ [key]: checked });

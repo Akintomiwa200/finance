@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { Badge } from "@/src/components/ui/badge";
-import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { useSettingsSection, useSyncSectionData } from "@/src/hooks/use-settings-section";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 const ACCOUNT_TYPES = [
@@ -65,35 +65,28 @@ const DEFAULTS = {
 
 export default function ChartOfAccountsSettings() {
   const router = useRouter();
-  const { data, isLoading, saveSection } = useSettingsSection("accounting");
+  const { data, isLoading, saveSection, settingsVersion } = useSettingsSection("accounting");
 
-  const [initialized, setInitialized] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
   const [form, setForm] = useState(DEFAULTS);
 
-  useEffect(() => {
-    if (isLoading || initialized || !data) return;
+  useSyncSectionData(data, settingsVersion, hasChanges, (section) => {
     setForm({
-      defaultAccountType: (data.defaultAccountType as string) || DEFAULTS.defaultAccountType,
-      enableAutoJournal: (data.enableAutoJournal as boolean) ?? DEFAULTS.enableAutoJournal,
-      enableMultiCurrency: (data.enableMultiCurrency as boolean) ?? DEFAULTS.enableMultiCurrency,
-      baseCurrency: (data.baseCurrency as string) || DEFAULTS.baseCurrency,
-      decimalPlaces: (data.decimalPlaces as number) ?? DEFAULTS.decimalPlaces,
-      enableBudgetTracking: (data.enableBudgetTracking as boolean) ?? DEFAULTS.enableBudgetTracking,
-      enableDepartmentAllocations: (data.enableDepartmentAllocations as boolean) ?? DEFAULTS.enableDepartmentAllocations,
-      enableCostCenters: (data.enableCostCenters as boolean) ?? DEFAULTS.enableCostCenters,
+      defaultAccountType: (section.defaultAccountType as string) || DEFAULTS.defaultAccountType,
+      enableAutoJournal: (section.enableAutoJournal as boolean) ?? DEFAULTS.enableAutoJournal,
+      enableMultiCurrency: (section.enableMultiCurrency as boolean) ?? DEFAULTS.enableMultiCurrency,
+      baseCurrency: (section.baseCurrency as string) || DEFAULTS.baseCurrency,
+      decimalPlaces: (section.decimalPlaces as number) ?? DEFAULTS.decimalPlaces,
+      enableBudgetTracking: (section.enableBudgetTracking as boolean) ?? DEFAULTS.enableBudgetTracking,
+      enableDepartmentAllocations: (section.enableDepartmentAllocations as boolean) ?? DEFAULTS.enableDepartmentAllocations,
+      enableCostCenters: (section.enableCostCenters as boolean) ?? DEFAULTS.enableCostCenters,
     });
-    setInitialized(true);
-  }, [data, isLoading, initialized]);
+  });
 
   useEffect(() => {
-    if (!isLoading && !initialized) setInitialized(true);
-  }, [isLoading, initialized]);
-
-  useEffect(() => {
-    if (!initialized || !data) return;
+    if (!data) return;
     const changed =
       form.defaultAccountType !== ((data.defaultAccountType as string) || DEFAULTS.defaultAccountType) ||
       form.enableAutoJournal !== ((data.enableAutoJournal as boolean) ?? DEFAULTS.enableAutoJournal) ||
@@ -104,7 +97,7 @@ export default function ChartOfAccountsSettings() {
       form.enableDepartmentAllocations !== ((data.enableDepartmentAllocations as boolean) ?? DEFAULTS.enableDepartmentAllocations) ||
       form.enableCostCenters !== ((data.enableCostCenters as boolean) ?? DEFAULTS.enableCostCenters);
     setHasChanges(changed);
-  }, [form, data, initialized]);
+  }, [form, data]);
 
   const update = <K extends keyof typeof form>(field: K, value: (typeof form)[K]) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -133,7 +126,7 @@ export default function ChartOfAccountsSettings() {
     });
   };
 
-  if (isLoading && !initialized) return <SettingsPageSkeleton />;
+  if (isLoading && !data) return <SettingsPageSkeleton />;
 
   const samplePreview = (1234567.89).toLocaleString("en-US", {
     minimumFractionDigits: form.decimalPlaces,

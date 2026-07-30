@@ -30,7 +30,7 @@ import {
   Save,
   RotateCcw,
 } from "lucide-react";
-import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { useSettingsSection, useSyncSectionData } from "@/src/hooks/use-settings-section";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 const CATEGORY_FIELDS = [
@@ -75,7 +75,7 @@ const CATEGORY_FIELDS = [
 ];
 
 export default function EmailNotificationsPage() {
-  const { data, isLoading, error, saveSection } =
+  const { data, isLoading, error, saveSection, settingsVersion } =
     useSettingsSection("notifications");
 
   const notifications = (data || {}) as Record<string, unknown>;
@@ -91,6 +91,11 @@ export default function EmailNotificationsPage() {
       return true;
     return Object.keys(draft).length > 0;
   }, [emailDigest, notifications, draft]);
+
+  useSyncSectionData(data, settingsVersion, isDirty, (section) => {
+    setEmailDigest((section.emailDigest as string) || "realtime");
+    setDraft({});
+  });
 
   const currentValue = (key: string) => {
     if (key in draft) return draft[key];

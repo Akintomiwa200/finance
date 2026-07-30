@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Settings2,
   Clock,
@@ -47,8 +47,8 @@ import { useSettingsSection } from "@/src/hooks/use-settings-section";
 import { usePlatformSettingsStore } from "@/src/store/platform-settings-store";
 import {
   useSessionSettingsStore,
-  type SessionTimeout,
 } from "@/src/store/session-settings-store";
+import { applySessionTimeoutFromSettings, normalizeSessionTimeout } from "@/src/lib/sync-session-timeout";
 import type { AccentColor, FontSize, FontFamily } from "@/src/types/platform-settings";
 import type { ThemeMode } from "@/src/context/theme-context";
 
@@ -184,6 +184,7 @@ export default function GeneralSettingsPage() {
     isLoading: generalLoading,
     error: generalError,
     saveSection: saveGeneral,
+    settingsVersion: generalSettingsVersion,
   } = useSettingsSection("general");
 
   const {
@@ -191,6 +192,7 @@ export default function GeneralSettingsPage() {
     isLoading: sessionLoading,
     error: sessionError,
     saveSection: saveSession,
+    settingsVersion: sessionSettingsVersion,
   } = useSettingsSection("session");
 
   const isLoading = generalLoading || sessionLoading;
@@ -222,13 +224,7 @@ export default function GeneralSettingsPage() {
 
   const initializedRef = useRef(false);
 
-  // --- Hydrate from API data once loading completes ---
-  useEffect(() => {
-    if (isLoading) return;
-    if (initializedRef.current) return;
-    initializedRef.current = true;
-
-    // General section
+  const hydrateFromApi = useCallback(() => {
     if (generalData) {
       setTheme(pick(generalData, "theme", "system"));
       setAccentColor(pick(generalData, "accentColor", "rose"));
@@ -245,13 +241,12 @@ export default function GeneralSettingsPage() {
       setDebugMode(pick(generalData, "debugMode", false));
     }
 
-    // Session section
     if (sessionData) {
       setInactivityTimeout(
         String(pick(sessionData, "inactivityTimeoutMinutes", 30)),
       );
     }
-  }, [isLoading, generalData, sessionData]);
+  }, [generalData, sessionData]);
 
   // --- Snapshot of API-saved data for change detection ---
   const savedRef = useRef<Record<string, unknown>>({});
@@ -295,6 +290,29 @@ export default function GeneralSettingsPage() {
       debugMode !== savedRef.current.debugMode ||
       inactivityTimeout !== savedRef.current.inactivityTimeoutMinutes);
 
+  // --- Hydrate from API; re-sync on remote changes when form is clean ---
+  useEffect(() => {
+    if (isLoading) return;
+    if (!generalData && !sessionData) return;
+
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      hydrateFromApi();
+      return;
+    }
+
+    if (hasChanges) return;
+    hydrateFromApi();
+  }, [
+    isLoading,
+    generalData,
+    sessionData,
+    generalSettingsVersion,
+    sessionSettingsVersion,
+    hydrateFromApi,
+    hasChanges,
+  ]);
+
   // --- Save ---
   const handleSave = async () => {
     setIsSaving(true);
@@ -324,7 +342,7 @@ export default function GeneralSettingsPage() {
         platformSetSettings({ theme, accentColor, fontSize, fontFamily, compactNav });
       }
       if (sessionOk) {
-        sessionSetInactivityTimeout(Number(inactivityTimeout) as SessionTimeout);
+        sessionSetInactivityTimeout(normalizeSessionTimeout(Number(inactivityTimeout)));
       }
 
       if (generalOk && sessionOk) {

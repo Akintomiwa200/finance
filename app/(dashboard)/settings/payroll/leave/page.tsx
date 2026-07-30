@@ -23,10 +23,10 @@ import { Label } from "@/src/components/ui/label";
 import { Switch } from "@/src/components/ui/switch";
 import { Badge } from "@/src/components/ui/badge";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
-import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { useSettingsSection, useSyncSectionData } from "@/src/hooks/use-settings-section";
 
 export default function PayrollLeavePage() {
-  const { data, isLoading, saveSection } = useSettingsSection("payroll");
+  const { data, isLoading, saveSection, settingsVersion } = useSettingsSection("payroll");
 
   const [enableLeaveDeductions, setEnableLeaveDeductions] = useState(false);
   const [annualLeaveQuota, setAnnualLeaveQuota] = useState("15");
@@ -35,14 +35,12 @@ export default function PayrollLeavePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  useEffect(() => {
-    if (data) {
-      setEnableLeaveDeductions((data.enableLeaveDeductions as boolean) ?? false);
-      setAnnualLeaveQuota(String((data as Record<string, unknown>).annualLeaveQuota ?? 15));
-      setSickLeaveQuota(String((data as Record<string, unknown>).sickLeaveQuota ?? 10));
-      setPersonalLeaveQuota(String((data as Record<string, unknown>).personalLeaveQuota ?? 5));
-    }
-  }, [data]);
+  useSyncSectionData(data, settingsVersion, hasChanges, (section) => {
+    setEnableLeaveDeductions((section.enableLeaveDeductions as boolean) ?? false);
+    setAnnualLeaveQuota(String(section.annualLeaveQuota ?? 15));
+    setSickLeaveQuota(String(section.sickLeaveQuota ?? 10));
+    setPersonalLeaveQuota(String(section.personalLeaveQuota ?? 5));
+  });
 
   useEffect(() => {
     if (!data) return;

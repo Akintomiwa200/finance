@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { Badge } from "@/src/components/ui/badge";
-import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { useSettingsSection, useSyncSectionData } from "@/src/hooks/use-settings-section";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 const BANK_PROVIDERS = [
@@ -45,34 +45,27 @@ const DEFAULTS = {
 };
 
 export default function BankFeedsSettingsPage() {
-  const { data, isLoading, saveSection } = useSettingsSection("integrations");
+  const { data, isLoading, saveSection, settingsVersion } = useSettingsSection("integrations");
 
-  const [initialized, setInitialized] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
   const [form, setForm] = useState(DEFAULTS);
 
-  useEffect(() => {
-    if (isLoading || initialized || !data) return;
+  useSyncSectionData(data, settingsVersion, hasChanges, (section) => {
     setForm({
-      enableBankFeed: (data.enableBankFeed as boolean) ?? DEFAULTS.enableBankFeed,
-      bankProvider: (data.bankProvider as string) || DEFAULTS.bankProvider,
+      enableBankFeed: (section.enableBankFeed as boolean) ?? DEFAULTS.enableBankFeed,
+      bankProvider: (section.bankProvider as string) || DEFAULTS.bankProvider,
     });
-    setInitialized(true);
-  }, [data, isLoading, initialized]);
+  });
 
   useEffect(() => {
-    if (!isLoading && !initialized) setInitialized(true);
-  }, [isLoading, initialized]);
-
-  useEffect(() => {
-    if (!initialized || !data) return;
+    if (!data) return;
     const changed =
       form.enableBankFeed !== ((data.enableBankFeed as boolean) ?? DEFAULTS.enableBankFeed) ||
       form.bankProvider !== ((data.bankProvider as string) || DEFAULTS.bankProvider);
     setHasChanges(changed);
-  }, [form, data, initialized]);
+  }, [form, data]);
 
   const update = <K extends keyof typeof form>(field: K, value: (typeof form)[K]) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -110,7 +103,7 @@ export default function BankFeedsSettingsPage() {
   const status = statusConfig[connectionStatus];
   const StatusIcon = status.icon;
 
-  if (isLoading && !initialized) return <SettingsPageSkeleton />;
+  if (isLoading && !data) return <SettingsPageSkeleton />;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">

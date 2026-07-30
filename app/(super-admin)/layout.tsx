@@ -7,6 +7,7 @@ import { SuperAdminSidebar } from "@/src/components/layout/super-admin-sidebar";
 import { SuperAdminNavbar } from "@/src/components/layout/super-admin-navbar";
 import { MobileSidebarProvider } from "@/src/context/mobile-sidebar-context";
 import { AdminShellSkeleton } from "@/src/components/layout/dashboard-skeletons";
+import { UserAppearanceSync } from "@/src/components/settings/user-appearance-sync";
 
 export default function SuperAdminLayout({
   children,
@@ -41,6 +42,7 @@ export default function SuperAdminLayout({
 
   return (
     <MobileSidebarProvider>
+      <UserAppearanceSync />
       <div className="flex h-screen overflow-hidden bg-background">
         <SuperAdminSidebar />
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">

@@ -1,69 +1,41 @@
-import Link from "next/link";
-import { Card, CardHeader, CardTitle } from "@/src/components/ui/card";
+"use client";
+
+import { SettingsHub } from "@/src/components/settings/settings-hub";
+import {
+  SETTINGS_GROUPS,
+  SETTINGS_ROOT_LINKS,
+} from "@/src/lib/settings-navigation";
+import { useTenantSettingsStore } from "@/src/store/tenant-settings-store";
+import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 export default function SettingsPage() {
+  const isLoading = useTenantSettingsStore((s) => s.isLoading);
+  const settings = useTenantSettingsStore((s) => s.settings);
+
+  if (isLoading && !settings) return <SettingsPageSkeleton />;
+
+  const allLinks = [
+    ...SETTINGS_ROOT_LINKS,
+    ...SETTINGS_GROUPS.flatMap((group) => group.links),
+  ];
+
   return (
-<div className="page-container">
-        <div className="page-header">
-          <h1 className="page-title">Settings</h1>
-          <p className="page-description">System configuration and preferences</p>
-        </div>
-        <div className="grid gap-6 max-w-2xl">
-          <Link href="/settings/general" className="block no-underline">
-            <Card className="hover:border-brand-300 hover:shadow-sm transition-all">
-              <CardHeader>
-                <CardTitle>General</CardTitle>
-              </CardHeader>
-              <div className="px-6 pb-6 text-sm text-muted-foreground">
-                Manage general application settings.
-              </div>
-            </Card>
-          </Link>
-          <Link href="/settings/profile" className="block no-underline">
-            <Card className="hover:border-brand-300 hover:shadow-sm transition-all">
-              <CardHeader>
-                <CardTitle>Profile</CardTitle>
-              </CardHeader>
-              <div className="px-6 pb-6 text-sm text-muted-foreground">
-                Manage your profile information.
-              </div>
-            </Card>
-          </Link>
-          <Link href="/settings/appearance" className="block no-underline">
-            <Card className="hover:border-brand-300 hover:shadow-sm transition-all">
-              <CardHeader>
-                <CardTitle>Appearance</CardTitle>
-              </CardHeader>
-              <div className="px-6 pb-6 text-sm text-muted-foreground">
-                Customize the look and feel of the application.
-              </div>
-            </Card>
-          </Link>
-          <Card>
-            <CardHeader>
-              <CardTitle>Organization</CardTitle>
-            </CardHeader>
-            <div className="px-6 pb-6 text-sm text-muted-foreground">
-              Manage organization profile, branding, and preferences.
-            </div>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Tax Configuration</CardTitle>
-            </CardHeader>
-            <div className="px-6 pb-6 text-sm text-muted-foreground">
-              Configure tax brackets, rates, and thresholds.
-            </div>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
-            </CardHeader>
-            <div className="px-6 pb-6 text-sm text-muted-foreground">
-              Configure email and in-app notifications.
-            </div>
-          </Card>
-        </div>
-      </div>
-);
+    <SettingsHub
+      title="Settings"
+      description="All configuration is saved to your organization, cached locally, and synchronized in real time across devices."
+      links={allLinks}
+      summary={[
+        { label: "Organization", value: settings?.org.name ?? "—" },
+        { label: "Base currency", value: String((settings?.accounting as Record<string, unknown>)?.baseCurrency ?? settings?.regional.currency ?? "—") },
+        { label: "Timezone", value: settings?.regional.timezone ?? "—" },
+        {
+          label: "Auto logout",
+          value:
+            settings?.session.inactivityTimeoutMinutes === 0
+              ? "Disabled"
+              : `${settings?.session.inactivityTimeoutMinutes ?? 30} min`,
+        },
+      ]}
+    />
+  );
 }

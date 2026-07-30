@@ -29,7 +29,7 @@ import {
 } from "@/src/components/ui/select";
 import { Badge } from "@/src/components/ui/badge";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
-import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { useSettingsSection, useSyncSectionData } from "@/src/hooks/use-settings-section";
 
 const PAY_FREQUENCY_OPTIONS = [
   { value: "weekly", label: "Weekly", description: "52 pay periods per year" },
@@ -44,7 +44,7 @@ const TAX_CALCULATION_OPTIONS = [
 ];
 
 export default function PayrollStructuresPage() {
-  const { data, isLoading, saveSection } = useSettingsSection("payroll");
+  const { data, isLoading, saveSection, settingsVersion } = useSettingsSection("payroll");
 
   const [payFrequency, setPayFrequency] = useState("monthly");
   const [overtimeRate, setOvertimeRate] = useState("1.5");
@@ -52,13 +52,11 @@ export default function PayrollStructuresPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  useEffect(() => {
-    if (data) {
-      setPayFrequency((data.payFrequency as string) || "monthly");
-      setOvertimeRate(String(data.overtimeRate ?? "1.5"));
-      setTaxCalculation((data.taxCalculation as string) || "AUTOMATIC");
-    }
-  }, [data]);
+  useSyncSectionData(data, settingsVersion, hasChanges, (section) => {
+    setPayFrequency((section.payFrequency as string) || "monthly");
+    setOvertimeRate(String(section.overtimeRate ?? "1.5"));
+    setTaxCalculation((section.taxCalculation as string) || "AUTOMATIC");
+  });
 
   useEffect(() => {
     if (!data) return;

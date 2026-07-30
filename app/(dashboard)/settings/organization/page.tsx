@@ -10,7 +10,6 @@ import {
 } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
-import { Badge } from "@/src/components/ui/badge";
 import { Label } from "@/src/components/ui/label";
 import { Textarea } from "@/src/components/ui/textarea";
 import {
@@ -31,160 +30,17 @@ import {
   Globe,
   Upload,
   Save,
-  CheckCircle,
-  Mail,
-  Phone,
-  MapPin,
-  Globe2,
+  Palette,
+  Image,
   Calendar,
-  Clock,
   Shield,
   Key,
   Lock,
-  Bell,
-  Palette,
-  Image,
-  FileText,
-  Users,
-  DollarSign,
-  Languages,
-  Moon,
-  Sun,
-  Monitor,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
-
-// Types
-interface OrganizationInfo {
-  name: string;
-  legalName: string;
-  email: string;
-  phone: string;
-  website: string;
-  address: string;
-  city: string;
-  state: string;
-  country: string;
-  postalCode: string;
-  registrationNumber: string;
-  taxId: string;
-  industry: string;
-  employeeCount: number;
-  foundedYear: number;
-  description: string;
-}
-
-interface Branding {
-  logo: string;
-  logoAlt: string;
-  favicon: string;
-  primaryColor: string;
-  secondaryColor: string;
-  accentColor: string;
-  fontFamily: string;
-  darkMode: boolean;
-}
-
-interface Localization {
-  timezone: string;
-  dateFormat: string;
-  timeFormat: string;
-  currency: string;
-  currencySymbol: string;
-  language: string;
-  firstDayOfWeek: number;
-  fiscalYearStart: string;
-  numberFormat: string;
-}
-
-interface FiscalYearSettings {
-  fiscalYear: string;
-  startMonth: string;
-  endMonth: string;
-  startDay: number;
-  periods: number;
-  periodType: "monthly" | "quarterly";
-  currentPeriod: number;
-}
-
-interface SecuritySettings {
-  passwordMinLength: number;
-  passwordRequireUppercase: boolean;
-  passwordRequireNumber: boolean;
-  passwordRequireSpecial: boolean;
-  passwordExpiryDays: number;
-  sessionTimeout: number;
-  mfaEnabled: boolean;
-  ipRestriction: string;
-  loginAttempts: number;
-  lockoutDuration: number;
-}
-
-// Initial Data
-const initialOrgInfo: OrganizationInfo = {
-  name: "Acme Corp",
-  legalName: "Acme Corporation Ltd",
-  email: "finance@acmecorp.com",
-  phone: "+234 800 000 0000",
-  website: "https://www.acmecorp.com",
-  address: "123 Business District",
-  city: "Lagos",
-  state: "Lagos State",
-  country: "Nigeria",
-  postalCode: "100001",
-  registrationNumber: "RC-1234567",
-  taxId: "TIN-12345678-0001",
-  industry: "Technology",
-  employeeCount: 156,
-  foundedYear: 2018,
-  description:
-    "Leading technology solutions provider specializing in enterprise software and digital transformation services.",
-};
-
-const initialBranding: Branding = {
-  logo: "https://via.placeholder.com/200x60/3B82F6/FFFFFF?text=Acme+Corp",
-  logoAlt: "Acme Corp Logo",
-  favicon: "",
-  primaryColor: "#3B82F6",
-  secondaryColor: "#1E40AF",
-  accentColor: "#F59E0B",
-  fontFamily: "Inter",
-  darkMode: false,
-};
-
-const initialLocalization: Localization = {
-  timezone: "Africa/Lagos",
-  dateFormat: "DD/MM/YYYY",
-  timeFormat: "12h",
-  currency: "NGN",
-  currencySymbol: "₦",
-  language: "en",
-  firstDayOfWeek: 1,
-  fiscalYearStart: "01-01",
-  numberFormat: "1,234,567.89",
-};
-
-const initialFiscalYear: FiscalYearSettings = {
-  fiscalYear: "FY 2026",
-  startMonth: "January",
-  endMonth: "December",
-  startDay: 1,
-  periods: 12,
-  periodType: "monthly",
-  currentPeriod: 6,
-};
-
-const initialSecurity: SecuritySettings = {
-  passwordMinLength: 8,
-  passwordRequireUppercase: true,
-  passwordRequireNumber: true,
-  passwordRequireSpecial: true,
-  passwordExpiryDays: 90,
-  sessionTimeout: 30,
-  mfaEnabled: true,
-  ipRestriction: "",
-  loginAttempts: 5,
-  lockoutDuration: 30,
-};
+import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
+import { useOrganizationSettings } from "@/src/hooks/use-organization-settings";
 
 const timezones = [
   "Africa/Lagos",
@@ -251,47 +107,72 @@ const languages = [
 ];
 
 export default function OrganizationSettingsPage() {
-  // State
-  const [orgInfo, setOrgInfo] = useState<OrganizationInfo>(initialOrgInfo);
-  const [branding, setBranding] = useState<Branding>(initialBranding);
-  const [localization, setLocalization] =
-    useState<Localization>(initialLocalization);
-  const [fiscalYear, setFiscalYear] =
-    useState<FiscalYearSettings>(initialFiscalYear);
-  const [security, setSecurity] = useState<SecuritySettings>(initialSecurity);
-  const [activeTab, setActiveTab] = useState("general");
-  const [saveMessage, setSaveMessage] = useState("");
+  const {
+    orgInfo,
+    setOrgInfo,
+    branding,
+    setBranding,
+    localization,
+    setLocalization,
+    fiscalYear,
+    setFiscalYear,
+    security,
+    setSecurity,
+    isLoading,
+    isSaving,
+    savingSection,
+    error,
+    markDirty,
+    saveGeneral,
+    saveBranding,
+    saveLocalization,
+    saveFiscalYear,
+    saveSecurity,
+  } = useOrganizationSettings();
 
-  const showSaveMessage = (section: string) => {
-    setSaveMessage(`${section} settings saved successfully!`);
-    setTimeout(() => setSaveMessage(""), 3000);
-  };
+  const [activeTab, setActiveTab] = useState("general");
+
+  if (isLoading) return <SettingsPageSkeleton />;
+
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+        <AlertCircle className="mx-auto h-10 w-10 text-destructive mb-3" />
+        <p className="font-medium text-destructive">Failed to load organization settings</p>
+        <p className="text-sm text-muted-foreground mt-1">{error}</p>
+      </div>
+    );
+  }
 
   const handleOrgChange = (
-    field: keyof OrganizationInfo,
+    field: keyof typeof orgInfo,
     value: string | number,
   ) => {
+    markDirty();
     setOrgInfo((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleBrandingChange = (
-    field: keyof Branding,
+    field: keyof typeof branding,
     value: string | boolean,
   ) => {
+    markDirty();
     setBranding((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleLocalizationChange = (
-    field: keyof Localization,
+    field: keyof typeof localization,
     value: string | number,
   ) => {
+    markDirty();
     setLocalization((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSecurityChange = (
-    field: keyof SecuritySettings,
+    field: keyof typeof security,
     value: string | boolean | number,
   ) => {
+    markDirty();
     setSecurity((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -304,18 +185,10 @@ export default function OrganizationSettingsPage() {
             Organization Settings
           </h1>
           <p className="text-muted-foreground mt-1">
-            Manage your organization profile and branding
+            Manage your organization profile, branding, and regional settings. Changes sync in real time across your team.
           </p>
         </div>
       </div>
-
-      {/* Save Message */}
-      {saveMessage && (
-        <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-sm text-green-700">
-          <CheckCircle className="h-4 w-4" />
-          {saveMessage}
-        </div>
-      )}
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -537,8 +410,12 @@ export default function OrganizationSettingsPage() {
               </div>
 
               <div className="flex justify-end pt-4">
-                <Button onClick={() => showSaveMessage("General information")}>
-                  <Save className="h-4 w-4 mr-2" />
+                <Button onClick={() => void saveGeneral()} disabled={isSaving}>
+                  {savingSection === "general" ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
                   Save Changes
                 </Button>
               </div>
@@ -765,8 +642,12 @@ export default function OrganizationSettingsPage() {
               </div>
 
               <div className="flex justify-end pt-4">
-                <Button onClick={() => showSaveMessage("Branding")}>
-                  <Save className="h-4 w-4 mr-2" />
+                <Button onClick={() => void saveBranding()} disabled={isSaving}>
+                  {savingSection === "branding" ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
                   Save Branding
                 </Button>
               </div>
@@ -931,8 +812,12 @@ export default function OrganizationSettingsPage() {
               </div>
 
               <div className="flex justify-end pt-4">
-                <Button onClick={() => showSaveMessage("Localization")}>
-                  <Save className="h-4 w-4 mr-2" />
+                <Button onClick={() => void saveLocalization()} disabled={isSaving}>
+                  {savingSection === "localization" ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
                   Save Localization
                 </Button>
               </div>
@@ -955,12 +840,13 @@ export default function OrganizationSettingsPage() {
                   <Label>Current Fiscal Year</Label>
                   <Input
                     value={fiscalYear.fiscalYear}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      markDirty();
                       setFiscalYear({
                         ...fiscalYear,
                         fiscalYear: e.target.value,
-                      })
-                    }
+                      });
+                    }}
                     placeholder="FY 2026"
                   />
                 </div>
@@ -968,13 +854,14 @@ export default function OrganizationSettingsPage() {
                   <Label>Period Type</Label>
                   <Select
                     value={fiscalYear.periodType}
-                    onValueChange={(v) =>
+                    onValueChange={(v) => {
+                      markDirty();
                       setFiscalYear({
                         ...fiscalYear,
                         periodType: v as "monthly" | "quarterly",
                         periods: v === "monthly" ? 12 : 4,
-                      })
-                    }
+                      });
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -993,9 +880,10 @@ export default function OrganizationSettingsPage() {
                   <Label>Start Month</Label>
                   <Select
                     value={fiscalYear.startMonth}
-                    onValueChange={(v) =>
-                      setFiscalYear({ ...fiscalYear, startMonth: v })
-                    }
+                    onValueChange={(v) => {
+                      markDirty();
+                      setFiscalYear({ ...fiscalYear, startMonth: v });
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -1026,9 +914,10 @@ export default function OrganizationSettingsPage() {
                   <Label>End Month</Label>
                   <Select
                     value={fiscalYear.endMonth}
-                    onValueChange={(v) =>
-                      setFiscalYear({ ...fiscalYear, endMonth: v })
-                    }
+                    onValueChange={(v) => {
+                      markDirty();
+                      setFiscalYear({ ...fiscalYear, endMonth: v });
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -1062,15 +951,16 @@ export default function OrganizationSettingsPage() {
                     min={1}
                     max={fiscalYear.periods}
                     value={fiscalYear.currentPeriod}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      markDirty();
                       setFiscalYear({
                         ...fiscalYear,
                         currentPeriod: Math.min(
                           fiscalYear.periods,
                           Math.max(1, parseInt(e.target.value) || 1),
                         ),
-                      })
-                    }
+                      });
+                    }}
                   />
                 </div>
                 <div className="space-y-2">
@@ -1080,12 +970,13 @@ export default function OrganizationSettingsPage() {
                     min={1}
                     max={28}
                     value={fiscalYear.startDay}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      markDirty();
                       setFiscalYear({
                         ...fiscalYear,
                         startDay: parseInt(e.target.value) || 1,
-                      })
-                    }
+                      });
+                    }}
                   />
                 </div>
               </div>
@@ -1116,8 +1007,12 @@ export default function OrganizationSettingsPage() {
               </div>
 
               <div className="flex justify-end pt-4">
-                <Button onClick={() => showSaveMessage("Fiscal year")}>
-                  <Save className="h-4 w-4 mr-2" />
+                <Button onClick={() => void saveFiscalYear()} disabled={isSaving}>
+                  {savingSection === "fiscal-year" ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
                   Save Fiscal Year
                 </Button>
               </div>
@@ -1331,8 +1226,12 @@ export default function OrganizationSettingsPage() {
               </div>
 
               <div className="flex justify-end pt-4">
-                <Button onClick={() => showSaveMessage("Security")}>
-                  <Save className="h-4 w-4 mr-2" />
+                <Button onClick={() => void saveSecurity()} disabled={isSaving}>
+                  {savingSection === "security" ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
                   Save Security Settings
                 </Button>
               </div>

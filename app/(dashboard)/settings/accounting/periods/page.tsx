@@ -22,7 +22,7 @@ import {
 import { Label } from "@/src/components/ui/label";
 import { Switch } from "@/src/components/ui/switch";
 import { Badge } from "@/src/components/ui/badge";
-import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { useSettingsSection, useSyncSectionData } from "@/src/hooks/use-settings-section";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
 const DEFAULTS = {
@@ -32,9 +32,8 @@ const DEFAULTS = {
 };
 
 export default function AccountingPeriodsSettings() {
-  const { data, isLoading, saveSection } = useSettingsSection("accounting");
+  const { data, isLoading, saveSection, settingsVersion } = useSettingsSection("accounting");
 
-  const [initialized, setInitialized] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -42,26 +41,20 @@ export default function AccountingPeriodsSettings() {
   const [enableDepartmentAllocations, setEnableDepartmentAllocations] = useState(DEFAULTS.enableDepartmentAllocations);
   const [enableCostCenters, setEnableCostCenters] = useState(DEFAULTS.enableCostCenters);
 
-  useEffect(() => {
-    if (isLoading || initialized || !data) return;
-    if (data.enableBudgetTracking !== undefined) setEnableBudgetTracking(data.enableBudgetTracking as boolean);
-    if (data.enableDepartmentAllocations !== undefined) setEnableDepartmentAllocations(data.enableDepartmentAllocations as boolean);
-    if (data.enableCostCenters !== undefined) setEnableCostCenters(data.enableCostCenters as boolean);
-    setInitialized(true);
-  }, [data, isLoading, initialized]);
+  useSyncSectionData(data, settingsVersion, hasChanges, (section) => {
+    if (section.enableBudgetTracking !== undefined) setEnableBudgetTracking(section.enableBudgetTracking as boolean);
+    if (section.enableDepartmentAllocations !== undefined) setEnableDepartmentAllocations(section.enableDepartmentAllocations as boolean);
+    if (section.enableCostCenters !== undefined) setEnableCostCenters(section.enableCostCenters as boolean);
+  });
 
   useEffect(() => {
-    if (!isLoading && !initialized) setInitialized(true);
-  }, [isLoading, initialized]);
-
-  useEffect(() => {
-    if (!initialized || !data) return;
+    if (!data) return;
     const changed =
       enableBudgetTracking !== (data.enableBudgetTracking as boolean ?? DEFAULTS.enableBudgetTracking) ||
       enableDepartmentAllocations !== (data.enableDepartmentAllocations as boolean ?? DEFAULTS.enableDepartmentAllocations) ||
       enableCostCenters !== (data.enableCostCenters as boolean ?? DEFAULTS.enableCostCenters);
     setHasChanges(changed);
-  }, [enableBudgetTracking, enableDepartmentAllocations, enableCostCenters, data, initialized]);
+  }, [enableBudgetTracking, enableDepartmentAllocations, enableCostCenters, data]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -83,7 +76,7 @@ export default function AccountingPeriodsSettings() {
     setEnableCostCenters((data?.enableCostCenters as boolean) ?? DEFAULTS.enableCostCenters);
   };
 
-  if (isLoading && !initialized) return <SettingsPageSkeleton />;
+  if (isLoading && !data) return <SettingsPageSkeleton />;
 
   const enabledCount = [enableBudgetTracking, enableDepartmentAllocations, enableCostCenters].filter(Boolean).length;
 

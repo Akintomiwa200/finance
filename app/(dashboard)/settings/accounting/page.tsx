@@ -1,24 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { SettingsHub } from "@/src/components/settings/settings-hub";
+import { SETTINGS_GROUPS } from "@/src/lib/settings-navigation";
+import { useTenantSettingsStore } from "@/src/store/tenant-settings-store";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
 
-export default function settings_accounting() {
-  const [loading, setLoading] = useState(true);
+const GROUP = SETTINGS_GROUPS.find((g) => g.id === "accounting")!;
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 400);
-    return () => clearTimeout(timer);
-  }, []);
+export default function AccountingSettingsPage() {
+  const isLoading = useTenantSettingsStore((s) => s.isLoading);
+  const settings = useTenantSettingsStore((s) => s.settings);
 
-  if (loading) return <SettingsPageSkeleton />;
+  if (isLoading && !settings) return <SettingsPageSkeleton />;
+
+  const accounting = settings?.accounting ?? {};
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Accounting Settings</h1>
-        <p className="text-muted-foreground">Configure accounting preferences</p>
-      </div>
-    </div>
+    <SettingsHub
+      title="Accounting Settings"
+      description="Configure ledger defaults, chart of accounts, and accounting periods."
+      group={GROUP}
+      links={GROUP.links}
+      summary={[
+        { label: "Base currency", value: String(accounting.baseCurrency ?? "USD") },
+        { label: "Multi-currency", value: accounting.enableMultiCurrency ? "Enabled" : "Disabled" },
+        { label: "Auto journal", value: accounting.enableAutoJournal ? "On" : "Off" },
+        { label: "Decimal places", value: String(accounting.decimalPlaces ?? 2) },
+      ]}
+    />
   );
 }
