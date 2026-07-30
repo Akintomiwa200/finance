@@ -1,170 +1,208 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  Card, CardHeader, CardTitle, CardContent, CardDescription,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
 } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { Label } from "@/src/components/ui/label";
 import { Badge } from "@/src/components/ui/badge";
+import { Input } from "@/src/components/ui/input";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/src/components/ui/select";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/src/components/ui/table";
+import { Avatar, AvatarFallback } from "@/src/components/ui/avatar";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
-} from "@/src/components/ui/dialog";
-import {
-  ArrowLeft, Plus, Search, Users, Mail, Shield, UserCheck, UserX, Loader2,
+  Users,
+  Search,
+  Mail,
+  Shield,
+  Building2,
+  UserCheck,
+  UserX,
+  ArrowUpDown,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { TableSkeleton } from "@/src/components/layout/dashboard-skeletons";
+import { useEmployeeStore } from "@/src/store/employee-store";
+import { EMPLOYEE_ROLE_OPTIONS } from "@/src/types/employee";
+import { formatProfileDate } from "@/src/lib/profile-utils";
+import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
+import type { EmployeeRole } from "@/src/types/employee";
 
-const ROLES = [
-  { value: "FINANCE_MANAGER", label: "Finance Manager", level: "Senior" },
-  { value: "ACCOUNTANT_PAYABLE", label: "Accountant (AP)", level: "Mid" },
-  { value: "ACCOUNTANT_RECEIVABLE", label: "Accountant (AR)", level: "Mid" },
-  { value: "PAYROLL_OFFICER", label: "Payroll Officer", level: "Mid" },
-  { value: "BUDGET_ANALYST", label: "Budget Analyst", level: "Mid" },
-  { value: "DEPARTMENT_HEAD", label: "Department Head", level: "Senior" },
-  { value: "AUDITOR", label: "Auditor", level: "Senior" },
-  { value: "TAX_SPECIALIST", label: "Tax Specialist", level: "Mid" },
-  { value: "EMPLOYEE", label: "Employee", level: "Basic" },
-];
+const ROLE_MAP: Record<string, string> = Object.fromEntries(
+  EMPLOYEE_ROLE_OPTIONS.map((r) => [r.value, r.label]),
+);
 
-interface Department {
-  id: string;
-  name: string;
-  code: string;
-}
+const ROLE_BADGE_COLORS: Record<string, string> = {
+  ADMIN: "bg-red-100 text-red-700",
+  HR: "bg-pink-100 text-pink-700",
+  FINANCE: "bg-blue-100 text-blue-700",
+  MANAGER: "bg-purple-100 text-purple-700",
+  EMPLOYEE: "bg-gray-100 text-gray-600",
+};
 
-interface UserRecord {
-  id: string;
-  employeeCode: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-  isActive: boolean;
-  department: { id: string; name: string } | null;
-  createdAt: string;
-}
+type SortField = "name" | "email" | "role";
+type SortDir = "asc" | "desc";
 
-export default function UserManagement() {
-  const router = useRouter();
-  const [users, setUsers] = useState<UserRecord[]>([]);
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function UsersPage() {
+  const { employees, loading, startPolling, stopPolling } = useEmployeeStore();
   const [search, setSearch] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    role: "",
-    departmentId: "",
-  });
-
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch("/api/users");
-      if (res.ok) setUsers(await res.json());
-    } catch {} finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchDepartments = async () => {
-    try {
-      const res = await fetch("/api/departments");
-      if (res.ok) setDepartments(await res.json());
-    } catch {}
-  };
+  const [sortField, setSortField] = useState<SortField>("name");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   useEffect(() => {
-    fetchUsers();
-    fetchDepartments();
-  }, []);
+    startPolling();
+    return () => stopPolling();
+  }, [startPolling, stopPolling]);
 
-  const handleCreate = async () => {
-    setSaving(true);
-    try {
-      const res = await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (res.ok) {
-        setDialogOpen(false);
-        setForm({ firstName: "", lastName: "", email: "", password: "", role: "", departmentId: "" });
-        fetchUsers();
-      }
-    } finally {
-      setSaving(false);
+  const isLoading = loading && employees.length === 0;
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDir("asc");
     }
   };
 
-  const handleToggleActive = async (user: UserRecord) => {
-    await fetch(`/api/users/${user.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isActive: !user.isActive }),
+  const filtered = useMemo(() => {
+    let list = [...employees];
+
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (e) =>
+          e.firstName.toLowerCase().includes(q) ||
+          e.lastName.toLowerCase().includes(q) ||
+          e.email.toLowerCase().includes(q) ||
+          e.employeeCode.toLowerCase().includes(q) ||
+          e.departmentName.toLowerCase().includes(q),
+      );
+    }
+
+    list.sort((a, b) => {
+      let cmp = 0;
+      if (sortField === "name") {
+        cmp = `${a.firstName} ${a.lastName}`.localeCompare(
+          `${b.firstName} ${b.lastName}`,
+        );
+      } else if (sortField === "email") {
+        cmp = a.email.localeCompare(b.email);
+      } else if (sortField === "role") {
+        cmp = a.role.localeCompare(b.role);
+      }
+      return sortDir === "asc" ? cmp : -cmp;
     });
-    fetchUsers();
-  };
 
-  const filtered = users.filter((u) => {
-    const q = search.toLowerCase();
-    return (
-      u.firstName.toLowerCase().includes(q) ||
-      u.lastName.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
-      u.employeeCode.toLowerCase().includes(q)
-    );
-  });
+    return list;
+  }, [employees, search, sortField, sortDir]);
 
-  const roleLabel = (role: string) => ROLES.find((r) => r.value === role)?.label || role.replace(/_/g, " ");
+  const activeCount = employees.filter((e) => e.isActive).length;
+  const roleCount = new Set(employees.map((e) => e.role)).size;
+
+  const SortableHead = ({
+    field,
+    children,
+    className,
+  }: {
+    field: SortField;
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <TableHead className={className}>
+      <button
+        type="button"
+        onClick={() => handleSort(field)}
+        className="flex items-center gap-1 hover:text-foreground transition-colors"
+      >
+        {children}
+        <ArrowUpDown
+          className={`h-3 w-3 ${sortField === field ? "text-foreground" : "text-muted-foreground"}`}
+        />
+      </button>
+    </TableHead>
+  );
+
+  if (isLoading) {
+    return <SettingsPageSkeleton />;
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Users className="h-6 w-6" />
-            User Management
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Create and manage users, assign roles and departments
-          </p>
+    <div className="space-y-6 max-w-6xl mx-auto">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <Users className="h-6 w-6" />
+          <span className="text-2xl font-bold tracking-tight">Users</span>
         </div>
+        <p className="text-sm text-muted-foreground">
+          All employees in your organization and their assigned roles
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="border-l-4 border-l-blue-500">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Users</p>
+                <p className="text-2xl font-bold">{employees.length}</p>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-xl">
+                <Users className="h-5 w-5 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-l-4 border-l-green-500">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Active</p>
+                <p className="text-2xl font-bold">{activeCount}</p>
+              </div>
+              <div className="p-3 bg-green-50 rounded-xl">
+                <UserCheck className="h-5 w-5 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-l-4 border-l-purple-500">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Roles</p>
+                <p className="text-2xl font-bold">{roleCount}</p>
+              </div>
+              <div className="p-3 bg-purple-50 rounded-xl">
+                <Shield className="h-5 w-5 text-purple-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>All Users</CardTitle>
-              <CardDescription>{users.length} user{users.length !== 1 ? "s" : ""} in your organization</CardDescription>
+              <CardTitle>User List</CardTitle>
+              <CardDescription>
+                {filtered.length} of {employees.length} user
+                {employees.length !== 1 ? "s" : ""}
+              </CardDescription>
             </div>
-            <Button onClick={() => setDialogOpen(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add User
-            </Button>
           </div>
           <div className="relative mt-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name, email, or code..."
+              placeholder="Search by name, email, code, or department..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
@@ -172,178 +210,96 @@ export default function UserManagement() {
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <TableSkeleton rows={8} columns={7} className="border-0" />
-          ) : filtered.length === 0 ? (
+          {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Users className="h-12 w-12 mb-3 opacity-30" />
-              <p>{search ? "No users match your search" : "No users yet. Click 'Add User' to create one."}</p>
+              <p>
+                {search
+                  ? "No employees match your search"
+                  : "No employees yet."}
+              </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Code</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <SortableHead field="name">Name</SortableHead>
+                  <SortableHead field="email">Email</SortableHead>
+                  <SortableHead field="role">Role</SortableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Joined</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((emp) => (
+                  <TableRow key={emp.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback>
+                            {emp.firstName[0]}
+                            {emp.lastName[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium text-sm">
+                            {emp.firstName} {emp.lastName}
+                          </p>
+                          <p className="text-xs text-muted-foreground font-mono">
+                            {emp.employeeCode}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Mail className="h-3 w-3" />
+                        {emp.email}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="secondary"
+                        className={`font-normal ${ROLE_BADGE_COLORS[emp.role] || ""}`}
+                      >
+                        <Shield className="h-3 w-3 mr-1" />
+                        {ROLE_MAP[emp.role] || emp.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1.5">
+                        <Building2 className="h-3 w-3" />
+                        {emp.departmentName || "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={emp.isActive ? "default" : "secondary"}
+                        className={
+                          emp.isActive
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }
+                      >
+                        {emp.isActive ? (
+                          <UserCheck className="h-3 w-3 mr-1" />
+                        ) : (
+                          <UserX className="h-3 w-3 mr-1" />
+                        )}
+                        {emp.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {formatProfileDate(emp.hireDate ?? emp.createdAt)}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-mono text-xs">{user.employeeCode}</TableCell>
-                      <TableCell className="font-medium">{user.firstName} {user.lastName}</TableCell>
-                      <TableCell>
-                        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                          <Mail className="h-3 w-3" />
-                          {user.email}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="font-normal">
-                          <Shield className="h-3 w-3 mr-1" />
-                          {roleLabel(user.role)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {user.department?.name || "—"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={user.isActive ? "default" : "secondary"} className={user.isActive ? "bg-green-100 text-green-700" : ""}>
-                          {user.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleActive(user)}
-                        >
-                          {user.isActive ? (
-                            <UserX className="h-4 w-4 text-red-500" />
-                          ) : (
-                            <UserCheck className="h-4 w-4 text-green-500" />
-                          )}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
-            <DialogDescription>
-              Create a user account. They will receive their credentials to log in.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>First Name</Label>
-                <Input
-                  value={form.firstName}
-                  onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))}
-                  placeholder="John"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Last Name</Label>
-                <Input
-                  value={form.lastName}
-                  onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))}
-                  placeholder="Doe"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                placeholder="john@company.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Password</Label>
-              <Input
-                type="password"
-                value={form.password}
-                onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
-                placeholder="Set initial password"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Role</Label>
-                <Select
-                  value={form.role}
-                  onValueChange={(v) => setForm((p) => ({ ...p, role: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ROLES.map((role) => (
-                      <SelectItem key={role.value} value={role.value}>
-                        {role.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Department</Label>
-                <Select
-                  value={form.departmentId}
-                  onValueChange={(v) => setForm((p) => ({ ...p, departmentId: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departments.map((dept) => (
-                      <SelectItem key={dept.id} value={dept.id}>
-                        {dept.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreate}
-              disabled={saving || !form.firstName || !form.lastName || !form.email || !form.password || !form.role || !form.departmentId}
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                "Create User"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

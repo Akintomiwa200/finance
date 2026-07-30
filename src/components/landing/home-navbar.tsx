@@ -3,16 +3,64 @@
 // src/components/landing/home-navbar.tsx
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LandingSpark } from "@/src/components/landing/landing-spark";
 import { SplashBlob } from "@/src/components/landing/splash-blob";
 
-const navItems: { label: string; href: string; active?: boolean }[] = [
-  { label: "Home", href: "/", active: true },
+const navItems: { label: string; href: string }[] = [
+  { label: "Home", href: "/" },
   { label: "About Us", href: "/about" },
   { label: "Pricing", href: "/pricing" },
   { label: "Features", href: "/features" },
 ];
+
+function isNavActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function NavLink({
+  href,
+  label,
+  active,
+  mobile = false,
+  onClick,
+}: {
+  href: string;
+  label: string;
+  active: boolean;
+  mobile?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <a
+      href={href}
+      onClick={onClick}
+      aria-current={active ? "page" : undefined}
+      className={
+        mobile
+          ? `relative block px-1 pt-3 pb-3.5 text-[1.05rem] font-medium no-underline transition-colors ${
+              active
+                ? "text-[var(--lp-text)]"
+                : "text-[var(--lp-nav-text-muted)] hover:text-[var(--lp-text)]"
+            }`
+          : `relative inline-flex items-center px-1 pt-0.5 pb-2 text-[0.94rem] font-medium no-underline transition-colors ${
+              active
+                ? "text-[var(--lp-text)]"
+                : "text-[var(--lp-nav-text-muted)] hover:text-[var(--lp-text)]"
+            }`
+      }
+    >
+      {label}
+      {active && (
+        <span
+          className="absolute bottom-0 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-[#ff5555]"
+          aria-hidden="true"
+        />
+      )}
+    </a>
+  );
+}
 
 function AudpayLogo() {
   return (
@@ -31,17 +79,17 @@ function HamburgerIcon({ open }: { open: boolean }) {
   return (
     <span className="flex h-5 flex-col items-center justify-center gap-[5px] w-5">
       <span
-        className={`block h-[2px] rounded-sm bg-white transition-all duration-300 w-full ${
+        className={`block h-[2px] rounded-sm bg-[var(--lp-nav-text)] transition-all duration-300 w-full ${
           open ? "translate-y-[7px] rotate-45" : ""
         }`}
       />
       <span
-        className={`block h-[2px] rounded-sm bg-white transition-all duration-300 w-3/4 self-end ${
+        className={`block h-[2px] rounded-sm bg-[var(--lp-nav-text)] transition-all duration-300 w-3/4 self-end ${
           open ? "scale-x-0 opacity-0" : ""
         }`}
       />
       <span
-        className={`block h-[2px] rounded-sm bg-white transition-all duration-300 w-full ${
+        className={`block h-[2px] rounded-sm bg-[var(--lp-nav-text)] transition-all duration-300 w-full ${
           open ? "-translate-y-[7px] -rotate-45" : ""
         }`}
       />
@@ -52,6 +100,7 @@ function HamburgerIcon({ open }: { open: boolean }) {
 export function HomeNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-40 bg-[var(--lp-nav-bg)]" aria-label="Main navigation">
@@ -63,7 +112,7 @@ export function HomeNavbar() {
         <div className="flex items-center">
           {/* Logo */}
           <a
-            href="#"
+            href="/"
             className="flex items-center gap-2 text-[1.35rem] font-extrabold tracking-[-0.04em] text-[var(--lp-nav-text)] no-underline lg:text-[1.58rem]"
             aria-label="Audpay home"
           >
@@ -76,26 +125,20 @@ export function HomeNavbar() {
 
           {/* Desktop nav links */}
           <div className="relative ml-14 hidden md:block lg:ml-[56px]">
-            {/* Red radial glow behind active link */}
-            <div
-              className="pointer-events-none absolute left-1/2 top-1/2 h-14 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(255,85,85,0.22)_0%,transparent_72%)] blur-2xl"
-              aria-hidden="true"
-            />
-            <ul className="relative flex list-none items-center gap-8 p-0">
-              {navItems.map((item) => (
-                <li key={item.label}>
-                  <a
-                    href={item.href}
-                    className={
-                      item.active
-                        ? "text-[0.94rem] font-semibold text-[var(--lp-red)] no-underline"
-                        : "text-[0.94rem] font-medium text-[var(--lp-nav-text-muted)] no-underline transition-colors hover:text-[var(--lp-red)]"
-                    }
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
+            <ul className="relative flex list-none items-center gap-3 p-0 lg:gap-4">
+              {navItems.map((item) => {
+                const active = isNavActive(pathname, item.href);
+
+                return (
+                  <li key={item.label}>
+                    <NavLink
+                      href={item.href}
+                      label={item.label}
+                      active={active}
+                    />
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>
@@ -135,22 +178,22 @@ export function HomeNavbar() {
           aria-label="Mobile navigation"
         >
           {/* Mobile nav links */}
-          <ul className="mb-5 flex list-none flex-col p-0">
-              {navItems.map((item) => (
-                <li key={item.label}>
-                  <a
-                    href={item.href}
-                    className={`block border-b border-[var(--lp-border)] py-4 text-[1.05rem] no-underline transition-colors last:border-none ${
-                      item.active
-                        ? "font-semibold text-[var(--lp-red)]"
-                        : "font-medium text-[var(--lp-nav-text-muted)] hover:text-[var(--lp-red)]"
-                    }`}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
+          <ul className="mb-5 flex list-none flex-col gap-2 p-0">
+              {navItems.map((item) => {
+                const active = isNavActive(pathname, item.href);
+
+                return (
+                  <li key={item.label}>
+                    <NavLink
+                      href={item.href}
+                      label={item.label}
+                      active={active}
+                      mobile
+                      onClick={() => setMobileOpen(false)}
+                    />
+                  </li>
+                );
+              })}
           </ul>
 
           {/* Mobile Get Started button */}

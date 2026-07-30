@@ -36,6 +36,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        await db.employee.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        });
+
         return {
           id: user.id,
           email: user.email,
@@ -52,8 +57,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
+        token.sub = user.id;
         token.role = user.role;
         token.departmentId = user.departmentId;
         token.organizationId = user.organizationId;
@@ -62,6 +68,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
+        session.user.id = token.sub as string;
         session.user.role = token.role as string;
         session.user.departmentId = token.departmentId as string;
         session.user.organizationId = token.organizationId as string;

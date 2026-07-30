@@ -1,5 +1,6 @@
 import { LandingSpark } from "@/src/components/landing/landing-spark";
 import { SplashBlob } from "@/src/components/landing/splash-blob";
+import { DeviceMockup } from "@/src/components/landing/device-mockup";
 
 export function HomeFeatures() {
   return (
@@ -30,119 +31,9 @@ export function HomeFeatures() {
           {/* Star */}
           <LandingSpark className="absolute left-[20px] top-[40px] z-[2] md:left-[32px] md:top-[60px]" size={22} />
 
-          {/* Phone */}
-          <div className="relative z-[3] flex h-[420px] w-[200px] flex-col overflow-hidden rounded-[36px] bg-[#1a1a1a] shadow-[0_32px_80px_rgba(0,0,0,0.35),0_0_0_1.5px_#333,inset_0_0_0_1px_rgba(255,255,255,0.06)] sm:w-[210px] md:h-[440px] md:w-[220px] lg:h-[460px] lg:w-[230px]">
-            <div className="relative z-10 mx-auto h-[22px] w-[72px] shrink-0 rounded-b-[14px] bg-[#1a1a1a]" />
-
-            <div className="mx-[4px] mb-[4px] flex flex-1 flex-col gap-2 overflow-hidden rounded-[28px] bg-[#f5f5f7] px-3 py-[10px]">
-              {/* Header */}
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-normal text-[#222] sm:text-[11px]">
-                  Hello <strong className="font-extrabold">Sami</strong>
-                </span>
-                <div className="flex h-[24px] w-[24px] items-center justify-center rounded-full bg-gradient-to-br from-[#f093fb] to-[#f5576c] text-[10px] sm:h-[26px] sm:w-[26px] sm:text-[11px]">
-                  👤
-                </div>
-              </div>
-
-              {/* Card */}
-              <div className="shrink-0 rounded-[12px] bg-[#1a1a1a] px-3 py-[8px] pb-2 text-white sm:py-[10px]">
-                <div className="mb-[6px] flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-[8px] font-bold text-white sm:text-[9px]">
-                    <div className="h-[12px] w-[12px] rounded-full bg-[#FF3B30] sm:h-[14px] sm:w-[14px]" />
-                    <span>Audpay</span>
-                  </div>
-                  <span className="text-[9px] font-extrabold italic tracking-[0.5px] text-white sm:text-[11px]">
-                    VISA
-                  </span>
-                </div>
-                <div className="mb-[4px] text-[7px] tracking-[1.5px] text-white/85 sm:text-[8.5px]">
-                  0000 8888 2222 3333
-                </div>
-                <div className="flex justify-between text-[6.5px] text-white/50 sm:text-[7.5px]">
-                  <span>———</span>
-                  <span>07/24</span>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="flex gap-2">
-                {[
-                  {
-                    arrow: "↑",
-                    arrowColor: "text-emerald-500",
-                    label: "Expense",
-                    val: "$4,264",
-                  },
-                  {
-                    arrow: "↓",
-                    arrowColor: "text-[#FF5555]",
-                    label: "Income",
-                    val: "$3,897",
-                  },
-                ].map((s, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 rounded-[10px] bg-white px-2 py-[5px] sm:py-[6px]"
-                  >
-                    <div className="mb-0.5 flex items-center gap-[2px] text-[6.5px] text-[#888] sm:gap-[3px] sm:text-[7.5px]">
-                      <span
-                        className={`text-[7px] ${s.arrowColor} sm:text-[8px]`}
-                      >
-                        {s.arrow}
-                      </span>{" "}
-                      {s.label}
-                    </div>
-                    <div className="text-[10px] font-extrabold text-[#1a1a1a] sm:text-[11px]">
-                      {s.val}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Transaction row */}
-              <div className="flex items-center gap-2 rounded-[10px] bg-white px-[7px] py-[6px] sm:px-[9px] sm:py-[7px]">
-                <div className="flex h-[22px] w-[22px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#f7971e] to-[#ffd200] text-[11px] sm:h-[26px] sm:w-[26px] sm:text-[13px]">
-                  🧑
-                </div>
-                <div className="flex-1">
-                  <div className="text-[9px] font-extrabold text-[#1a1a1a] sm:text-[10px]">
-                    $560.00
-                  </div>
-                  <div className="text-[6.5px] text-[#aaa] sm:text-[7.5px]">
-                    From Adam
-                  </div>
-                </div>
-                <span className="rounded-full bg-[#FFE8E8] px-[4px] py-[2px] text-[6px] font-bold text-[#FF3B30] sm:px-[6px] sm:py-[3px] sm:text-[7px]">
-                  On Hold
-                </span>
-              </div>
-
-              <div className="text-[8px] font-bold text-[#1a1a1a] sm:text-[9px]">
-                Transaction
-              </div>
-
-              {/* Nav */}
-              <div className="mt-auto flex items-center justify-around border-t border-black/6 pt-1 pb-0.5">
-                {["🏠", "💳", null, "📊", "⚙️"].map((icon, i) =>
-                  icon ? (
-                    <span
-                      key={i}
-                      className={`cursor-pointer p-0.5 text-[12px] sm:text-[13px] ${i === 0 ? "opacity-100" : "opacity-40"}`}
-                    >
-                      {icon}
-                    </span>
-                  ) : (
-                    <div
-                      key={i}
-                      className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FF3B30] text-[13px] font-light leading-none text-white sm:h-6 sm:w-6 sm:text-[15px]"
-                    >
-                      +
-                    </div>
-                  ),
-                )}
-              </div>
-            </div>
+          {/* Phone — real app dashboard preview */}
+          <div className="relative z-[3] scale-[1.05] sm:scale-[1.1] md:scale-[1.15]">
+            <DeviceMockup device="phone" />
           </div>
         </div>
 

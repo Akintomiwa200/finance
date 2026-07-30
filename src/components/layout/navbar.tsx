@@ -7,8 +7,6 @@ import { NavbarSearch } from "@/src/components/layout/navbar-search";
 import { getNavbarTitle } from "@/src/lib/navbar-title";
 import { NavbarProfile } from "@/src/components/layout/navbar-profile";
 import { MobileSidebarTrigger } from "@/src/components/layout/mobile-sidebar-trigger";
-import { useOrganization } from "@/src/hooks/use-organization";
-import { CompanyLogo } from "@/src/components/ui/company-logo";
 import { cn } from "@/src/lib/utils";
 
 export function Navbar() {
@@ -18,7 +16,6 @@ export function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const headerRef = useRef<HTMLElement>(null);
   const pageTitle = getNavbarTitle(pathname ?? "/dashboard", "dashboard");
-  const { data: organization } = useOrganization();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -54,18 +51,6 @@ export function Navbar() {
 
           {!searchOpen && (
             <div className="min-w-0 flex-1">
-              {organization?.name && (
-                <div className="mb-0.5 flex items-center gap-2">
-                  <CompanyLogo
-                    name={organization.name}
-                    logo={organization.logo}
-                    size={22}
-                  />
-                  <span className="truncate text-xs font-medium text-muted-foreground">
-                    {organization.name}
-                  </span>
-                </div>
-              )}
               <h1 className="truncate text-lg font-semibold text-foreground">
                 {pageTitle}
               </h1>

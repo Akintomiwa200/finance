@@ -255,6 +255,8 @@ model Organization {
   assetDisposals      AssetDisposal[]
   pettyCashRequests   PettyCashRequest[]
   pettyCashReimbursements PettyCashReimbursement[]
+
+  settings Json? @default("{}")
 }
 
 model Department {
@@ -291,6 +293,11 @@ model Employee {
   hireDate     DateTime?
   isActive     Boolean  @default(true)
   role         Role     @default(EMPLOYEE)
+
+  jobTitle      String?
+  bio           String?   @db.VarChar(500)
+  avatarUrl     String?
+  lastLoginAt   DateTime?
 
   departmentId   String
   department     Department   @relation(fields: [departmentId], references: [id])
@@ -1272,4 +1279,94 @@ model PettyCashReimbursement {
 
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
+}
+
+enum MarketingPublishStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model MarketingBlogPost {
+  id          String                 @id @default(cuid())
+  slug        String                 @unique
+  title       String
+  excerpt     String
+  content     String                 @db.Text
+  category    String
+  imageUrl    String?
+  publishedAt DateTime               @default(now())
+  status      MarketingPublishStatus @default(PUBLISHED)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+}
+
+model MarketingJobListing {
+  id           String                 @id @default(cuid())
+  slug         String                 @unique
+  title        String
+  type         String
+  location     String
+  description  String                 @db.Text
+  requirements String                 @db.Text
+  status       MarketingPublishStatus @default(PUBLISHED)
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  applications MarketingJobApplication[]
+}
+
+model MarketingJobApplication {
+  id          String              @id @default(cuid())
+  jobId       String
+  job         MarketingJobListing @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  coverLetter String              @db.Text
+  resumeUrl   String?
+  status      String              @default("NEW")
+  createdAt   DateTime            @default(now())
+}
+
+model MarketingChangelogEntry {
+  id          String                 @id @default(cuid())
+  version     String
+  title       String
+  items       Json
+  publishedAt DateTime               @default(now())
+  status      MarketingPublishStatus @default(PUBLISHED)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+}
+
+model MarketingIntegration {
+  id          String                 @id @default(cuid())
+  slug        String                 @unique
+  name        String
+  category    String
+  description String
+  content     String?                @db.Text
+  logoUrl     String?
+  docsUrl     String?
+  status      MarketingPublishStatus @default(PUBLISHED)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+}
+
+model MarketingContactSubmission {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String
+  message   String   @db.Text
+  status    String   @default("NEW")
+  createdAt DateTime @default(now())
+}
+
+model MarketingNewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now())
 }

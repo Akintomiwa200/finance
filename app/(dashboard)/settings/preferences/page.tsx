@@ -6,13 +6,11 @@ import {
   Globe,
   Shield,
   Database,
-  Palette,
   Clock,
   ChevronDown,
-  AlertCircle,
   Save,
   RotateCcw,
-  AlignLeft,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -22,9 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
-import { Switch } from "@/src/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -32,13 +28,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-import { Separator } from "@/src/components/ui/separator";
+import { Switch } from "@/src/components/ui/switch";
 import { useToast } from "@/src/components/ui/use-toast";
 import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
-import { usePlatformSettingsStore } from "@/src/store/platform-settings-store";
-import { useSessionSettingsStore } from "@/src/store/session-settings-store";
+import { useSettingsSection } from "@/src/hooks/use-settings-section";
 import type { AccentColor, FontSize } from "@/src/types/platform-settings";
-import type { SessionTimeout } from "@/src/store/session-settings-store";
 
 // --- Constants ---
 const SECTIONS = [
@@ -160,57 +154,93 @@ function PreferenceSection({
 
 // --- Main Page Component ---
 export default function SettingsPreferencesPage() {
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const accentColor = usePlatformSettingsStore((s) => s.accentColor);
-  const fontSize = usePlatformSettingsStore((s) => s.fontSize);
-  const setSettings = usePlatformSettingsStore((s) => s.setSettings);
+  const general = useSettingsSection("general");
+  const regional = useSettingsSection("regional");
 
-  const { inactivityTimeoutMinutes, setInactivityTimeout } =
-    useSessionSettingsStore();
-
-  const [localTimeout, setLocalTimeout] = useState(
-    String(inactivityTimeoutMinutes),
-  );
-  const [localAccentColor, setLocalAccentColor] =
-    useState<AccentColor>(accentColor);
-  const [localFontSize, setLocalFontSize] = useState<FontSize>(fontSize);
+  const [localTimeout, setLocalTimeout] = useState("60");
+  const [localAccentColor, setLocalAccentColor] = useState<AccentColor>("blue");
+  const [localFontSize, setLocalFontSize] = useState<FontSize>("medium");
   const [timezone, setTimezone] = useState("America/New_York");
   const [dateFormat, setDateFormat] = useState("MM/DD/YYYY");
   const [locale, setLocale] = useState("en-US");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 400);
-    return () => clearTimeout(timer);
-  }, []);
+    if (general.data) {
+      setLocalTimeout(
+        String(general.data.sessionTimeout ?? general.data.inactivityTimeoutMinutes ?? 60),
+      );
+      setLocalAccentColor(
+        (general.data.accentColor as AccentColor) ?? "blue",
+      );
+      setLocalFontSize((general.data.fontSize as FontSize) ?? "medium");
+    }
+  }, [general.data]);
 
-  const handleSaveAll = () => {
-    setSettings({ accentColor: localAccentColor, fontSize: localFontSize });
-    setInactivityTimeout(Number(localTimeout) as SessionTimeout);
+  useEffect(() => {
+    if (regional.data) {
+      setTimezone((regional.data.timezone as string) ?? "America/New_York");
+      setDateFormat(
+        (regional.data.dateFormat as string) ?? "MM/DD/YYYY",
+      );
+      setLocale((regional.data.locale as string) ?? "en-US");
+    }
+  }, [regional.data]);
 
-    toast({
-      title: "Preferences saved",
-      description: "Your preferences have been updated successfully.",
-    });
+  const handleSaveAll = async () => {
+    const [gOk, rOk] = await Promise.all([
+      general.saveSection({
+        sessionTimeout: Number(localTimeout),
+        accentColor: localAccentColor,
+        fontSize: localFontSize,
+      }),
+      regional.saveSection({
+        timezone,
+        dateFormat,
+        locale,
+      }),
+    ]);
+
+    if (gOk && rOk) {
+      toast({
+        title: "Preferences saved",
+        description: "All preferences have been updated successfully.",
+      });
+    }
   };
 
   const handleReset = () => {
-    setLocalTimeout(String(inactivityTimeoutMinutes));
-    setLocalAccentColor(accentColor);
-    setLocalFontSize(fontSize);
-    setTimezone("America/New_York");
-    setDateFormat("MM/DD/YYYY");
-    setLocale("en-US");
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+    if (general.data) {
+      setLocalTimeout(
+        String(general.data.sessionTimeout ?? general.data.inactivityTimeoutMinutes ?? 60),
+      );
+      setLocalAccentColor(
+        (general.data.accentColor as AccentColor) ?? "blue",
+      );
+      setLocalFontSize((general.data.fontSize as FontSize) ?? "medium");
+    }
+    if (regional.data) {
+      setTimezone((regional.data.timezone as string) ?? "America/New_York");
+      setDateFormat(
+        (regional.data.dateFormat as string) ?? "MM/DD/YYYY",
+      );
+      setLocale((regional.data.locale as string) ?? "en-US");
+    }
   };
 
-  if (loading) return <SettingsPageSkeleton />;
+  if (general.isLoading || regional.isLoading) return <SettingsPageSkeleton />;
+
+  if (general.error || regional.error) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-20">
+        <AlertCircle className="h-10 w-10 text-destructive" />
+        <p className="text-destructive">
+          {general.error || regional.error}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">

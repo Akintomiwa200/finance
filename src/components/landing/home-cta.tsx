@@ -35,14 +35,17 @@ export function HomeCta() {
           />
 
           {/* Left Content */}
-          <div className="relative z-10 w-full md:w-1/2 flex flex-col items-start space-y-6">
-            <h2 className="text-[var(--lp-text)] text-4xl md:text-5xl font-bold leading-tight tracking-tight">
+          <div className="relative z-10 w-full md:w-1/2 flex flex-col items-start">
+            <h2 className="mb-4 text-4xl font-bold leading-tight tracking-tight text-[var(--lp-text)] md:mb-5 md:text-5xl">
               Ready To Get Started?
             </h2>
-            <p className="text-[var(--lp-text-muted)] text-sm md:text-base font-light leading-relaxed max-w-md">
+            <p className="max-w-md text-sm font-light leading-relaxed text-[var(--lp-text-muted)] md:text-base">
               Join thousands of businesses that trust Audpay to manage their finances. Start your free trial today — no credit card required.
             </p>
-            <button className="bg-[#ff5555] text-white font-semibold text-sm py-3 px-8 rounded-full flex items-center gap-2 hover:brightness-110 transition-all shadow-lg mt-2">
+
+            <div className="h-8 shrink-0" aria-hidden="true" />
+
+            <button className="flex items-center gap-2 rounded-full bg-[#ff5555] px-8 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:brightness-110">
               Get Started Free
             </button>
           </div>

@@ -43,7 +43,7 @@ interface AuthState {
   isSidebarOpen: boolean;
   _hydrated: boolean;
 
-  setUser: (user: User | null) => void;
+  setUser: (userOrFn: User | null | ((prev: User | null) => User | null)) => void;
   updateProfile: (patch: ProfilePatch) => void;
   setToken: (token: string | null) => void;
   logout: () => void;
@@ -65,7 +65,11 @@ export const useAuthStore = create<AuthState>()(
         isSidebarOpen: true,
         _hydrated: false,
 
-        setUser: (user) => set({ user, isAuthenticated: !!user }),
+        setUser: (userOrFn) =>
+          set((state) => ({
+            user: typeof userOrFn === "function" ? userOrFn(state.user) : userOrFn,
+            isAuthenticated: typeof userOrFn === "function" ? !!userOrFn(state.user) : !!userOrFn,
+          })),
         updateProfile: (patch) =>
           set((state) => ({
             user: state.user ? { ...state.user, ...patch } : null,

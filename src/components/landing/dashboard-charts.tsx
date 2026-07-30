@@ -1,5 +1,17 @@
-export function DashboardCharts({ compact = false }: { compact?: boolean }) {
+const BAR_HEIGHTS = [20, 32, 24, 36, 28, 38, 22, 30, 34];
+
+export function DashboardCharts({
+  compact = false,
+  highlightIndex = -1,
+}: {
+  compact?: boolean;
+  highlightIndex?: number;
+}) {
   const h = compact ? 40 : 60;
+  const barWidth = 14;
+  const gap = 4;
+  const startX = 10;
+
   return (
     <svg
       viewBox={`0 0 180 ${h}`}
@@ -7,15 +19,26 @@ export function DashboardCharts({ compact = false }: { compact?: boolean }) {
       style={{ height: h }}
       aria-hidden="true"
     >
-      <rect x="10" y={h - 20} width="14" height="20" rx="2" fill="#4F7EF7" opacity="0.6" />
-      <rect x="28" y={h - 32} width="14" height="32" rx="2" fill="#4F7EF7" />
-      <rect x="46" y={h - 24} width="14" height="24" rx="2" fill="#4F7EF7" opacity="0.7" />
-      <rect x="64" y={h - 36} width="14" height="36" rx="2" fill="#FF5555" />
-      <rect x="82" y={h - 28} width="14" height="28" rx="2" fill="#4F7EF7" opacity="0.8" />
-      <rect x="100" y={h - 38} width="14" height="38" rx="2" fill="#4F7EF7" />
-      <rect x="118" y={h - 22} width="14" height="22" rx="2" fill="#4F7EF7" opacity="0.6" />
-      <rect x="136" y={h - 30} width="14" height="30" rx="2" fill="#4F7EF7" opacity="0.7" />
-      <rect x="154" y={h - 34} width="14" height="34" rx="2" fill="#4F7EF7" />
+      {BAR_HEIGHTS.map((barHeight, index) => {
+        const x = startX + index * (barWidth + gap);
+        const isHighlighted = highlightIndex >= 0 && index === highlightIndex;
+        const fill = isHighlighted ? "#FF5555" : "#4F7EF7";
+        const opacity = isHighlighted ? 1 : 0.55 + (index % 3) * 0.15;
+
+        return (
+          <rect
+            key={index}
+            x={x}
+            y={h - barHeight}
+            width={barWidth}
+            height={barHeight}
+            rx="2"
+            fill={fill}
+            opacity={opacity}
+            className="transition-all duration-300"
+          />
+        );
+      })}
     </svg>
   );
 }

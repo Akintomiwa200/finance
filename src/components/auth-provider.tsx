@@ -23,14 +23,15 @@ function AuthSync({ children }: { children: React.ReactNode }) {
     if (status === "loading") return;
 
     if (status === "authenticated" && session?.user) {
-      setUser({
+      setUser((prev) => ({
+        ...(prev ?? {}),
         id: session.user.id as string,
-        name: session.user.name as string,
-        email: session.user.email as string,
-        role: (session.user as any).role as string,
-        departmentId: (session.user as any).departmentId as string,
-        organizationId: (session.user as any).organizationId as string,
-      });
+        name: (session.user.name as string) || prev?.name || "User",
+        email: (session.user.email as string) || prev?.email || "",
+        role: ((session.user as any).role as string) || prev?.role || "EMPLOYEE",
+        departmentId: ((session.user as any).departmentId as string) || prev?.departmentId || "",
+        organizationId: ((session.user as any).organizationId as string) || prev?.organizationId || "",
+      }));
       setToken("authenticated");
       return;
     }

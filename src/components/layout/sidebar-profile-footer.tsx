@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { ChevronRight, Mail, Shield } from "lucide-react";
 import { useAuthStore } from "@/src/store/auth-store";
 import { cn } from "@/src/lib/utils";
@@ -23,7 +24,18 @@ export function SidebarProfileFooter({
   const initials = getInitials(user?.name);
   const roleLabel = formatRole(user?.role);
   const email = user?.email ?? "—";
-  const avatarUrl = user?.avatarUrl;
+  const [avatarVersion, setAvatarVersion] = useState(0);
+  const avatarUrl = user?.avatarUrl
+    ? user.avatarUrl.startsWith("data:")
+      ? user.avatarUrl
+      : `${user.avatarUrl}?v=${avatarVersion}`
+    : undefined;
+
+  useEffect(() => {
+    if (user?.avatarUrl && !user.avatarUrl.startsWith("data:")) {
+      setAvatarVersion((v) => v + 1);
+    }
+  }, [user?.avatarUrl]);
 
   const textPrimary =
     variant === "admin" ? "text-[var(--admin-nav-item)]" : "text-primary";

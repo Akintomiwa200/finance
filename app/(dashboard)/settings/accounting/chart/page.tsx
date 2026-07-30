@@ -1,14 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  BookOpen,
+  Calculator,
+  Globe,
+  BarChart3,
+  Building2,
+  Save,
+  RotateCcw,
+  AlertCircle,
+  RefreshCw,
+  ArrowLeft,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/src/components/ui/button";
 import {
   Card,
-  CardHeader,
-  CardTitle,
   CardContent,
   CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 import { Switch } from "@/src/components/ui/switch";
@@ -19,708 +32,401 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/src/components/ui/tabs";
-import {
-  ArrowLeft,
-  Save,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle,
-  Settings,
-  Hash,
-  type Icon as LucideIcon,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Badge } from "@/src/components/ui/badge";
+import { useSettingsSection } from "@/src/hooks/use-settings-section";
+import { SettingsPageSkeleton } from "@/src/components/layout/dashboard-skeletons";
+
+const ACCOUNT_TYPES = [
+  { value: "ASSET", label: "Asset", description: "Resources owned by the business (cash, inventory, equipment)" },
+  { value: "LIABILITY", label: "Liability", description: "Obligations owed to others (loans, accounts payable)" },
+  { value: "EQUITY", label: "Equity", description: "Owner's residual interest in the business" },
+  { value: "REVENUE", label: "Revenue", description: "Income earned from business operations" },
+  { value: "EXPENSE", label: "Expense", description: "Costs incurred to generate revenue" },
+];
+
+const CURRENCIES = [
+  { value: "USD", label: "USD — US Dollar" },
+  { value: "EUR", label: "EUR — Euro" },
+  { value: "GBP", label: "GBP — British Pound" },
+  { value: "NGN", label: "NGN — Nigerian Naira" },
+  { value: "JPY", label: "JPY — Japanese Yen" },
+];
+
+const DEFAULTS = {
+  defaultAccountType: "ASSET",
+  enableAutoJournal: true,
+  enableMultiCurrency: false,
+  baseCurrency: "USD",
+  decimalPlaces: 2,
+  enableBudgetTracking: false,
+  enableDepartmentAllocations: false,
+  enableCostCenters: false,
+};
 
 export default function ChartOfAccountsSettings() {
   const router = useRouter();
+  const { data, isLoading, saveSection } = useSettingsSection("accounting");
+
+  const [initialized, setInitialized] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
-  // Account Code Settings
-  const [codeSettings, setCodeSettings] = useState({
-    prefix: {
-      asset: "1",
-      liability: "2",
-      equity: "3",
-      revenue: "4",
-      expense: "5",
-    },
-    separator: "-",
-    autoGenerate: true,
-    startingNumber: 1000,
-    incrementBy: 10,
-  });
+  const [form, setForm] = useState(DEFAULTS);
 
-  // Display Settings
-  const [displaySettings, setDisplaySettings] = useState({
-    showFullCode: true,
-    showAccountType: true,
-    showBalance: true,
-    groupByType: true,
-    defaultView: "list",
-  });
+  useEffect(() => {
+    if (isLoading || initialized || !data) return;
+    setForm({
+      defaultAccountType: (data.defaultAccountType as string) || DEFAULTS.defaultAccountType,
+      enableAutoJournal: (data.enableAutoJournal as boolean) ?? DEFAULTS.enableAutoJournal,
+      enableMultiCurrency: (data.enableMultiCurrency as boolean) ?? DEFAULTS.enableMultiCurrency,
+      baseCurrency: (data.baseCurrency as string) || DEFAULTS.baseCurrency,
+      decimalPlaces: (data.decimalPlaces as number) ?? DEFAULTS.decimalPlaces,
+      enableBudgetTracking: (data.enableBudgetTracking as boolean) ?? DEFAULTS.enableBudgetTracking,
+      enableDepartmentAllocations: (data.enableDepartmentAllocations as boolean) ?? DEFAULTS.enableDepartmentAllocations,
+      enableCostCenters: (data.enableCostCenters as boolean) ?? DEFAULTS.enableCostCenters,
+    });
+    setInitialized(true);
+  }, [data, isLoading, initialized]);
 
-  // Default Accounts
-  const [defaultAccounts, setDefaultAccounts] = useState({
-    cash: "",
-    accountsReceivable: "",
-    inventory: "",
-    accountsPayable: "",
-    retainedEarnings: "",
-    salesRevenue: "",
-    costOfSales: "",
-  });
+  useEffect(() => {
+    if (!isLoading && !initialized) setInitialized(true);
+  }, [isLoading, initialized]);
 
-  // Account Types Configuration
-  const [accountTypes, setAccountTypes] = useState([
-    { id: "asset", name: "Assets", enabled: true, icon: "Wallet" },
-    { id: "liability", name: "Liabilities", enabled: true, icon: "CreditCard" },
-    { id: "equity", name: "Equity", enabled: true, icon: "PiggyBank" },
-    { id: "revenue", name: "Revenue", enabled: true, icon: "TrendingUp" },
-    { id: "expense", name: "Expenses", enabled: true, icon: "TrendingDown" },
-  ]);
+  useEffect(() => {
+    if (!initialized || !data) return;
+    const changed =
+      form.defaultAccountType !== ((data.defaultAccountType as string) || DEFAULTS.defaultAccountType) ||
+      form.enableAutoJournal !== ((data.enableAutoJournal as boolean) ?? DEFAULTS.enableAutoJournal) ||
+      form.enableMultiCurrency !== ((data.enableMultiCurrency as boolean) ?? DEFAULTS.enableMultiCurrency) ||
+      form.baseCurrency !== ((data.baseCurrency as string) || DEFAULTS.baseCurrency) ||
+      form.decimalPlaces !== ((data.decimalPlaces as number) ?? DEFAULTS.decimalPlaces) ||
+      form.enableBudgetTracking !== ((data.enableBudgetTracking as boolean) ?? DEFAULTS.enableBudgetTracking) ||
+      form.enableDepartmentAllocations !== ((data.enableDepartmentAllocations as boolean) ?? DEFAULTS.enableDepartmentAllocations) ||
+      form.enableCostCenters !== ((data.enableCostCenters as boolean) ?? DEFAULTS.enableCostCenters);
+    setHasChanges(changed);
+  }, [form, data, initialized]);
+
+  const update = <K extends keyof typeof form>(field: K, value: (typeof form)[K]) =>
+    setForm((prev) => ({ ...prev, [field]: value }));
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSaving(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    try {
+      const ok = await saveSection(form);
+      if (ok) setHasChanges(false);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
+  const handleReset = () => {
+    if (!data) return;
+    setForm({
+      defaultAccountType: (data.defaultAccountType as string) || DEFAULTS.defaultAccountType,
+      enableAutoJournal: (data.enableAutoJournal as boolean) ?? DEFAULTS.enableAutoJournal,
+      enableMultiCurrency: (data.enableMultiCurrency as boolean) ?? DEFAULTS.enableMultiCurrency,
+      baseCurrency: (data.baseCurrency as string) || DEFAULTS.baseCurrency,
+      decimalPlaces: (data.decimalPlaces as number) ?? DEFAULTS.decimalPlaces,
+      enableBudgetTracking: (data.enableBudgetTracking as boolean) ?? DEFAULTS.enableBudgetTracking,
+      enableDepartmentAllocations: (data.enableDepartmentAllocations as boolean) ?? DEFAULTS.enableDepartmentAllocations,
+      enableCostCenters: (data.enableCostCenters as boolean) ?? DEFAULTS.enableCostCenters,
+    });
+  };
+
+  if (isLoading && !initialized) return <SettingsPageSkeleton />;
+
+  const samplePreview = (1234567.89).toLocaleString("en-US", {
+    minimumFractionDigits: form.decimalPlaces,
+    maximumFractionDigits: form.decimalPlaces,
+  });
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="gap-2"
-          >
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
-            Back
           </Button>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-              <Settings className="h-6 w-6" />
-              Chart of Accounts Settings
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <BookOpen className="h-8 w-8 text-primary" />
+              Chart of Accounts
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Configure account numbering, display options, and defaults
+            <p className="text-muted-foreground">
+              Configure default account types, journal behaviour, and tracking options
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => router.refresh()}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleReset} disabled={!hasChanges || isSaving}>
+            <RotateCcw className="h-4 w-4 mr-2" />
             Reset
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
             {isSaving ? (
               <>
-                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                 Saving...
               </>
             ) : (
               <>
-                <Save className="mr-2 h-4 w-4" />
-                Save Settings
+                <Save className="h-4 w-4 mr-2" />
+                Save Changes
               </>
             )}
           </Button>
         </div>
       </div>
 
-      {/* Success Message */}
-      {saveSuccess && (
-        <Card className="border-green-200 bg-green-50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-green-700">
-              <CheckCircle className="h-5 w-5" />
-              <span>Settings saved successfully!</span>
-            </div>
-          </CardContent>
-        </Card>
+      {hasChanges && (
+        <div className="flex items-center gap-3 rounded-lg border border-yellow-600/20 bg-yellow-50 dark:bg-yellow-950/30 p-4 text-sm text-yellow-800 dark:text-yellow-300">
+          <AlertCircle className="h-5 w-5 shrink-0" />
+          <span>You have unsaved changes. Don&apos;t forget to save.</span>
+        </div>
       )}
 
-      {/* Settings Tabs */}
-      <Tabs defaultValue="numbering" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="numbering">Account Numbering</TabsTrigger>
-          <TabsTrigger value="display">Display Settings</TabsTrigger>
-          <TabsTrigger value="defaults">Default Accounts</TabsTrigger>
-          <TabsTrigger value="types">Account Types</TabsTrigger>
-        </TabsList>
-
-        {/* Account Numbering Tab */}
-        <TabsContent value="numbering" className="space-y-4 mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Account Code Prefixes</CardTitle>
+      {/* Default Account Type */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Calculator className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Default Account Type</CardTitle>
               <CardDescription>
-                Define the prefix for each account type
+                Pre-selected type when creating a new account in the chart of accounts
               </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Assets Prefix</Label>
-                  <Input
-                    value={codeSettings.prefix.asset}
-                    onChange={(e) =>
-                      setCodeSettings((prev) => ({
-                        ...prev,
-                        prefix: { ...prev.prefix, asset: e.target.value },
-                      }))
-                    }
-                    className="mt-1 font-mono"
-                    placeholder="1"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Accounts will start with this prefix (e.g., 1-1000)
-                  </p>
-                </div>
-                <div>
-                  <Label>Liabilities Prefix</Label>
-                  <Input
-                    value={codeSettings.prefix.liability}
-                    onChange={(e) =>
-                      setCodeSettings((prev) => ({
-                        ...prev,
-                        prefix: { ...prev.prefix, liability: e.target.value },
-                      }))
-                    }
-                    className="mt-1 font-mono"
-                    placeholder="2"
-                  />
-                </div>
-                <div>
-                  <Label>Equity Prefix</Label>
-                  <Input
-                    value={codeSettings.prefix.equity}
-                    onChange={(e) =>
-                      setCodeSettings((prev) => ({
-                        ...prev,
-                        prefix: { ...prev.prefix, equity: e.target.value },
-                      }))
-                    }
-                    className="mt-1 font-mono"
-                    placeholder="3"
-                  />
-                </div>
-                <div>
-                  <Label>Revenue Prefix</Label>
-                  <Input
-                    value={codeSettings.prefix.revenue}
-                    onChange={(e) =>
-                      setCodeSettings((prev) => ({
-                        ...prev,
-                        prefix: { ...prev.prefix, revenue: e.target.value },
-                      }))
-                    }
-                    className="mt-1 font-mono"
-                    placeholder="4"
-                  />
-                </div>
-                <div>
-                  <Label>Expenses Prefix</Label>
-                  <Input
-                    value={codeSettings.prefix.expense}
-                    onChange={(e) =>
-                      setCodeSettings((prev) => ({
-                        ...prev,
-                        prefix: { ...prev.prefix, expense: e.target.value },
-                      }))
-                    }
-                    className="mt-1 font-mono"
-                    placeholder="5"
-                  />
-                </div>
-                <div>
-                  <Label>Code Separator</Label>
-                  <Input
-                    value={codeSettings.separator}
-                    onChange={(e) =>
-                      setCodeSettings((prev) => ({
-                        ...prev,
-                        separator: e.target.value,
-                      }))
-                    }
-                    className="mt-1 font-mono"
-                    placeholder="-"
-                    maxLength={1}
-                  />
-                </div>
-              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {ACCOUNT_TYPES.map((type) => (
+              <button
+                key={type.value}
+                type="button"
+                onClick={() => update("defaultAccountType", type.value)}
+                className={`flex flex-col items-start rounded-lg border p-4 text-left transition-all ${
+                  form.defaultAccountType === type.value
+                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                    : "border-border hover:bg-muted/50"
+                }`}
+              >
+                <span className="font-medium text-sm">{type.label}</span>
+                <span className="text-xs text-muted-foreground mt-1">{type.description}</span>
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-              <div className="border-t pt-4 mt-4">
-                <h3 className="font-semibold mb-4">Auto-generation Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Auto-generate Account Codes</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Automatically generate account codes based on prefix and
-                        numbering
-                      </p>
-                    </div>
-                    <Switch
-                      checked={codeSettings.autoGenerate}
-                      onCheckedChange={(checked) =>
-                        setCodeSettings((prev) => ({
-                          ...prev,
-                          autoGenerate: checked,
-                        }))
-                      }
-                    />
-                  </div>
-
-                  {codeSettings.autoGenerate && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label>Starting Number</Label>
-                        <Input
-                          type="number"
-                          value={codeSettings.startingNumber}
-                          onChange={(e) =>
-                            setCodeSettings((prev) => ({
-                              ...prev,
-                              startingNumber: parseInt(e.target.value) || 1000,
-                            }))
-                          }
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label>Increment By</Label>
-                        <Input
-                          type="number"
-                          value={codeSettings.incrementBy}
-                          onChange={(e) =>
-                            setCodeSettings((prev) => ({
-                              ...prev,
-                              incrementBy: parseInt(e.target.value) || 10,
-                            }))
-                          }
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="p-3 bg-muted rounded-lg">
-                    <p className="text-sm font-medium">Preview</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Next asset account code: {codeSettings.prefix.asset}
-                      {codeSettings.separator}
-                      {codeSettings.startingNumber}
-                      <br />
-                      Next liability account code:{" "}
-                      {codeSettings.prefix.liability}
-                      {codeSettings.separator}
-                      {codeSettings.startingNumber}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Display Settings Tab */}
-        <TabsContent value="display" className="space-y-4 mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Display Preferences</CardTitle>
+      {/* Auto Journal */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+              <RefreshCw className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Auto Journal</CardTitle>
               <CardDescription>
-                Configure how the chart of accounts is displayed
+                Automatically create journal entries from transactions
               </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Show Full Account Code</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Display the complete account code including prefix
-                    </p>
-                  </div>
-                  <Switch
-                    checked={displaySettings.showFullCode}
-                    onCheckedChange={(checked) =>
-                      setDisplaySettings((prev) => ({
-                        ...prev,
-                        showFullCode: checked,
-                      }))
-                    }
-                  />
-                </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <Label htmlFor="autoJournal">Enable Auto Journal</Label>
+              <p className="text-xs text-muted-foreground">
+                When enabled, journal entries are generated automatically whenever invoices, payments, or expenses are created
+              </p>
+            </div>
+            <Switch
+              id="autoJournal"
+              checked={form.enableAutoJournal}
+              onCheckedChange={(v) => update("enableAutoJournal", v)}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Show Account Type</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Display account type badge next to each account
-                    </p>
-                  </div>
-                  <Switch
-                    checked={displaySettings.showAccountType}
-                    onCheckedChange={(checked) =>
-                      setDisplaySettings((prev) => ({
-                        ...prev,
-                        showAccountType: checked,
-                      }))
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Show Account Balance</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Display current balance in the accounts list
-                    </p>
-                  </div>
-                  <Switch
-                    checked={displaySettings.showBalance}
-                    onCheckedChange={(checked) =>
-                      setDisplaySettings((prev) => ({
-                        ...prev,
-                        showBalance: checked,
-                      }))
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Group by Account Type</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Organize accounts by their type in the list view
-                    </p>
-                  </div>
-                  <Switch
-                    checked={displaySettings.groupByType}
-                    onCheckedChange={(checked) =>
-                      setDisplaySettings((prev) => ({
-                        ...prev,
-                        groupByType: checked,
-                      }))
-                    }
-                  />
-                </div>
-
-                <div className="border-t pt-4">
-                  <Label>Default View</Label>
-                  <Select
-                    value={displaySettings.defaultView}
-                    onValueChange={(value) =>
-                      setDisplaySettings((prev) => ({
-                        ...prev,
-                        defaultView: value as "list" | "hierarchy",
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="list">List View</SelectItem>
-                      <SelectItem value="hierarchy">Hierarchy View</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Default view when opening the chart of accounts page
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Default Accounts Tab */}
-        <TabsContent value="defaults" className="space-y-4 mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Default Accounts</CardTitle>
+      {/* Multi-Currency */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+              <Globe className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Multi-Currency</CardTitle>
               <CardDescription>
-                Set default accounts for common transactions
+                Enable transactions and reporting in multiple currencies
               </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Default Cash Account</Label>
-                  <Select
-                    value={defaultAccounts.cash}
-                    onValueChange={(value) =>
-                      setDefaultAccounts((prev) => ({
-                        ...prev,
-                        cash: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1110">
-                        1110 - Cash - Operating
-                      </SelectItem>
-                      <SelectItem value="1120">
-                        1120 - Cash - Savings
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Used for cash transactions and journal entries
-                  </p>
-                </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <Label htmlFor="multiCurrency">Enable Multi-Currency</Label>
+              <p className="text-xs text-muted-foreground">
+                Allow accounts and transactions in foreign currencies with automatic exchange rate conversion
+              </p>
+            </div>
+            <Switch
+              id="multiCurrency"
+              checked={form.enableMultiCurrency}
+              onCheckedChange={(v) => update("enableMultiCurrency", v)}
+            />
+          </div>
 
-                <div>
-                  <Label>Default Accounts Receivable</Label>
-                  <Select
-                    value={defaultAccounts.accountsReceivable}
-                    onValueChange={(value) =>
-                      setDefaultAccounts((prev) => ({
-                        ...prev,
-                        accountsReceivable: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1130">
-                        1130 - Accounts Receivable
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Default Inventory Account</Label>
-                  <Select
-                    value={defaultAccounts.inventory}
-                    onValueChange={(value) =>
-                      setDefaultAccounts((prev) => ({
-                        ...prev,
-                        inventory: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1140">1140 - Inventory</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Default Accounts Payable</Label>
-                  <Select
-                    value={defaultAccounts.accountsPayable}
-                    onValueChange={(value) =>
-                      setDefaultAccounts((prev) => ({
-                        ...prev,
-                        accountsPayable: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2100">
-                        2100 - Accounts Payable
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Default Retained Earnings</Label>
-                  <Select
-                    value={defaultAccounts.retainedEarnings}
-                    onValueChange={(value) =>
-                      setDefaultAccounts((prev) => ({
-                        ...prev,
-                        retainedEarnings: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="3200">
-                        3200 - Retained Earnings
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Default Sales Revenue</Label>
-                  <Select
-                    value={defaultAccounts.salesRevenue}
-                    onValueChange={(value) =>
-                      setDefaultAccounts((prev) => ({
-                        ...prev,
-                        salesRevenue: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="4100">4100 - Sales Revenue</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Default Cost of Sales</Label>
-                  <Select
-                    value={defaultAccounts.costOfSales}
-                    onValueChange={(value) =>
-                      setDefaultAccounts((prev) => ({
-                        ...prev,
-                        costOfSales: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5100">5100 - Cost of Sales</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+          {form.enableMultiCurrency && (
+            <>
+              <div className="h-px bg-border" />
+              <div className="space-y-2">
+                <Label>Base Currency</Label>
+                <Select
+                  value={form.baseCurrency}
+                  onValueChange={(v) => update("baseCurrency", v)}
+                >
+                  <SelectTrigger className="max-w-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRENCIES.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Home currency used for consolidated financial reporting
+                </p>
               </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
-              <div className="p-3 bg-blue-50 rounded-lg mt-4">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-blue-800">
-                      Why set default accounts?
-                    </p>
-                    <p className="text-xs text-blue-700 mt-1">
-                      Default accounts will be automatically selected when
-                      creating new transactions, saving time and ensuring
-                      consistency across your accounting entries.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Account Types Tab */}
-        <TabsContent value="types" className="space-y-4 mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Account Types Configuration</CardTitle>
+      {/* Decimal Places */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+              <BarChart3 className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Decimal Places</CardTitle>
               <CardDescription>
-                Enable or disable account types and configure their properties
+                Number of decimal places for monetary amounts
               </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                {accountTypes.map((type) => (
-                  <div
-                    key={type.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-2 h-2 rounded-full ${
-                            type.id === "asset"
-                              ? "bg-blue-500"
-                              : type.id === "liability"
-                                ? "bg-red-500"
-                                : type.id === "equity"
-                                  ? "bg-green-500"
-                                  : type.id === "revenue"
-                                    ? "bg-purple-500"
-                                    : "bg-orange-500"
-                          }`}
-                        />
-                        <Label className="font-medium">{type.name}</Label>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {type.id === "asset" &&
-                          "Resources owned by the company"}
-                        {type.id === "liability" &&
-                          "Obligations owed to others"}
-                        {type.id === "equity" &&
-                          "Owner's interest in the company"}
-                        {type.id === "revenue" &&
-                          "Income from business operations"}
-                        {type.id === "expense" &&
-                          "Costs incurred to generate revenue"}
-                      </p>
-                    </div>
-                    <Switch
-                      checked={type.enabled}
-                      onCheckedChange={(checked) =>
-                        setAccountTypes((prev) =>
-                          prev.map((t) =>
-                            t.id === type.id ? { ...t, enabled: checked } : t,
-                          ),
-                        )
-                      }
-                    />
-                  </div>
-                ))}
-              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="decimalPlaces">Decimal Places</Label>
+            <Input
+              id="decimalPlaces"
+              type="number"
+              min={0}
+              max={6}
+              value={form.decimalPlaces}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                if (v >= 0 && v <= 6) update("decimalPlaces", v);
+              }}
+              className="max-w-[120px]"
+            />
+            <p className="text-xs text-muted-foreground">
+              Values between 0 and 6 are supported
+            </p>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-4 space-y-1">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Preview</p>
+            <p className="text-lg font-mono font-semibold">
+              {samplePreview}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Example of how monetary amounts will be displayed
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
-              <div className="border-t pt-4 mt-4">
-                <h3 className="font-semibold mb-3">Normal Balances</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="p-3 bg-muted rounded-lg">
-                    <p className="text-sm font-medium">Assets & Expenses</p>
-                    <p className="text-xs text-muted-foreground">
-                      Normal Balance:{" "}
-                      <span className="text-blue-600 font-medium">Debit</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Increases are recorded as debits
-                    </p>
-                  </div>
-                  <div className="p-3 bg-muted rounded-lg">
-                    <p className="text-sm font-medium">
-                      Liabilities, Equity & Revenue
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Normal Balance:{" "}
-                      <span className="text-red-600 font-medium">Credit</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Increases are recorded as credits
-                    </p>
-                  </div>
-                </div>
+      {/* Tracking Features */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400">
+              <Building2 className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Tracking Features</CardTitle>
+              <CardDescription>
+                Enable budgeting, department allocations, and cost centre tracking
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="budgetTracking">Budget Tracking</Label>
+                <Switch
+                  id="budgetTracking"
+                  checked={form.enableBudgetTracking}
+                  onCheckedChange={(v) => update("enableBudgetTracking", v)}
+                />
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              <p className="text-xs text-muted-foreground">
+                Track budgets against actuals on accounts and generate variance reports
+              </p>
+              <Badge variant={form.enableBudgetTracking ? "default" : "secondary"}>
+                {form.enableBudgetTracking ? "Enabled" : "Disabled"}
+              </Badge>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="deptAlloc">Dept. Allocations</Label>
+                <Switch
+                  id="deptAlloc"
+                  checked={form.enableDepartmentAllocations}
+                  onCheckedChange={(v) => update("enableDepartmentAllocations", v)}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Allocate income and expenses to specific departments for per-department reporting
+              </p>
+              <Badge variant={form.enableDepartmentAllocations ? "default" : "secondary"}>
+                {form.enableDepartmentAllocations ? "Enabled" : "Disabled"}
+              </Badge>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="costCenters">Cost Centres</Label>
+                <Switch
+                  id="costCenters"
+                  checked={form.enableCostCenters}
+                  onCheckedChange={(v) => update("enableCostCenters", v)}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Track costs by business unit, project, or location for granular analysis
+              </p>
+              <Badge variant={form.enableCostCenters ? "default" : "secondary"}>
+                {form.enableCostCenters ? "Enabled" : "Disabled"}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/src/lib/utils";
+import React from "react";
 
 interface AlertDialogProps {
   open?: boolean;
@@ -9,12 +10,23 @@ interface AlertDialogProps {
 }
 
 export function AlertDialog({ open, onOpenChange, children }: AlertDialogProps) {
-  if (!open) return null;
+  const trigger = React.Children.toArray(children).find(
+    (child) => React.isValidElement(child) && child.type === AlertDialogTrigger,
+  );
+  const content = React.Children.toArray(children).find(
+    (child) => React.isValidElement(child) && child.type === AlertDialogContent,
+  );
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div onClick={() => onOpenChange?.(false)} className="absolute inset-0" />
-      {children}
-    </div>
+    <>
+      {trigger}
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div onClick={() => onOpenChange?.(false)} className="absolute inset-0" />
+          {content}
+        </div>
+      )}
+    </>
   );
 }
 

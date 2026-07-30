@@ -52,12 +52,12 @@ export function HomeFooter() {
           {/* Company */}
           <div>
             <h3 className="text-base font-bold uppercase tracking-wider text-[var(--lp-text)] mb-5">Company</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               {[
                 { label: "About Us", href: "/about" },
-                { label: "Careers", href: "#" },
-                { label: "Blog", href: "#" },
-                { label: "Contact", href: "#" },
+                { label: "Careers", href: "/careers" },
+                { label: "Blog", href: "/blog" },
+                { label: "Contact", href: "/contact" },
               ].map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="text-base text-[var(--lp-text-muted)] hover:text-[#ff5555] transition-colors">
@@ -71,12 +71,12 @@ export function HomeFooter() {
           {/* Product */}
           <div>
             <h3 className="text-base font-bold uppercase tracking-wider text-[var(--lp-text)] mb-5">Product</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               {[
                 { label: "Features", href: "/features" },
                 { label: "Pricing", href: "/pricing" },
-                { label: "Integrations", href: "#" },
-                { label: "Changelog", href: "#" },
+                { label: "Integrations", href: "/integrations" },
+                { label: "Changelog", href: "/changelog" },
               ].map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="text-base text-[var(--lp-text-muted)] hover:text-[#ff5555] transition-colors">
@@ -90,12 +90,12 @@ export function HomeFooter() {
           {/* Legal */}
           <div>
             <h3 className="text-base font-bold uppercase tracking-wider text-[var(--lp-text)] mb-5">Legal</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               {[
-                { label: "Terms of Service", href: "#" },
-                { label: "Privacy Policy", href: "#" },
-                { label: "Cookie Policy", href: "#" },
-                { label: "GDPR", href: "#" },
+                { label: "Terms of Service", href: "/terms" },
+                { label: "Privacy Policy", href: "/privacy" },
+                { label: "Cookie Policy", href: "/cookies" },
+                { label: "GDPR", href: "/gdpr" },
               ].map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="text-base text-[var(--lp-text-muted)] hover:text-[#ff5555] transition-colors">
@@ -109,10 +109,30 @@ export function HomeFooter() {
           {/* Newsletter */}
           <div className="sm:col-span-2 lg:col-span-1">
             <h3 className="text-base font-bold uppercase tracking-wider text-[var(--lp-text)] mb-5">Stay Updated</h3>
-            <p className="text-base text-[var(--lp-text-muted)] mb-8 leading-relaxed">
+            <p className="text-base leading-relaxed text-[var(--lp-text-muted)]">
               Get the latest on product updates, finance tips, and industry insights.
             </p>
-            <form onSubmit={(e) => e.preventDefault()} className="flex">
+
+            <div className="h-8 shrink-0" aria-hidden="true" />
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!email.trim()) return;
+                try {
+                  const res = await fetch("/api/marketing/newsletter", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: email.trim() }),
+                  });
+                  const json = await res.json();
+                  if (json.success) setEmail("");
+                } catch {
+                  // silent fail for footer UX
+                }
+              }}
+              className="flex"
+            >
               <input
                 type="email"
                 placeholder="Enter your email"

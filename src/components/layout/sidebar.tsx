@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
 import { useState } from "react";
 import { useMobileSidebar } from "@/src/context/mobile-sidebar-context";
 import { useAuthStore } from "@/src/store/auth-store";
@@ -881,12 +880,16 @@ function SidebarHeader({
   onToggle,
   orgName,
   orgLogo,
+  userRole,
 }: {
   collapsed: boolean;
   onToggle: () => void;
   orgName?: string;
   orgLogo?: string | null;
+  userRole?: string;
 }) {
+  const roleLabel = userRole ? userRole.charAt(0) + userRole.slice(1).toLowerCase() : "";
+
   return (
     <div
       className={`flex items-center border-b border-light min-h-[60px] ${
@@ -895,16 +898,17 @@ function SidebarHeader({
     >
       {!collapsed && (
         <Link href="/dashboard" className="flex min-w-0 items-center gap-2.5 no-underline">
-          {orgName ? (
-            <>
-              <CompanyLogo name={orgName} logo={orgLogo} size={28} />
-              <span className="truncate text-sm font-semibold text-primary">
-                {orgName}
-              </span>
-            </>
-          ) : (
-            <Image src="/logo.svg" alt="Finance App" width={28} height={28} className="shrink-0" />
-          )}
+          <CompanyLogo name={orgName || "Audpay"} logo={orgLogo} size={28} />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-primary leading-tight">
+              {orgName || "Audpay"}
+            </p>
+            {roleLabel && (
+              <p className="truncate text-[11px] text-muted leading-tight">
+                {roleLabel}
+              </p>
+            )}
+          </div>
         </Link>
       )}
 
@@ -938,6 +942,7 @@ export function Sidebar() {
           onToggle={() => setCollapsed((v) => !v)}
           orgName={organization?.name}
           orgLogo={organization?.logo}
+          userRole={user?.role}
         />
         <NavContent collapsed={collapsed} />
         <SidebarFooter collapsed={collapsed} />
@@ -966,22 +971,18 @@ export function Sidebar() {
       >
         <div className="flex shrink-0 items-center gap-3 border-b border-light px-4 py-4 min-h-[60px]">
           <Link href="/dashboard" className="shrink-0 no-underline" onClick={closeMobile}>
-            {organization?.name ? (
-              <CompanyLogo
-                name={organization.name}
-                logo={organization.logo}
-                size={28}
-              />
-            ) : (
-              <Image src="/logo.svg" alt="Finance App" width={28} height={28} className="shrink-0" />
-            )}
+            <CompanyLogo
+              name={organization?.name || "Audpay"}
+              logo={organization?.logo}
+              size={28}
+            />
           </Link>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-primary leading-tight truncate">
-              {organization?.name || user?.name || "Finance App"}
+              {organization?.name || "Audpay"}
             </p>
             <p className="text-xs text-muted leading-tight truncate capitalize">
-              {user?.role?.replace(/_/g, " ") || ""}
+              {user?.role ? user.role.charAt(0) + user.role.slice(1).toLowerCase() : ""}
             </p>
           </div>
           <button

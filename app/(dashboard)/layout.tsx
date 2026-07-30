@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/src/components/layout/sidebar";
 import { Navbar } from "@/src/components/layout/navbar";
@@ -19,6 +19,7 @@ import { useApprovalStore } from "@/src/store/approval-store";
 import { useBudgetStore } from "@/src/store/budget-store";
 import { useTransactionStore } from "@/src/store/transaction-store";
 import { useTaxStore } from "@/src/store/tax-store";
+import { useTenantSettingsStore } from "@/src/store/tenant-settings-store";
 
 function DashboardPollingProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -32,6 +33,7 @@ function DashboardPollingProvider({ children }: { children: React.ReactNode }) {
     useBudgetStore.getState().startPolling();
     useTransactionStore.getState().startPolling();
     useTaxStore.getState().startPolling();
+    useTenantSettingsStore.getState().startPolling();
 
     return () => {
       useLedgerStore.getState().stopPolling();
@@ -44,6 +46,7 @@ function DashboardPollingProvider({ children }: { children: React.ReactNode }) {
       useBudgetStore.getState().stopPolling();
       useTransactionStore.getState().stopPolling();
       useTaxStore.getState().stopPolling();
+      useTenantSettingsStore.getState().stopPolling();
     };
   }, []);
 
@@ -57,16 +60,26 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const { isAuthenticated, _hydrated, user } = useAuthStore();
+  const redirectRef = useRef(false);
 
   useEffect(() => {
-    if (_hydrated) {
-      if (!isAuthenticated) {
+    if (!_hydrated) return;
+
+    if (!isAuthenticated) {
+      if (!redirectRef.current) {
+        redirectRef.current = true;
         router.push("/login");
-      } else if (user?.role === "SUPER_ADMIN") {
+      }
+      return;
+    }
+
+    if (user?.role === "SUPER_ADMIN") {
+      if (!redirectRef.current) {
+        redirectRef.current = true;
         router.push("/admin/dashboard");
       }
     }
-  }, [_hydrated, isAuthenticated, user, router]);
+  }, [_hydrated, isAuthenticated, user?.role, router]);
 
   if (!_hydrated) return <DashboardShellSkeleton />;
   if (!isAuthenticated) return <DashboardShellSkeleton />;

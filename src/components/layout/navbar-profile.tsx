@@ -25,9 +25,22 @@ export function NavbarProfile({
   const logout = useAuthStore((s) => s.logout);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [avatarVersion, setAvatarVersion] = useState(0);
 
   const initials = getInitials(user?.name);
-  const roleLabel = user?.jobTitle || formatRole(user?.role);
+  const roleLabel = (user?.jobTitle && user.jobTitle !== "null") ? user.jobTitle : formatRole(user?.role);
+
+  const avatarUrl = user?.avatarUrl
+    ? user.avatarUrl.startsWith("data:")
+      ? user.avatarUrl
+      : `${user.avatarUrl}?v=${avatarVersion}`
+    : undefined;
+
+  useEffect(() => {
+    if (user?.avatarUrl && !user.avatarUrl.startsWith("data:")) {
+      setAvatarVersion((v) => v + 1);
+    }
+  }, [user?.avatarUrl]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -104,10 +117,10 @@ export function NavbarProfile({
         aria-haspopup="true"
       >
         <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full ring-2 ring-emerald-500 ring-offset-2 ring-offset-background">
-          {user?.avatarUrl ? (
+          {avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={user.avatarUrl}
+              src={avatarUrl}
               alt=""
               className="h-full w-full object-cover"
             />

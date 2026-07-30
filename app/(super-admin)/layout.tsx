@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/src/store/auth-store";
 import { SuperAdminSidebar } from "@/src/components/layout/super-admin-sidebar";
@@ -15,16 +15,26 @@ export default function SuperAdminLayout({
 }) {
   const router = useRouter();
   const { isAuthenticated, _hydrated, user } = useAuthStore();
+  const redirectRef = useRef(false);
 
   useEffect(() => {
-    if (_hydrated) {
-      if (!isAuthenticated) {
+    if (!_hydrated) return;
+
+    if (!isAuthenticated) {
+      if (!redirectRef.current) {
+        redirectRef.current = true;
         router.push("/login");
-      } else if (user?.role !== "SUPER_ADMIN") {
+      }
+      return;
+    }
+
+    if (user?.role !== "SUPER_ADMIN") {
+      if (!redirectRef.current) {
+        redirectRef.current = true;
         router.push("/dashboard");
       }
     }
-  }, [_hydrated, isAuthenticated, user, router]);
+  }, [_hydrated, isAuthenticated, user?.role, router]);
 
   if (!_hydrated) return <AdminShellSkeleton />;
   if (!isAuthenticated || user?.role !== "SUPER_ADMIN") return <AdminShellSkeleton />;

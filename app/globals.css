@@ -75,6 +75,7 @@
   --font-nunito: 'Nunito Sans', ui-sans-serif, sans-serif;
   --font-dm-sans: 'DM Sans', ui-sans-serif, sans-serif;
   --font-bricolage: 'Bricolage Grotesque', ui-sans-serif, sans-serif;
+  --font-landing: var(--font-jakarta), 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
@@ -105,6 +106,24 @@
     --lp-faq-card-bg: #ffffff;
     --lp-cta-card-bg: #ffffff;
     --lp-faq-number-bg: rgba(255, 85, 85, 0.1);
+    --lp-stats-glass-bg: rgba(255, 255, 255, 0.42);
+    --lp-stats-glass-border: rgba(255, 255, 255, 0.72);
+    --lp-stats-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    --lp-stats-divider: rgba(0, 0, 0, 0.08);
+    --lp-stats-glow-pink: rgba(255, 160, 200, 0.55);
+    --lp-stats-glow-purple: rgba(168, 130, 255, 0.45);
+    --lp-stats-glow-blue: rgba(120, 200, 255, 0.5);
+    --lp-team-section-bg: #f7f9fc;
+    --lp-team-card-bg: #ffffff;
+    --lp-team-card-border: rgba(0, 0, 0, 0.06);
+    --lp-team-card-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    --lp-team-image-bg: #eef1f5;
+    --lp-team-social-bg: #111111;
+    --lp-team-social-fg: #ffffff;
+    --lp-map-dot: #d8d8d8;
+    --lp-faq-row-bg: #f5f5f5;
+    --lp-faq-row-border: rgba(0, 0, 0, 0.06);
+    --lp-font: var(--font-jakarta), 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
     /* Brand accent (Audpay coral — matches home page) */
     --accent-50: #fff1f1;
@@ -218,6 +237,23 @@
     --lp-faq-card-bg: #222222;
     --lp-cta-card-bg: #222222;
     --lp-faq-number-bg: rgba(255, 85, 85, 0.12);
+    --lp-stats-glass-bg: rgba(255, 255, 255, 0.07);
+    --lp-stats-glass-border: rgba(255, 255, 255, 0.14);
+    --lp-stats-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    --lp-stats-divider: rgba(255, 255, 255, 0.1);
+    --lp-stats-glow-pink: rgba(255, 120, 180, 0.38);
+    --lp-stats-glow-purple: rgba(168, 85, 247, 0.32);
+    --lp-stats-glow-blue: rgba(56, 189, 248, 0.36);
+    --lp-team-section-bg: #141414;
+    --lp-team-card-bg: #222222;
+    --lp-team-card-border: rgba(255, 255, 255, 0.08);
+    --lp-team-card-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+    --lp-team-image-bg: #1a1a1a;
+    --lp-team-social-bg: #ffffff;
+    --lp-team-social-fg: #111111;
+    --lp-map-dot: #404040;
+    --lp-faq-row-bg: #222222;
+    --lp-faq-row-border: rgba(255, 255, 255, 0.08);
 
     /* Brand accent (dark) */
     --accent-50: #3d1515;
@@ -381,8 +417,22 @@
   h4 { font-size: 1.125rem; }
   h5 { font-size: 1rem; }
   h6 { font-size: 0.875rem; }
+  p { margin: 0; }
 }
-p { margin: 0; }
+
+.landing-root {
+  font-family: var(--lp-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.landing-root h1,
+.landing-root h2,
+.landing-root h3 {
+  font-family: var(--lp-font);
+  letter-spacing: -0.03em;
+}
 
 small, .text-sm { font-size: 0.75rem; line-height: 1.5; }
 .text-xs { font-size: 0.625rem; line-height: 1.5; }
@@ -858,4 +908,25 @@ tbody tr:hover { background-color: var(--bg-surface); }
 
 @media (max-width: 1024px) {
   .charts-grid { grid-template-columns: 1fr; }
+}
+
+/* About page — glass stats grid dividers (theme-aware) */
+.about-stats-grid > div {
+  border-color: var(--lp-stats-divider);
+}
+
+@media (max-width: 767px) {
+  .about-stats-grid > div:nth-child(odd) {
+    border-right-width: 1px;
+  }
+
+  .about-stats-grid > div:nth-child(-n + 2) {
+    border-bottom-width: 1px;
+  }
+}
+
+@media (min-width: 768px) {
+  .about-stats-grid > div:not(:last-child) {
+    border-right-width: 1px;
+  }
 }
